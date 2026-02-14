@@ -1,57 +1,1994 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>EL SEGARRO RUNNER</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      touch-action: manipulation;
+    }
 
-                        <!DOCTYPE html>
-                        <html lang="en">
-                        <head>
-                            <meta charset="UTF-8">
-                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body {
-                  background-color: white; /* Ensure the iframe has a white background */
-                }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Courier New', monospace;
+      overflow: hidden;
+      color: white;
+      padding: 10px;
+    }
 
-                
-              </style>
-                        </head>
-                        <body>
-                            <!-- Solo visible en móvil -->
-<div id="mobile-controls" class="hidden">
-  <button id="btn-left">←</button>
-  <button id="btn-down">↓</button>
-  <button id="btn-center">◉</button> <!-- Volver al centro -->
-  <button id="btn-up">↑</button>
-  <button id="btn-right">→</button>
-</div>
+    #game-container {
+      position: relative;
+      text-align: center;
+      width: 100%;
+      max-width: 800px;
+    }
 
-<style>
-#mobile-controls {
-  position: absolute;
-  bottom: 20px;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-}
-#mobile-controls button {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: rgba(255, 77, 77, 0.7);
-  color: white;
-  font-size: 24px;
-  border: none;
-  touch-action: manipulation;
-}
-</style>
+    canvas {
+      border: 6px solid #ff4d4d;
+      border-radius: 12px;
+      box-shadow: 
+        0 0 30px rgba(255, 77, 77, 0.6),
+        0 0 60px rgba(255, 209, 102, 0.3);
+      background: #0a0a14;
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
 
+    #hud {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 30px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 12px 25px;
+      border-radius: 20px;
+      border: 2px solid #ffd166;
+      box-shadow: 0 0 20px rgba(255, 209, 102, 0.5);
+      font-size: 22px;
+      font-weight: bold;
+      z-index: 10;
+    }
 
+    #score-display, #record-display {
+      position: absolute;
+      top: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #ffd166;
+      text-shadow: 0 0 10px rgba(255, 209, 102, 0.8);
+      font-family: 'Courier New', monospace;
+      z-index: 10;
+    }
 
-              <script>
-                              // Este código crea 3 partículas CADA 5 FRAMES durante 90 frames:
-if (this.particulas && this.tiempo % 5 === 0) {
-  for (let i = 0; i < 3; i++) { ... } // ¡54 partículas por texto!
-}
+    #score-display { right: 20px; }
+    #record-display { left: 20px; }
 
+    #game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.95);
+      color: #ff4d4d;
+      padding: 35px 50px;
+      border-radius: 20px;
+      border: 4px solid #ff4d4d;
+      text-align: center;
+      display: none;
+      z-index: 20;
+      box-shadow: 
+        0 0 40px rgba(255, 77, 77, 0.8),
+        0 0 80px rgba(255, 209, 102, 0.4);
+      width: 80%;
+      max-width: 500px;
+    }
 
-              </script>
-                        </body>
-                        </html>
-                    
+    #game-over h2 {
+      font-size: 48px;
+      margin-bottom: 15px;
+      text-shadow: 0 0 20px rgba(255, 77, 77, 0.9);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      background: linear-gradient(45deg, #ff4d4d, #ffd166);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #game-over p {
+      font-size: 24px;
+      margin-bottom: 25px;
+      color: #ffd166;
+      font-family: 'Courier New', monospace;
+    }
+
+    #restart-btn {
+      background: linear-gradient(45deg, #06d6a0, #118ab2);
+      color: white;
+      border: none;
+      padding: 12px 35px;
+      font-size: 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      font-family: 'Courier New', monospace;
+      box-shadow: 0 5px 15px rgba(6, 214, 160, 0.4);
+      width: 100%;
+    }
+
+    #restart-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(6, 214, 160, 0.7);
+    }
+
+    #restart-btn:active {
+      transform: scale(0.98);
+    }
+
+    #instructions {
+      position: absolute;
+      bottom: 15px;
+      color: #a8dadc;
+      font-size: 16px;
+      text-align: center;
+      width: 100%;
+      font-family: 'Courier New', monospace;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 8px;
+      border-radius: 8px;
+      z-index: 10;
+    }
+
+    #instructions p {
+      margin: 3px 0;
+    }
+
+    #title-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 30;
+      gap: 30px;
+    }
+
+    #title-screen h1 {
+      font-size: 50px;
+      font-weight: bold;
+      color: #ffd166;
+      text-shadow: 
+        0 0 20px rgba(255, 209, 102, 0.8),
+        0 0 40px rgba(255, 77, 77, 0.6);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 3px;
+      animation: pulse 2s infinite;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    #start-btn {
+      background: linear-gradient(45deg, #ff4d4d, #ffd166);
+      color: white;
+      border: none;
+      padding: 18px 50px;
+      font-size: 26px;
+      border-radius: 15px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      font-family: 'Courier New', monospace;
+      box-shadow: 
+        0 0 30px rgba(255, 77, 77, 0.6),
+        0 0 60px rgba(255, 209, 102, 0.4);
+    }
+
+    #start-btn:hover {
+      transform: scale(1.08);
+      box-shadow: 
+        0 0 40px rgba(255, 77, 77, 0.8),
+        0 0 80px rgba(255, 209, 102, 0.6);
+    }
+
+    #start-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Controles táctiles para móvil */
+    #mobile-controls {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      gap: 15px;
+      z-index: 15;
+    }
+
+    #mobile-controls.visible {
+      display: flex;
+    }
+
+    .control-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 77, 77, 0.8);
+      color: white;
+      font-size: 28px;
+      border: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      user-select: none;
+      box-shadow: 0 4px 15px rgba(255, 77, 77, 0.6);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .control-btn:active {
+      transform: scale(0.9);
+      background: rgba(255, 77, 77, 1);
+    }
+
+    #btn-center {
+      background: rgba(255, 209, 102, 0.9);
+      box-shadow: 0 4px 15px rgba(255, 209, 102, 0.6);
+    }
+
+    #btn-center:active {
+      background: rgba(255, 209, 102, 1);
+    }
+
+    /* Indicador de carril actual */
+    #carril-indicator {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 6px;
+      background: #4cc9f0;
+      border-radius: 3px;
+      transition: left 0.2s;
+      z-index: 5;
+    }
+
+    /* Mensaje de audio */
+    #audio-message {
+      position: absolute;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 209, 102, 0.9);
+      color: #0a0a14;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 16px;
+      display: none;
+      z-index: 15;
+    }
+
+    @media (max-width: 768px) {
+      #title-screen h1 {
+        font-size: 36px;
+        padding: 0 10px;
+      }
+      
+      #start-btn {
+        font-size: 22px;
+        padding: 15px 40px;
+      }
+      
+      #hud {
+        font-size: 18px;
+        gap: 20px;
+        padding: 10px 20px;
+      }
+      
+      #score-display, #record-display {
+        font-size: 22px;
+        top: 15px;
+      }
+      
+      #score-display { right: 15px; }
+      #record-display { left: 15px; }
+      
+      .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+      }
+      
+      #instructions {
+        font-size: 14px;
+        bottom: 10px;
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="hud">
+      <div>
+        <span>❤️</span> <span id="vidas-count">1</span>
+      </div>
+      <div>
+        <span>🚬</span> <span id="cigarros-count">0</span>/5
+      </div>
+    </div>
+    <div id="score-display">SCORE: 0</div>
+    <div id="record-display">RÉCORD: 0</div>
+    <canvas id="game-canvas" width="800" height="600"></canvas>
+    
+    <div id="carril-indicator"></div>
+    
+    <div id="game-over">
+      <h2>¡RECISTA!</h2>
+      <p id="final-score">SCORE: 0</p>
+      <p id="best-record">MEJOR RÉCORD: 0</p>
+      <button id="restart-btn">OTRA VEZ, AMIGOO</button>
+    </div>
+    
+    <div id="instructions">
+      <p>← → : Cambiar carril | ↑ : Saltar | ↓ : Agacharse</p>
+    </div>
+
+    <div id="title-screen">
+      <h1>EL SEGARRO RUNNER</h1>
+      <button id="start-btn">EMPEZAR A FUMAR</button>
+    </div>
+
+    <div id="audio-message">🔊 ¡MUSIQUILLA ÁRABE ACTIVADA!</div>
+
+    <!-- Controles táctiles para móvil -->
+    <div id="mobile-controls">
+      <button id="btn-left" class="control-btn">←</button>
+      <button id="btn-down" class="control-btn">↓</button>
+      <button id="btn-center" class="control-btn">◉</button>
+      <button id="btn-up" class="control-btn">↑</button>
+      <button id="btn-right" class="control-btn">→</button>
+    </div>
+  </div>
+
+  <script>
+    // ==================== CONFIGURACIÓN ====================
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score-display');
+    const recordDisplay = document.getElementById('record-display');
+    const vidasDisplay = document.getElementById('vidas-count');
+    const cigarrosDisplay = document.getElementById('cigarros-count');
+    const gameOverPanel = document.getElementById('game-over');
+    const finalScoreDisplay = document.getElementById('final-score');
+    const bestRecordDisplay = document.getElementById('best-record');
+    const restartBtn = document.getElementById('restart-btn');
+    const titleScreen = document.getElementById('title-screen');
+    const startBtn = document.getElementById('start-btn');
+    const audioMessage = document.getElementById('audio-message');
+    const mobileControls = document.getElementById('mobile-controls');
+    const carrilIndicator = document.getElementById('carril-indicator');
+
+    // Detectar si es móvil
+    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                    ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    
+    if (esMovil) {
+      mobileControls.classList.add('visible');
+      document.getElementById('instructions').innerHTML = '<p>Usa los botones para jugar</p>';
+    }
+
+    // Constantes del juego
+    const CARRILES = {
+      IZQUIERDA: 0,
+      CENTRO: 1,
+      DERECHA: 2
+    };
+
+    // Posiciones en pantalla
+    const POS_X_CARRIL = [200, 400, 600];
+    const POS_Y_BASE = 350;
+    const ALTURA_AGACHADO = 450;
+
+    // ==================== SISTEMA DE AUDIO ====================
+    let audioContext;
+    let musicaFondoNode;
+    let audioHabilitado = false;
+    let musicaPlaying = false;
+    let ultimoTiempoMusica = 0;
+
+    function initAudio() {
+      if (audioHabilitado) return;
+      
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        startMusicaArabe();
+        audioHabilitado = true;
+        audioMessage.style.display = 'block';
+        
+        setTimeout(() => {
+          audioMessage.style.display = 'none';
+        }, 3000);
+      } catch (e) {
+        console.log('Audio no disponible:', e);
+      }
+    }
+
+    function startMusicaArabe() {
+      if (!audioContext || musicaPlaying) return;
+      
+      musicaPlaying = true;
+      ultimoTiempoMusica = Date.now();
+      
+      // Melodía suave con onda senoidal, notas graves y espaciadas
+      const notasGraves = [110, 130.81, 146.83, 164.81, 196.00];
+      let indice = 0;
+      
+      function tocarMelodia() {
+        if (!musicaPlaying || !audioContext) return;
+        
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.value = notasGraves[indice];
+        
+        gain.gain.setValueAtTime(0, audioContext.currentTime);
+        gain.gain.linearRampToValueAtTime(0.06, audioContext.currentTime + 0.1);
+        gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1.8);
+        
+        osc.start();
+        osc.stop(audioContext.currentTime + 2.0);
+        
+        indice = (indice + 1) % notasGraves.length;
+        
+        setTimeout(tocarMelodia, 2400);
+      }
+      
+      tocarMelodia();
+    }
+
+    function stopMusicaArabe() {
+      musicaPlaying = false;
+    }
+
+    // Sonido de suspiro (recoger cigarro)
+    function sonidoSuspiro() {
+      if (!audioContext) return;
+      
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.value = 300;
+      osc.type = 'sine';
+      gain.gain.value = 0.15;
+      
+      osc.start();
+      osc.stop(audioContext.currentTime + 0.4);
+    }
+
+    // Sonido de choque
+    function sonidoChoque() {
+      if (!audioContext) return;
+      
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.value = 120;
+      osc.type = 'square';
+      gain.gain.value = 0.4;
+      
+      osc.start();
+      osc.stop(audioContext.currentTime + 0.15);
+    }
+
+    // Sonido de sirenas (game over)
+    function sonidoSirenas() {
+      if (!audioContext) return;
+      
+      const osc1 = audioContext.createOscillator();
+      const osc2 = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc1.frequency.value = 650;
+      osc2.frequency.value = 850;
+      gain.gain.value = 0.25;
+      
+      osc1.start();
+      osc2.start();
+      
+      let ascendente = true;
+      const interval = setInterval(() => {
+        if (!audioContext) {
+          clearInterval(interval);
+          return;
+        }
+        
+        if (ascendente) {
+          osc1.frequency.value = 850;
+          osc2.frequency.value = 1050;
+        } else {
+          osc1.frequency.value = 650;
+          osc2.frequency.value = 850;
+        }
+        ascendente = !ascendente;
+      }, 250);
+      
+      setTimeout(() => {
+        clearInterval(interval);
+        osc1.stop();
+        osc2.stop();
+      }, 2500);
+    }
+
+    // Sonido de celebración (conseguir vida)
+    function sonidoCelebracion() {
+      if (!audioContext) return;
+      
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          if (!audioContext) return;
+          
+          const osc = audioContext.createOscillator();
+          const gain = audioContext.createGain();
+          
+          osc.connect(gain);
+          gain.connect(audioContext.destination);
+          
+          osc.frequency.value = 500 + i * 80;
+          osc.type = 'sine';
+          gain.gain.value = 0.18;
+          
+          osc.start();
+          osc.stop(audioContext.currentTime + 0.12);
+        }, i * 120);
+      }
+    }
+
+    // Sonido de salto
+    function sonidoSalto() {
+      if (!audioContext) return;
+      
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.value = 450;
+      osc.type = 'sine';
+      gain.gain.value = 0.25;
+      
+      osc.start();
+      osc.stop(audioContext.currentTime + 0.12);
+    }
+
+    // Sonido de tos (final de PAKI RICOH)
+    function sonidoTos() {
+      if (!audioContext) return;
+      
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.value = 200;
+      osc.type = 'square';
+      gain.gain.value = 0.6;
+      
+      osc.start();
+      osc.stop(audioContext.currentTime + 0.3);
+      
+      setTimeout(() => {
+        if (!audioContext) return;
+        
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        
+        osc2.frequency.value = 100;
+        osc2.type = 'sawtooth';
+        gain2.gain.value = 0.3;
+        
+        osc2.start();
+        osc2.stop(audioContext.currentTime + 0.5);
+      }, 100);
+    }
+
+    // Sonido de moneda (truco EURO)
+    function sonidoEuro() {
+      if (!audioContext) return;
+      
+      const osc = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioContext.destination);
+      
+      osc.frequency.value = 800;
+      osc.type = 'sine';
+      gain.gain.value = 0.3;
+      
+      osc.start();
+      osc.stop(audioContext.currentTime + 0.1);
+      
+      setTimeout(() => {
+        if (!audioContext) return;
+        
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        
+        osc2.frequency.value = 600;
+        osc2.type = 'sine';
+        gain2.gain.value = 0.25;
+        
+        osc2.start();
+        osc2.stop(audioContext.currentTime + 0.1);
+      }, 100);
+    }
+
+    // Sonido de cerdo (GRUÑIDO SIMPLE Y SEGURO - SIN VIBRATO)
+    function sonidoCerdo() {
+      if (!audioContext) return;
+      
+      try {
+        // Versión SIMPLE y 100% SEGURA
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        // Gruñido grave de cerdo
+        osc.frequency.value = 180;
+        osc.type = 'sawtooth'; // Timbre áspero
+        gain.gain.value = 0.4;
+        
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.3);
+        
+        // Fade out suave
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      } catch (e) {
+        console.error("Error en sonidoCerdo (ignorado):", e);
+        // Nunca rompe el juego
+      }
+    }
+
+    // Música suave para escena final
+    function startMusicaFinal() {
+      if (!audioContext) return;
+      
+      stopMusicaArabe();
+      
+      const notas = [110, 130.81, 146.83, 164.81, 196.00];
+      let indice = 0;
+      
+      function tocarNota() {
+        if (!audioContext) return;
+        
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.value = notas[indice];
+        
+        gain.gain.value = 0.08;
+        
+        osc.start();
+        osc.stop(audioContext.currentTime + 1.0);
+        
+        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
+        
+        indice = (indice + 1) % notas.length;
+        
+        setTimeout(tocarNota, 1500);
+      }
+      
+      tocarNota();
+    }
+
+    // ==================== ESTADO DEL JUEGO ====================
+    const juego = {
+      estado: 'menu',
+      score: 0,
+      velocidadBase: 4.8,
+      velocidad: 4.8,
+      dificultad: 1,
+      tiempo: 0,
+      frecuenciaObstaculos: 90,
+      contadorObstaculos: 0,
+      pantallaRoja: 0,
+      parpadeoGameOver: 0,
+      record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
+      choquesSinMorir: 0
+    };
+
+    recordDisplay.textContent = `RÉCORD: ${juego.record}`;
+
+    // ==================== JUGADOR ====================
+    const jugador = {
+      carril: CARRILES.CENTRO,
+      y: POS_Y_BASE,
+      vy: 0,
+      ancho: 30,
+      alto: 60,
+      colorPiel: '#5d4037',
+      colorRopa: '#2e7d32',
+      saltando: false,
+      agachado: false,
+      enSuelo: true,
+      gravedad: 0.6,
+      vidas: 1,
+      cigarros: 0,
+      invulnerable: false,
+      tiempoInvulnerable: 0,
+      trucoEuro: {
+        paso1: false,
+        tiempoPaso1: 0,
+        usado: false
+      },
+      pakiRicoh: {
+        activo: false,
+        duracion: 300,
+        contador: 0,
+        cambiosRestantes: 3,
+        proximoCambio: 60,
+        direccion: 0,
+        humoParticulas: []
+      },
+      enEscenaFinal: false,
+      amigos: []
+    };
+
+    // ==================== OBSTÁCULOS, CIGARROS Y CERDOS ====================
+    const obstaculos = [];
+    const cigarros = [];
+    const cerdos = [];
+    const textosEmergentes = [];
+
+    // ==================== TECLADO ====================
+    const teclas = {
+      izquierda: false,
+      derecha: false,
+      arriba: false,
+      abajo: false,
+      abajoPresionado: false,
+      tiempoAbajo: 0
+    };
+
+    window.addEventListener('keydown', (e) => {
+      if (juego.estado !== 'jugando' || jugador.pakiRicoh.activo || jugador.enEscenaFinal) return;
+      
+      switch(e.key) {
+        case 'ArrowLeft':
+          jugador.carril = Math.max(0, jugador.carril - 1);
+          break;
+        case 'ArrowRight':
+          jugador.carril = Math.min(2, jugador.carril + 1);
+          break;
+        case 'ArrowUp':
+          if (jugador.enSuelo) {
+            jugador.vy = -15;
+            jugador.enSuelo = false;
+            jugador.saltando = true;
+            sonidoSalto();
+          }
+          break;
+        case 'ArrowDown':
+          if (!teclas.abajoPresionado) {
+            teclas.abajoPresionado = true;
+            teclas.tiempoAbajo = Date.now();
+            
+            if (jugador.trucoEuro.paso1 && !jugador.trucoEuro.usado) {
+              const tiempoTranscurrido = Date.now() - jugador.trucoEuro.tiempoPaso1;
+              if (tiempoTranscurrido < 2000) {
+                activarTrucoEuro();
+              }
+            }
+          }
+          break;
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowDown') {
+        teclas.abajoPresionado = false;
+        
+        const duracion = Date.now() - teclas.tiempoAbajo;
+        if (duracion < 300 && !jugador.trucoEuro.usado && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
+          jugador.trucoEuro.paso1 = true;
+          jugador.trucoEuro.tiempoPaso1 = Date.now();
+          
+          textosEmergentes.push(new TextoEmergente(
+            "?", 
+            POS_X_CARRIL[jugador.carril], 
+            jugador.y - 20, 
+            '#ffd166',
+            { gigante: false, vibrar: false }
+          ));
+        }
+      }
+    });
+
+    // ==================== CONTROLES TÁCTILES ====================
+    document.getElementById('btn-left').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (juego.estado === 'jugando' && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
+        jugador.carril = Math.max(0, jugador.carril - 1);
+      }
+    });
+
+    document.getElementById('btn-right').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (juego.estado === 'jugando' && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
+        jugador.carril = Math.min(2, jugador.carril + 1);
+      }
+    });
+
+    document.getElementById('btn-center').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (juego.estado === 'jugando' && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
+        jugador.carril = CARRILES.CENTRO;
+      }
+    });
+
+    document.getElementById('btn-up').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (juego.estado === 'jugando' && jugador.enSuelo && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
+        jugador.vy = -15;
+        jugador.enSuelo = false;
+        jugador.saltando = true;
+        sonidoSalto();
+      }
+    });
+
+    document.getElementById('btn-down').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (juego.estado !== 'jugando' || jugador.pakiRicoh.activo || jugador.enEscenaFinal) return;
+      
+      if (!teclas.abajoPresionado) {
+        teclas.abajoPresionado = true;
+        teclas.tiempoAbajo = Date.now();
+        
+        if (jugador.trucoEuro.paso1 && !jugador.trucoEuro.usado) {
+          const tiempoTranscurrido = Date.now() - jugador.trucoEuro.tiempoPaso1;
+          if (tiempoTranscurrido < 2000) {
+            activarTrucoEuro();
+          }
+        }
+      }
+    });
+
+    document.getElementById('btn-down').addEventListener('touchend', (e) => {
+      e.preventDefault();
+      teclas.abajoPresionado = false;
+      
+      const duracion = Date.now() - teclas.tiempoAbajo;
+      if (duracion < 300 && !jugador.trucoEuro.usado && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
+        jugador.trucoEuro.paso1 = true;
+        jugador.trucoEuro.tiempoPaso1 = Date.now();
+        
+        textosEmergentes.push(new TextoEmergente(
+          "?", 
+          POS_X_CARRIL[jugador.carril], 
+          jugador.y - 20, 
+          '#ffd166',
+          { gigante: false, vibrar: false }
+        ));
+      }
+    });
+
+    // ==================== CLASES ====================
+
+    class TextoEmergente {
+      constructor(texto, x, y, color = '#ffd166', opciones = {}) {
+        this.texto = texto;
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.vida = opciones.gigante ? 100 : 70;
+        this.velocidadY = -2;
+        this.opacidad = 1.0;
+        this.escala = opciones.gigante ? 1.8 : 1.0;
+        this.vibrar = opciones.vibrar || false;
+        this.tiempo = 0;
+      }
+      
+      actualizar() {
+        this.y += this.velocidadY;
+        this.vida--;
+        this.tiempo++;
+      }
+      
+      dibujar(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.opacidad;
+        
+        let offsetX = this.x;
+        if (this.vibrar) {
+          offsetX += Math.sin(this.tiempo * 15) * 1.5;
+        }
+        
+        ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 4 * this.escala;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(this.texto, offsetX, this.y);
+        
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.texto, offsetX, this.y);
+        
+        ctx.restore();
+      }
+      
+      estaMuerto() {
+        return this.vida <= 0;
+      }
+    }
+
+    class ParticulaHumo {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = -0.5 - Math.random() * 0.3;
+        this.radio = 1.5 + Math.random() * 2;
+        this.opacidad = 0.7;
+        this.vida = 40 + Math.random() * 20;
+      }
+      
+      actualizar() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.radio *= 0.98;
+        this.opacidad *= 0.97;
+        this.vida--;
+      }
+      
+      dibujar(ctx) {
+        ctx.globalAlpha = this.opacidad;
+        ctx.fillStyle = `rgba(200, 200, 200, ${this.opacidad})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+      }
+      
+      estaMuerta() {
+        return this.vida <= 0 || this.radio < 0.5;
+      }
+    }
+
+    // ==================== FUNCIONES DEL JUEGO ====================
+
+    function activarTrucoEuro() {
+      if (jugador.trucoEuro.usado || jugador.pakiRicoh.activo || jugador.enEscenaFinal) return;
+      
+      jugador.trucoEuro.usado = true;
+      jugador.trucoEuro.paso1 = false;
+      
+      juego.estado = 'pausado_truco';
+      
+      jugador.vidas++;
+      vidasDisplay.textContent = jugador.vidas;
+      
+      textosEmergentes.push(new TextoEmergente(
+        "EURO", 
+        POS_X_CARRIL[jugador.carril], 
+        jugador.y - 60, 
+        '#ffd700',
+        { gigante: true, vibrar: true }
+      ));
+      
+      sonidoEuro();
+      
+      setTimeout(() => {
+        if (juego.estado === 'pausado_truco') {
+          juego.estado = 'jugando';
+        }
+      }, 2000);
+    }
+
+    function generarObstaculo() {
+      if (juego.contadorObstaculos >= juego.frecuenciaObstaculos) {
+        const random = Math.random();
+        
+        // NUEVA DISTRIBUCIÓN: 45% policías normales, 22% policías rápidos, 8% cerdos, 25% cigarros
+        if (random < 0.45) {
+          // Policía normal (45%)
+          const carril = Math.floor(Math.random() * 3);
+          obstaculos.push({
+            x: POS_X_CARRIL[carril] - 25,
+            y: -80,
+            ancho: 50,
+            alto: 70,
+            carril: carril,
+            tipo: 'policia',
+            velocidadExtra: 0
+          });
+        } else if (random < 0.67) {
+          // Policía rápido (22%)
+          const carril = Math.floor(Math.random() * 3);
+          obstaculos.push({
+            x: POS_X_CARRIL[carril] - 25,
+            y: -80,
+            ancho: 50,
+            alto: 70,
+            carril: carril,
+            tipo: 'policia',
+            velocidadExtra: 1
+          });
+        } else if (random < 0.75) {
+          // Cerdo (8%)
+          const carril = Math.floor(Math.random() * 3);
+          cerdos.push({
+            x: POS_X_CARRIL[carril] - 25,
+            y: -60,
+            ancho: 50,
+            alto: 40,
+            carril: carril,
+            tipo: 'cerdo'
+          });
+        } else {
+          // Cigarro (25%)
+          const carril = Math.floor(Math.random() * 3);
+          cigarros.push({
+            x: POS_X_CARRIL[carril] - 20,
+            y: -60,
+            ancho: 40,
+            alto: 25,
+            carril: carril,
+            tipo: 'cigarro'
+          });
+        }
+        
+        juego.contadorObstaculos = 0;
+      } else {
+        juego.contadorObstaculos++;
+      }
+    }
+
+    function moverObstaculos() {
+      // Mover policías
+      for (let i = obstaculos.length - 1; i >= 0; i--) {
+        obstaculos[i].y += juego.velocidad + obstaculos[i].velocidadExtra;
+        
+        if (obstaculos[i].y > canvas.height + 100) {
+          obstaculos.splice(i, 1);
+        }
+      }
+      
+      // Mover cerdos (lentamente)
+      for (let i = cerdos.length - 1; i >= 0; i--) {
+        cerdos[i].y += 1.5;
+        
+        if (cerdos[i].y > canvas.height + 100) {
+          cerdos.splice(i, 1);
+        }
+      }
+      
+      // Mover cigarros
+      for (let i = cigarros.length - 1; i >= 0; i--) {
+        cigarros[i].y += juego.velocidad;
+        
+        if (cigarros[i].y > canvas.height + 100) {
+          cigarros.splice(i, 1);
+        }
+      }
+    }
+
+    function detectarColisiones() {
+      const jugadorX = POS_X_CARRIL[jugador.carril] - jugador.ancho / 2;
+      const jugadorY = jugador.y - jugador.alto / 2;
+      
+      // Colisión con policías
+      for (let i = obstaculos.length - 1; i >= 0; i--) {
+        const obs = obstaculos[i];
+        const obsX = obs.x;
+        const obsY = obs.y - obs.alto / 2;
+        
+        if (jugador.pakiRicoh.activo) {
+          if (
+            jugadorX < obsX + obs.ancho &&
+            jugadorX + jugador.ancho > obsX &&
+            jugadorY < obsY + obs.alto &&
+            jugadorY + jugador.alto > obsY
+          ) {
+            if (Math.random() < 0.3) {
+              textosEmergentes.push(new TextoEmergente(
+                "RECISTA", 
+                POS_X_CARRIL[jugador.carril], 
+                jugador.y - 50, 
+                '#ff4d4d',
+                { gigante: false, vibrar: false }
+              ));
+            }
+          }
+          continue;
+        }
+        
+        if (
+          jugadorX < obsX + obs.ancho &&
+          jugadorX + jugador.ancho > obsX &&
+          jugadorY < obsY + obs.alto &&
+          jugadorY + jugador.alto > obsY
+        ) {
+          if (!jugador.invulnerable) {
+            sonidoChoque();
+            
+            juego.choquesSinMorir++;
+            
+            // ¿Tercer choque? Mostrar "MI CARTERA¡" (solo texto)
+            if (juego.choquesSinMorir >= 3) {
+              textosEmergentes.push(new TextoEmergente(
+                "MI CARTERA¡", 
+                POS_X_CARRIL[jugador.carril], 
+                jugador.y - 60, 
+                '#ffd166',
+                { gigante: true, vibrar: true }
+              ));
+              juego.choquesSinMorir = 0;
+            }
+            
+            textosEmergentes.push(new TextoEmergente(
+              "RECISTA", 
+              POS_X_CARRIL[jugador.carril], 
+              jugador.y - 50, 
+              '#ff4d4d'
+            ));
+            
+            juego.pantallaRoja = 25;
+            
+            if (jugador.vidas > 1) {
+              jugador.vidas--;
+              vidasDisplay.textContent = jugador.vidas;
+              jugador.invulnerable = true;
+              jugador.tiempoInvulnerable = 90;
+            } else {
+              gameOver();
+            }
+          }
+          obstaculos.splice(i, 1);
+        }
+      }
+      
+      // Colisión con cerdos
+      for (let i = cerdos.length - 1; i >= 0; i--) {
+        const cerdo = cerdos[i];
+        const cerdoX = cerdo.x;
+        const cerdoY = cerdo.y - cerdo.alto / 2;
+        
+        if (
+          jugadorX < cerdoX + cerdo.ancho &&
+          jugadorX + jugador.ancho > cerdoX &&
+          jugadorY < cerdoY + cerdo.alto &&
+          jugadorY + jugador.alto > cerdoY
+        ) {
+          if (!jugador.invulnerable) {
+            sonidoCerdo(); // ¡GRUÑIDO SEGURO!
+            
+            jugador.vidas--;
+            vidasDisplay.textContent = jugador.vidas;
+            
+            textosEmergentes.push(new TextoEmergente(
+              "YALLAH", 
+              POS_X_CARRIL[jugador.carril], 
+              jugador.y - 50, 
+              '#ff4d4d',
+              { gigante: true, vibrar: true }
+            ));
+            
+            juego.pantallaRoja = 30;
+            
+            if (jugador.vidas <= 0) {
+              gameOver();
+            } else {
+              jugador.invulnerable = true;
+              jugador.tiempoInvulnerable = 90;
+            }
+          }
+          cerdos.splice(i, 1);
+        }
+      }
+      
+      // Colisión con cigarros
+      for (let i = cigarros.length - 1; i >= 0; i--) {
+        const cig = cigarros[i];
+        const cigX = cig.x;
+        const cigY = cig.y - cig.alto / 2;
+        
+        if (
+          jugadorX < cigX + cig.ancho &&
+          jugadorX + jugador.ancho > cigX &&
+          jugadorY < cigY + cig.alto &&
+          jugadorY + jugador.alto > cigY
+        ) {
+          sonidoSuspiro();
+          
+          textosEmergentes.push(new TextoEmergente(
+            "SEGARRO", 
+            POS_X_CARRIL[jugador.carril], 
+            jugador.y - 40, 
+            '#ffd166'
+          ));
+          
+          jugador.cigarros++;
+          cigarrosDisplay.textContent = jugador.cigarros;
+          
+          // ¿Quinto cigarro?
+          if (jugador.cigarros >= 5) {
+            jugador.vidas++;
+            jugador.cigarros = 0;
+            cigarrosDisplay.textContent = jugador.cigarros;
+            vidasDisplay.textContent = jugador.vidas;
+            
+            sonidoCelebracion();
+            
+            textosEmergentes.push(new TextoEmergente(
+              "AMIGOO", 
+              POS_X_CARRIL[jugador.carril], 
+              jugador.y - 80, 
+              '#ffd700',
+              { gigante: true, vibrar: true }
+            ));
+          }
+          
+          // ¿Décimo cigarro?
+          if ((jugador.cigarros + 5 * (jugador.vidas - 1)) % 10 === 0 && jugador.cigarros !== 0) {
+            activarPakiRicoh();
+          }
+          
+          cigarros.splice(i, 1);
+        }
+      }
+    }
+
+    function activarPakiRicoh() {
+      jugador.pakiRicoh.activo = true;
+      jugador.pakiRicoh.contador = 0;
+      jugador.pakiRicoh.cambiosRestantes = 3;
+      jugador.pakiRicoh.proximoCambio = 60;
+      jugador.pakiRicoh.direccion = 0;
+      jugador.pakiRicoh.humoParticulas = [];
+      
+      textosEmergentes.push(new TextoEmergente(
+        "¡PAKI RICOH!", 
+        POS_X_CARRIL[jugador.carril], 
+        jugador.y - 100, 
+        '#ffd700',
+        { gigante: true, vibrar: true }
+      ));
+      
+      if (audioContext) {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.frequency.value = 600;
+        osc.type = 'sine';
+        gain.gain.value = 0.3;
+        
+        osc.start();
+        osc.stop(audioContext.currentTime + 0.3);
+      }
+    }
+
+    function actualizarPakiRicoh() {
+      if (!jugador.pakiRicoh.activo) return;
+      
+      jugador.pakiRicoh.contador++;
+      
+      // Generar humo (máximo 50 partículas)
+      if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.3) {
+        jugador.pakiRicoh.humoParticulas.push(new ParticulaHumo(
+          POS_X_CARRIL[jugador.carril] + (Math.random() - 0.5) * 20,
+          jugador.y - 20
+        ));
+      }
+      
+      // Actualizar partículas de humo
+      for (let i = jugador.pakiRicoh.humoParticulas.length - 1; i >= 0; i--) {
+        jugador.pakiRicoh.humoParticulas[i].actualizar();
+        if (jugador.pakiRicoh.humoParticulas[i].estaMuerta()) {
+          jugador.pakiRicoh.humoParticulas.splice(i, 1);
+        }
+      }
+      
+      // ¿Es momento de cambiar de dirección?
+      if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.proximoCambio && 
+          jugador.pakiRicoh.cambiosRestantes > 0) {
+        
+        jugador.pakiRicoh.direccion = Math.random() > 0.5 ? 1 : -1;
+        jugador.pakiRicoh.proximoCambio += 60 + Math.random() * 60;
+        jugador.pakiRicoh.cambiosRestantes--;
+      }
+      
+      // Mover personaje automáticamente
+      if (jugador.pakiRicoh.direccion !== 0) {
+        jugador.carril += jugador.pakiRicoh.direccion * 0.05;
+        jugador.carril = Math.max(0, Math.min(2, jugador.carril));
+      }
+      
+      // ¿Se acabó el tiempo?
+      if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.duracion) {
+        terminarPakiRicoh();
+      }
+    }
+
+    function terminarPakiRicoh() {
+      jugador.pakiRicoh.activo = false;
+      jugador.pakiRicoh.humoParticulas = [];
+      
+      textosEmergentes.push(new TextoEmergente(
+        "..", 
+        POS_X_CARRIL[jugador.carril], 
+        jugador.y - 20, 
+        '#ffffff',
+        { gigante: false, vibrar: false }
+      ));
+      
+      sonidoTos();
+    }
+
+    function actualizarJugador() {
+      if (juego.pantallaRoja > 0) {
+        juego.pantallaRoja--;
+      }
+      
+      if (!jugador.enSuelo) {
+        jugador.vy += jugador.gravedad;
+        jugador.y += jugador.vy;
+        
+        if (jugador.y >= POS_Y_BASE) {
+          jugador.y = POS_Y_BASE;
+          jugador.vy = 0;
+          jugador.enSuelo = true;
+          jugador.saltando = false;
+        }
+      }
+      
+      if (jugador.invulnerable) {
+        jugador.tiempoInvulnerable--;
+        if (jugador.tiempoInvulnerable <= 0) {
+          jugador.invulnerable = false;
+        }
+      }
+      
+      actualizarPakiRicoh();
+    }
+
+    function actualizarDificultad() {
+      juego.score++;
+      scoreDisplay.textContent = `SCORE: ${juego.score}`;
+      
+      // Progresión más agresiva
+      juego.velocidad = 4.8;
+      if (juego.score >= 1000) juego.velocidad += 0.6;
+      if (juego.score >= 2000) juego.velocidad += 0.6;
+      if (juego.score >= 3500) juego.velocidad += 0.6;
+      if (juego.score >= 5500) juego.velocidad += 0.6;
+      if (juego.score >= 8000) juego.velocidad += 0.6;
+      if (juego.score >= 11000) juego.velocidad += 0.6;
+      if (juego.score >= 15000) juego.velocidad += 0.6;
+      
+      // Verificar final secreto
+      if (juego.score >= 30000 && juego.estado !== 'final') {
+        escenaFinal();
+        return;
+      }
+      
+      // Aumentar frecuencia de obstáculos cada 1200 puntos
+      if (juego.score % 1200 === 0 && juego.frecuenciaObstaculos > 40) {
+        juego.frecuenciaObstaculos -= 6;
+      }
+    }
+
+    function actualizarTextos() {
+      for (let i = textosEmergentes.length - 1; i >= 0; i--) {
+        textosEmergentes[i].actualizar();
+        if (textosEmergentes[i].estaMuerto()) {
+          textosEmergentes.splice(i, 1);
+        }
+      }
+    }
+
+    function escenaFinal() {
+      juego.estado = 'final';
+      jugador.enEscenaFinal = true;
+      stopMusicaArabe();
+      startMusicaFinal();
+      
+      // Generar amigos (5 siluetas alrededor)
+      jugador.amigos = [];
+      const posicionesAmigos = [
+        { x: 300, y: 400, carril: 0 },
+        { x: 350, y: 420, carril: 0 },
+        { x: 450, y: 420, carril: 2 },
+        { x: 500, y: 400, carril: 2 },
+        { x: 400, y: 440, carril: 1 }
+      ];
+      
+      for (let i = 0; i < 5; i++) {
+        jugador.amigos.push({
+          x: posicionesAmigos[i].x,
+          y: posicionesAmigos[i].y,
+          carril: posicionesAmigos[i].carril,
+          colorPiel: '#795548',
+          colorRopa: '#388e3c'
+        });
+      }
+    }
+
+    function gameOver() {
+      juego.estado = 'gameover';
+      
+      if (juego.score > juego.record) {
+        juego.record = juego.score;
+        localStorage.setItem('segarroRecord', juego.record.toString());
+        recordDisplay.textContent = `RÉCORD: ${juego.record}`;
+      }
+      
+      finalScoreDisplay.textContent = `SCORE: ${juego.score}`;
+      bestRecordDisplay.textContent = `MEJOR RÉCORD: ${juego.record}`;
+      gameOverPanel.style.display = 'block';
+      
+      sonidoSirenas();
+      stopMusicaArabe();
+    }
+
+    function reiniciarJuego() {
+      juego.estado = 'jugando';
+      juego.score = 0;
+      juego.velocidad = juego.velocidadBase;
+      juego.frecuenciaObstaculos = 90;
+      juego.contadorObstaculos = 0;
+      juego.pantallaRoja = 0;
+      juego.choquesSinMorir = 0;
+      
+      jugador.carril = CARRILES.CENTRO;
+      jugador.y = POS_Y_BASE;
+      jugador.vy = 0;
+      jugador.saltando = false;
+      jugador.agachado = false;
+      jugador.enSuelo = true;
+      jugador.vidas = 1;
+      jugador.cigarros = 0;
+      jugador.invulnerable = false;
+      jugador.tiempoInvulnerable = 0;
+      jugador.trucoEuro = {
+        paso1: false,
+        tiempoPaso1: 0,
+        usado: false
+      };
+      jugador.pakiRicoh = {
+        activo: false,
+        duracion: 300,
+        contador: 0,
+        cambiosRestantes: 3,
+        proximoCambio: 60,
+        direccion: 0,
+        humoParticulas: []
+      };
+      jugador.enEscenaFinal = false;
+      jugador.amigos = [];
+      
+      obstaculos.length = 0;
+      cigarros.length = 0;
+      cerdos.length = 0;
+      textosEmergentes.length = 0;
+      
+      scoreDisplay.textContent = `SCORE: 0`;
+      vidasDisplay.textContent = jugador.vidas;
+      cigarrosDisplay.textContent = jugador.cigarros;
+      
+      gameOverPanel.style.display = 'none';
+      
+      if (audioHabilitado) {
+        startMusicaArabe();
+      }
+    }
+
+    // ==================== RENDERIZADO ====================
+
+    function dibujarFondo() {
+      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      gradient.addColorStop(0, '#1a1a2e');
+      gradient.addColorStop(0.5, '#162447');
+      gradient.addColorStop(1, '#0f3460');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.fillStyle = '#2d3142';
+      ctx.beginPath();
+      ctx.moveTo(0, 400);
+      ctx.lineTo(200, 250);
+      ctx.lineTo(400, 350);
+      ctx.lineTo(600, 200);
+      ctx.lineTo(800, 300);
+      ctx.lineTo(800, 600);
+      ctx.lineTo(0, 600);
+      ctx.fill();
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * 200, 0);
+        ctx.lineTo(i * 200, canvas.height);
+        ctx.stroke();
+      }
+      
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.setLineDash([15, 10]);
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      ctx.strokeStyle = 'rgba(255, 209, 102, 0.3)';
+      ctx.lineWidth = 2;
+      for (let i = 0; i < 15; i++) {
+        const y = (juego.tiempo * juego.velocidad * 0.2 + i * 40) % canvas.height;
+        ctx.beginPath();
+        ctx.moveTo(350, y);
+        ctx.lineTo(450, y);
+        ctx.stroke();
+      }
+    }
+
+    function dibujarJugador() {
+      if (jugador.enEscenaFinal) {
+        // Dibujar jugador sentado en la escena final
+        const x = 400;
+        const y = 400;
+        
+        // Mesa
+        ctx.fillStyle = '#5d4037';
+        ctx.fillRect(350, 420, 100, 15);
+        ctx.fillStyle = '#3e2723';
+        ctx.fillRect(355, 435, 8, 50);
+        ctx.fillRect(437, 435, 8, 50);
+        ctx.fillStyle = '#d32f2f';
+        ctx.fillRect(345, 415, 110, 10);
+        
+        // Silla
+        ctx.fillStyle = '#4e342e';
+        ctx.fillRect(370, 370, 30, 25);
+        ctx.fillStyle = '#2e1b1b';
+        ctx.fillRect(370, 340, 8, 30);
+        ctx.fillRect(370, 395, 6, 50);
+        ctx.fillRect(394, 395, 6, 50);
+        
+        // Cabeza
+        ctx.fillStyle = jugador.colorPiel;
+        ctx.fillRect(x - 10, y - 50, 20, 20);
+        
+        // Ojos cerrados (relajado)
+        ctx.fillStyle = '#2e1b1b';
+        ctx.fillRect(x - 6, y - 42, 4, 2);
+        ctx.fillRect(x + 2, y - 42, 4, 2);
+        
+        // Sonrisa
+        ctx.strokeStyle = '#2e1b1b';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(x, y - 35, 5, Math.PI, 2 * Math.PI);
+        ctx.stroke();
+        
+        // Cuerpo
+        ctx.fillStyle = jugador.colorRopa;
+        ctx.fillRect(x - 12, y - 30, 24, 35);
+        
+        // Brazo derecho con cigarro
+        ctx.fillStyle = jugador.colorPiel;
+        ctx.fillRect(x + 12, y - 25, 20, 8);
+        
+        // Cigarro
+        ctx.fillStyle = '#8d6e63';
+        ctx.fillRect(x + 32, y - 28, 18, 5);
+        ctx.fillStyle = '#ff9800';
+        ctx.beginPath();
+        ctx.arc(x + 50, y - 30, 3, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Piernas cruzadas
+        ctx.fillStyle = '#1a237e';
+        ctx.fillRect(x - 8, y + 5, 8, 25);
+        ctx.fillRect(x, y + 10, 8, 20);
+        
+        // Amigos alrededor
+        jugador.amigos.forEach(amigo => {
+          ctx.fillStyle = amigo.colorPiel;
+          ctx.fillRect(amigo.x - 8, amigo.y - 30, 16, 16);
+          
+          ctx.fillStyle = amigo.colorRopa;
+          ctx.fillRect(amigo.x - 10, amigo.y - 15, 20, 25);
+          
+          ctx.fillStyle = '#2e1b1b';
+          ctx.fillRect(amigo.x - 6, amigo.y - 25, 3, 2);
+          ctx.fillRect(amigo.x + 3, amigo.y - 25, 3, 2);
+        });
+        
+        // Créditos subiendo
+        const creditY = 650 - (juego.tiempo % 1800) * 0.6;
+        
+        ctx.font = 'bold 28px "Courier New", monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffd166';
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.lineWidth = 4;
+        
+        ctx.strokeText("ESTE ES DEL BUENO", 400, creditY);
+        ctx.fillText("ESTE ES DEL BUENO", 400, creditY);
+        
+        ctx.strokeText("RESINA PEGAJOSA", 400, creditY + 45);
+        ctx.fillText("RESINA PEGAJOSA", 400, creditY + 45);
+        
+        ctx.font = 'bold 20px "Courier New", monospace';
+        ctx.fillStyle = '#a5d6a7';
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.lineWidth = 3;
+        ctx.strokeText("la paz del segarrero", 400, 80);
+        ctx.fillText("la paz del segarrero", 400, 80);
+        
+        return;
+      }
+      
+      const x = POS_X_CARRIL[jugador.carril] - jugador.ancho / 2;
+      const y = jugador.y;
+      
+      ctx.save();
+      
+      if (jugador.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
+        ctx.globalAlpha = 0.6;
+      }
+      
+      if (jugador.pakiRicoh.activo) {
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 20;
+      }
+      
+      ctx.fillStyle = jugador.colorRopa;
+      ctx.fillRect(x, y - jugador.alto, jugador.ancho, jugador.alto - 10);
+      
+      ctx.fillStyle = jugador.colorPiel;
+      ctx.fillRect(x + 5, y - jugador.alto - 15, jugador.ancho - 10, 15);
+      
+      if (jugador.pakiRicoh.activo) {
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(x + 7, y - jugador.alto - 12, 16, 6);
+        ctx.fillRect(x + 7, y - jugador.alto - 12, 4, 6);
+        ctx.fillRect(x + 19, y - jugador.alto - 12, 4, 6);
+      } else {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(x + 8, y - jugador.alto - 10, 5, 5);
+        ctx.fillRect(x + 17, y - jugador.alto - 10, 5, 5);
+        ctx.fillStyle = 'black';
+        ctx.fillRect(x + 9, y - jugador.alto - 8, 2, 2);
+        ctx.fillRect(x + 18, y - jugador.alto - 8, 2, 2);
+      }
+      
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x + 15, y - jugador.alto - 5, 4, 0, Math.PI);
+      ctx.stroke();
+      
+      const offsetBrazos = Math.sin(juego.tiempo / 5) * 10;
+      ctx.fillStyle = jugador.colorPiel;
+      
+      if (jugador.agachado) {
+        ctx.fillRect(x - 8, y - 30, 8, 20);
+        ctx.fillRect(x + jugador.ancho, y - 30, 8, 20);
+      } else if (jugador.saltando) {
+        ctx.fillRect(x - 8, y - jugador.alto - 5, 8, 25);
+        ctx.fillRect(x + jugador.ancho, y - jugador.alto - 5, 8, 25);
+      } else {
+        ctx.fillRect(x - 8, y - 40 + offsetBrazos, 8, 25);
+        ctx.fillRect(x + jugador.ancho, y - 40 - offsetBrazos, 8, 25);
+      }
+      
+      ctx.fillStyle = '#1a237e';
+      if (jugador.agachado) {
+        ctx.fillRect(x + 5, y - 20, 10, 25);
+        ctx.fillRect(x + 15, y - 20, 10, 25);
+      } else {
+        const offsetPiernas = Math.sin(juego.tiempo / 5) * 8;
+        ctx.fillRect(x + 5, y - 15 + offsetPiernas, 10, 30);
+        ctx.fillRect(x + 15, y - 15 - offsetPiernas, 10, 30);
+      }
+      
+      ctx.fillStyle = '#212121';
+      ctx.fillRect(x + 5, y + 5, 10, 5);
+      ctx.fillRect(x + 15, y + 5, 10, 5);
+      
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    function dibujarPolicia(obs) {
+      const x = obs.x;
+      const y = obs.y;
+      
+      ctx.fillStyle = '#2196f3';
+      ctx.fillRect(x + 5, y - 60, 40, 60);
+      
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(x + 15, y - 75, 20, 15);
+      
+      ctx.fillStyle = '#1565c0';
+      ctx.fillRect(x + 10, y - 80, 30, 10);
+      ctx.fillRect(x + 12, y - 85, 26, 5);
+      
+      ctx.fillStyle = 'black';
+      ctx.fillRect(x + 18, y - 70, 3, 3);
+      ctx.fillRect(x + 25, y - 70, 3, 3);
+      
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + 18, y - 65);
+      ctx.lineTo(x + 27, y - 65);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(x - 5, y - 50, 10, 30);
+      ctx.fillRect(x + 45, y - 50, 10, 30);
+      
+      ctx.fillStyle = '#424242';
+      ctx.fillRect(x - 8, y - 30, 6, 25);
+      
+      ctx.fillStyle = '#0d47a1';
+      ctx.fillRect(x + 10, y - 10, 12, 25);
+      ctx.fillRect(x + 28, y - 10, 12, 25);
+      
+      ctx.fillStyle = '#212121';
+      ctx.fillRect(x + 10, y + 10, 12, 5);
+      ctx.fillRect(x + 28, y + 10, 12, 5);
+      
+      if (obs.velocidadExtra > 0) {
+        ctx.fillStyle = '#ff4d4d';
+        ctx.font = 'bold 12px Courier New';
+        ctx.textAlign = 'center';
+        ctx.fillText('RAPIDO', x + 25, y - 85);
+      }
+    }
+
+    function dibujarCerdo(cerdo) {
+      const x = cerdo.x;
+      const y = cerdo.y;
+      
+      // Cuerpo (rosa)
+      ctx.fillStyle = '#ff80ab';
+      ctx.beginPath();
+      ctx.ellipse(x + 25, y - 20, 25, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Cabeza
+      ctx.fillStyle = '#ff80ab';
+      ctx.beginPath();
+      ctx.arc(x + 25, y - 40, 15, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Ojos
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(x + 18, y - 42, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + 32, y - 42, 3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Hocico
+      ctx.fillStyle = '#e91e63';
+      ctx.beginPath();
+      ctx.arc(x + 25, y - 35, 8, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Nariz
+      ctx.fillStyle = 'black';
+      ctx.beginPath();
+      ctx.arc(x + 22, y - 35, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + 28, y - 35, 2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Orejas
+      ctx.fillStyle = '#ff80ab';
+      ctx.beginPath();
+      ctx.arc(x + 15, y - 45, 8, 0, Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(x + 35, y - 45, 8, 0, Math.PI);
+      ctx.fill();
+      
+      // Patas
+      ctx.fillStyle = '#e91e63';
+      ctx.fillRect(x + 10, y - 5, 10, 15);
+      ctx.fillRect(x + 30, y - 5, 10, 15);
+      
+      // Cola (espiral simple)
+      ctx.strokeStyle = '#e91e63';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x + 45, y - 25);
+      ctx.quadraticCurveTo(x + 55, y - 20, x + 50, y - 10);
+      ctx.stroke();
+    }
+
+    function dibujarCigarro(cig) {
+      const x = cig.x;
+      const y = cig.y;
+      
+      ctx.fillStyle = '#8d6e63';
+      ctx.fillRect(x + 5, y - 20, 30, 15);
+      
+      ctx.fillStyle = '#9e9e9e';
+      ctx.fillRect(x + 5, y - 25, 10, 5);
+      
+      ctx.fillStyle = '#ff9800';
+      ctx.beginPath();
+      ctx.arc(x + 10, y - 22, 3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + 10, y - 15);
+      ctx.lineTo(x + 30, y - 15);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + 10, y - 10);
+      ctx.lineTo(x + 30, y - 10);
+      ctx.stroke();
+    }
+
+    function dibujarObstaculos() {
+      obstaculos.forEach(obs => {
+        dibujarPolicia(obs);
+      });
+      
+      cerdos.forEach(cerdo => {
+        dibujarCerdo(cerdo);
+      });
+      
+      cigarros.forEach(cig => {
+        dibujarCigarro(cig);
+      });
+    }
+
+    function dibujarParticulasPakiRicoh() {
+      if (jugador.pakiRicoh.activo) {
+        jugador.pakiRicoh.humoParticulas.forEach(p => p.dibujar(ctx));
+      }
+    }
+
+    function dibujarTextos() {
+      textosEmergentes.forEach(t => t.dibujar(ctx));
+    }
+
+    function dibujarEfectoPantallaRoja() {
+      if (juego.pantallaRoja > 0) {
+        ctx.fillStyle = `rgba(255, 50, 50, ${juego.pantallaRoja / 40})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    function actualizarIndicadorCarril() {
+      if (jugador.enEscenaFinal) return;
+      
+      const posicionesX = [170, 370, 570];
+      carrilIndicator.style.left = `${posicionesX[jugador.carril]}px`;
+    }
+
+    // ==================== BUCLE PRINCIPAL ====================
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (juego.estado === 'jugando' || juego.estado === 'pausado_truco') {
+        actualizarJugador();
+        
+        if (juego.estado === 'jugando' && !jugador.enEscenaFinal) {
+          generarObstaculo();
+          moverObstaculos();
+          detectarColisiones();
+          actualizarDificultad();
+        }
+        
+        actualizarTextos();
+        actualizarIndicadorCarril();
+        
+        juego.tiempo++;
+      }
+      
+      // Renderizar
+      if (juego.estado !== 'gameover') {
+        dibujarFondo();
+        if (!jugador.enEscenaFinal) {
+          dibujarObstaculos();
+          dibujarParticulasPakiRicoh();
+        }
+        dibujarJugador();
+        dibujarTextos();
+        dibujarEfectoPantallaRoja();
+      }
+      
+      requestAnimationFrame(gameLoop);
+    }
+
+    // ==================== INICIAR ====================
+
+    startBtn.addEventListener('click', () => {
+      titleScreen.style.display = 'none';
+      juego.estado = 'jugando';
+      initAudio();
+    });
+    
+    restartBtn.addEventListener('click', reiniciarJuego);
+    
+    gameLoop();
+  </script>
+</body>
+</html>
+
