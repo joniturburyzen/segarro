@@ -1,0 +1,57 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  background-color: white; /* Ensure the iframe has a white background */
+                }
+
+                
+              </style>
+                        </head>
+                        <body>
+                            <!-- Solo visible en móvil -->
+<div id="mobile-controls" class="hidden">
+  <button id="btn-left">←</button>
+  <button id="btn-down">↓</button>
+  <button id="btn-center">◉</button> <!-- Volver al centro -->
+  <button id="btn-up">↑</button>
+  <button id="btn-right">→</button>
+</div>
+
+<style>
+#mobile-controls {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+#mobile-controls button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255, 77, 77, 0.7);
+  color: white;
+  font-size: 24px;
+  border: none;
+  touch-action: manipulation;
+}
+</style>
+
+
+
+              <script>
+                              // Este código crea 3 partículas CADA 5 FRAMES durante 90 frames:
+if (this.particulas && this.tiempo % 5 === 0) {
+  for (let i = 0; i < 3; i++) { ... } // ¡54 partículas por texto!
+}
+
+
+              </script>
+                        </body>
+                        </html>
+                    
