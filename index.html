@@ -1,1994 +1,1777 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>EL SEGARRO RUNNER</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      touch-action: manipulation;
-    }
-
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      font-family: 'Courier New', monospace;
-      overflow: hidden;
-      color: white;
-      padding: 10px;
-    }
-
-    #game-container {
-      position: relative;
-      text-align: center;
-      width: 100%;
-      max-width: 800px;
-    }
-
-    canvas {
-      border: 6px solid #ff4d4d;
-      border-radius: 12px;
-      box-shadow: 
-        0 0 30px rgba(255, 77, 77, 0.6),
-        0 0 60px rgba(255, 209, 102, 0.3);
-      background: #0a0a14;
-      width: 100%;
-      max-width: 800px;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
-
-    #hud {
-      position: absolute;
-      top: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 30px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 12px 25px;
-      border-radius: 20px;
-      border: 2px solid #ffd166;
-      box-shadow: 0 0 20px rgba(255, 209, 102, 0.5);
-      font-size: 22px;
-      font-weight: bold;
-      z-index: 10;
-    }
-
-    #score-display, #record-display {
-      position: absolute;
-      top: 20px;
-      font-size: 28px;
-      font-weight: bold;
-      color: #ffd166;
-      text-shadow: 0 0 10px rgba(255, 209, 102, 0.8);
-      font-family: 'Courier New', monospace;
-      z-index: 10;
-    }
-
-    #score-display { right: 20px; }
-    #record-display { left: 20px; }
-
-    #game-over {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.95);
-      color: #ff4d4d;
-      padding: 35px 50px;
-      border-radius: 20px;
-      border: 4px solid #ff4d4d;
-      text-align: center;
-      display: none;
-      z-index: 20;
-      box-shadow: 
-        0 0 40px rgba(255, 77, 77, 0.8),
-        0 0 80px rgba(255, 209, 102, 0.4);
-      width: 80%;
-      max-width: 500px;
-    }
-
-    #game-over h2 {
-      font-size: 48px;
-      margin-bottom: 15px;
-      text-shadow: 0 0 20px rgba(255, 77, 77, 0.9);
-      font-family: 'Courier New', monospace;
-      letter-spacing: 2px;
-      background: linear-gradient(45deg, #ff4d4d, #ffd166);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    #game-over p {
-      font-size: 24px;
-      margin-bottom: 25px;
-      color: #ffd166;
-      font-family: 'Courier New', monospace;
-    }
-
-    #restart-btn {
-      background: linear-gradient(45deg, #06d6a0, #118ab2);
-      color: white;
-      border: none;
-      padding: 12px 35px;
-      font-size: 20px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-      font-family: 'Courier New', monospace;
-      box-shadow: 0 5px 15px rgba(6, 214, 160, 0.4);
-      width: 100%;
-    }
-
-    #restart-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(6, 214, 160, 0.7);
-    }
-
-    #restart-btn:active {
-      transform: scale(0.98);
-    }
-
-    #instructions {
-      position: absolute;
-      bottom: 15px;
-      color: #a8dadc;
-      font-size: 16px;
-      text-align: center;
-      width: 100%;
-      font-family: 'Courier New', monospace;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 8px;
-      border-radius: 8px;
-      z-index: 10;
-    }
-
-    #instructions p {
-      margin: 3px 0;
-    }
-
-    #title-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.9);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 30;
-      gap: 30px;
-    }
-
-    #title-screen h1 {
-      font-size: 50px;
-      font-weight: bold;
-      color: #ffd166;
-      text-shadow: 
-        0 0 20px rgba(255, 209, 102, 0.8),
-        0 0 40px rgba(255, 77, 77, 0.6);
-      font-family: 'Courier New', monospace;
-      letter-spacing: 3px;
-      animation: pulse 2s infinite;
-      text-align: center;
-      padding: 0 20px;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-
-    #start-btn {
-      background: linear-gradient(45deg, #ff4d4d, #ffd166);
-      color: white;
-      border: none;
-      padding: 18px 50px;
-      font-size: 26px;
-      border-radius: 15px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s;
-      font-family: 'Courier New', monospace;
-      box-shadow: 
-        0 0 30px rgba(255, 77, 77, 0.6),
-        0 0 60px rgba(255, 209, 102, 0.4);
-    }
-
-    #start-btn:hover {
-      transform: scale(1.08);
-      box-shadow: 
-        0 0 40px rgba(255, 77, 77, 0.8),
-        0 0 80px rgba(255, 209, 102, 0.6);
-    }
-
-    #start-btn:active {
-      transform: scale(0.98);
-    }
-
-    /* Controles táctiles para móvil */
-    #mobile-controls {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      gap: 15px;
-      z-index: 15;
-    }
-
-    #mobile-controls.visible {
-      display: flex;
-    }
-
-    .control-btn {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: rgba(255, 77, 77, 0.8);
-      color: white;
-      font-size: 28px;
-      border: none;
-      cursor: pointer;
-      touch-action: manipulation;
-      user-select: none;
-      box-shadow: 0 4px 15px rgba(255, 77, 77, 0.6);
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-    }
-
-    .control-btn:active {
-      transform: scale(0.9);
-      background: rgba(255, 77, 77, 1);
-    }
-
-    #btn-center {
-      background: rgba(255, 209, 102, 0.9);
-      box-shadow: 0 4px 15px rgba(255, 209, 102, 0.6);
-    }
-
-    #btn-center:active {
-      background: rgba(255, 209, 102, 1);
-    }
-
-    /* Indicador de carril actual */
-    #carril-indicator {
-      position: absolute;
-      bottom: 120px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 60px;
-      height: 6px;
-      background: #4cc9f0;
-      border-radius: 3px;
-      transition: left 0.2s;
-      z-index: 5;
-    }
-
-    /* Mensaje de audio */
-    #audio-message {
-      position: absolute;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 209, 102, 0.9);
-      color: #0a0a14;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-family: 'Courier New', monospace;
-      font-weight: bold;
-      font-size: 16px;
-      display: none;
-      z-index: 15;
-    }
-
-    @media (max-width: 768px) {
-      #title-screen h1 {
-        font-size: 36px;
-        padding: 0 10px;
-      }
-      
-      #start-btn {
-        font-size: 22px;
-        padding: 15px 40px;
-      }
-      
-      #hud {
-        font-size: 18px;
-        gap: 20px;
-        padding: 10px 20px;
-      }
-      
-      #score-display, #record-display {
-        font-size: 22px;
-        top: 15px;
-      }
-      
-      #score-display { right: 15px; }
-      #record-display { left: 15px; }
-      
-      .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 24px;
-      }
-      
-      #instructions {
-        font-size: 14px;
-        bottom: 10px;
-        padding: 6px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Segarro Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            background-color: #1a1a1a;
+            font-family: 'Arial', sans-serif;
+            touch-action: manipulation;
+            position: relative;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        #juego-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        canvas {
+            display: block;
+            background-color: #1a1a1a;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #inicio {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #inicio h1 {
+            color: #ffd700;
+            font-size: 8vh;
+            margin-bottom: 4vh;
+            text-shadow: 0 0 10px #ff0, 0 0 20px #ff0;
+            letter-spacing: 2px;
+        }
+        
+        #inicio p {
+            color: #fff;
+            font-size: 3.5vh;
+            margin-bottom: 6vh;
+            max-width: 80%;
+            line-height: 1.4;
+        }
+        
+        #btn-iniciar {
+            background: linear-gradient(120deg, #ffd700 0%, #ff8c00 100%);
+            border: none;
+            padding: 2.5vh 8vw;
+            font-size: 4vh;
+            font-weight: bold;
+            color: #8b0000;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+            transition: all 0.2s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+        
+        #btn-iniciar:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.7);
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 4vh 6vw;
+            text-align: center;
+            z-index: 200;
+            max-width: 95%;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            display: none;
+        }
+        
+        #game-over h2 {
+            color: #ff4444;
+            font-size: 5vh;
+            margin-bottom: 2vh;
+            text-shadow: 0 0 10px #f00;
+        }
+        
+        #game-over p {
+            color: #fff;
+            font-size: 3.5vh;
+            margin: 1.5vh 0;
+            line-height: 1.4;
+        }
+        
+        #btn-reiniciar {
+            background: linear-gradient(120deg, #ff4444 0%, #cc0000 100%);
+            border: none;
+            padding: 2vh 6vw;
+            font-size: 3.5vh;
+            font-weight: bold;
+            color: #fff;
+            border-radius: 50px;
+            margin-top: 3vh;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 68, 68, 0.5);
+            transition: all 0.2s;
+            width: 90%;
+            max-width: 300px;
+        }
+        
+        #btn-reiniciar:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(255, 68, 68, 0.7);
+        }
+        
+        #hud {
+            position: absolute;
+            top: 2vh;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 4vw;
+            z-index: 50;
+            pointer-events: none;
+            font-size: 3.5vh;
+            color: white;
+            text-shadow: 0 0 5px #ffd700, 0 0 10px #ffd700;
+        }
+        
+        #vidas-container {
+            display: flex;
+            gap: 1.5vw;
+        }
+        
+        .vida {
+            width: 1.8vh;
+            height: 1.8vh;
+            background-color: #ff4444;
+            border-radius: 50%;
+            box-shadow: 0 0 5px #ff0000;
+        }
+        
+        #texto-emergente {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 150;
+            pointer-events: none;
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+        }
+        
+        #texto-emergente.gigante {
+            font-size: 12vh;
+            color: #ffd700;
+        }
+        
+        #texto-emergente.normal {
+            font-size: 8vh;
+            color: white;
+        }
+        
+        #overlay-pausa {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 180;
+            flex-direction: column;
+        }
+        
+        #overlay-pausa h2 {
+            color: #ffd700;
+            font-size: 6vh;
+            margin-bottom: 4vh;
+            text-shadow: 0 0 10px #ff0;
+        }
+        
+        #btn-continuar {
+            background: linear-gradient(120deg, #44ff44 0%, #00cc00 100%);
+            border: none;
+            padding: 2.5vh 8vw;
+            font-size: 4vh;
+            font-weight: bold;
+            color: #004400;
+            border-radius: 50px;
+            margin-bottom: 2vh;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(68, 255, 68, 0.5);
+            transition: all 0.2s;
+        }
+        
+        #btn-continuar:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(68, 255, 68, 0.7);
+        }
+        
+        #indicador-carril {
+            position: absolute;
+            bottom: 3vh;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 4vw;
+            z-index: 60;
+            pointer-events: none;
+        }
+        
+        .carril-indicador {
+            width: 2.5vh;
+            height: 2.5vh;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.2s;
+        }
+        
+        .carril-indicador.activo {
+            background-color: #ffd700;
+            border-color: #ff8c00;
+            box-shadow: 0 0 10px #ffd700;
+            transform: scale(1.3);
+        }
+        
+        #destello-euro {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 215, 0, 0.6);
+            display: none;
+            z-index: 160;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
-  <div id="game-container">
-    <div id="hud">
-      <div>
-        <span>❤️</span> <span id="vidas-count">1</span>
-      </div>
-      <div>
-        <span>🚬</span> <span id="cigarros-count">0</span>/5
-      </div>
+    <div id="juego-container">
+        <canvas id="juego"></canvas>
+        
+        <div id="inicio">
+            <h1>SE GARRO RUNNER</h1>
+            <p>Desliza el dedo para cambiar de carril<br>↑ ↓ ← →<br><br>Coge cigarros para ganar vidas<br>¡Cuidado con los cerdos y los policías!</p>
+            <button id="btn-iniciar">EMPEZAR</button>
+        </div>
+        
+        <div id="game-over">
+            <h2>¡MI CARTERA!</h2>
+            <p>PUNTUACIÓN: <span id="puntuacion-final">0</span></p>
+            <p>RÉCORD: <span id="record-final">0</span></p>
+            <p>CIGARROS: <span id="cigarros-final">0</span></p>
+            <button id="btn-reiniciar">OTRA VEZ, AMIGOO</button>
+        </div>
+        
+        <div id="hud">
+            <div id="vidas-container"></div>
+            <div id="puntuacion">0</div>
+        </div>
+        
+        <div id="texto-emergente"></div>
+        
+        <div id="overlay-pausa">
+            <h2>PAUSA</h2>
+            <button id="btn-continuar">CONTINUAR</button>
+            <button id="btn-reiniciar-pausa">REINICIAR</button>
+        </div>
+        
+        <div id="indicador-carril">
+            <div class="carril-indicador"></div>
+            <div class="carril-indicador activo"></div>
+            <div class="carril-indicador"></div>
+        </div>
+        
+        <div id="destello-euro"></div>
     </div>
-    <div id="score-display">SCORE: 0</div>
-    <div id="record-display">RÉCORD: 0</div>
-    <canvas id="game-canvas" width="800" height="600"></canvas>
-    
-    <div id="carril-indicator"></div>
-    
-    <div id="game-over">
-      <h2>¡RECISTA!</h2>
-      <p id="final-score">SCORE: 0</p>
-      <p id="best-record">MEJOR RÉCORD: 0</p>
-      <button id="restart-btn">OTRA VEZ, AMIGOO</button>
-    </div>
-    
-    <div id="instructions">
-      <p>← → : Cambiar carril | ↑ : Saltar | ↓ : Agacharse</p>
-    </div>
 
-    <div id="title-screen">
-      <h1>EL SEGARRO RUNNER</h1>
-      <button id="start-btn">EMPEZAR A FUMAR</button>
-    </div>
-
-    <div id="audio-message">🔊 ¡MUSIQUILLA ÁRABE ACTIVADA!</div>
-
-    <!-- Controles táctiles para móvil -->
-    <div id="mobile-controls">
-      <button id="btn-left" class="control-btn">←</button>
-      <button id="btn-down" class="control-btn">↓</button>
-      <button id="btn-center" class="control-btn">◉</button>
-      <button id="btn-up" class="control-btn">↑</button>
-      <button id="btn-right" class="control-btn">→</button>
-    </div>
-  </div>
-
-  <script>
-    // ==================== CONFIGURACIÓN ====================
-    const canvas = document.getElementById('game-canvas');
-    const ctx = canvas.getContext('2d');
-    const scoreDisplay = document.getElementById('score-display');
-    const recordDisplay = document.getElementById('record-display');
-    const vidasDisplay = document.getElementById('vidas-count');
-    const cigarrosDisplay = document.getElementById('cigarros-count');
-    const gameOverPanel = document.getElementById('game-over');
-    const finalScoreDisplay = document.getElementById('final-score');
-    const bestRecordDisplay = document.getElementById('best-record');
-    const restartBtn = document.getElementById('restart-btn');
-    const titleScreen = document.getElementById('title-screen');
-    const startBtn = document.getElementById('start-btn');
-    const audioMessage = document.getElementById('audio-message');
-    const mobileControls = document.getElementById('mobile-controls');
-    const carrilIndicator = document.getElementById('carril-indicator');
-
-    // Detectar si es móvil
-    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                    ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    
-    if (esMovil) {
-      mobileControls.classList.add('visible');
-      document.getElementById('instructions').innerHTML = '<p>Usa los botones para jugar</p>';
-    }
-
-    // Constantes del juego
-    const CARRILES = {
-      IZQUIERDA: 0,
-      CENTRO: 1,
-      DERECHA: 2
-    };
-
-    // Posiciones en pantalla
-    const POS_X_CARRIL = [200, 400, 600];
-    const POS_Y_BASE = 350;
-    const ALTURA_AGACHADO = 450;
-
-    // ==================== SISTEMA DE AUDIO ====================
-    let audioContext;
-    let musicaFondoNode;
-    let audioHabilitado = false;
-    let musicaPlaying = false;
-    let ultimoTiempoMusica = 0;
-
-    function initAudio() {
-      if (audioHabilitado) return;
-      
-      try {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        startMusicaArabe();
-        audioHabilitado = true;
-        audioMessage.style.display = 'block';
+    <script>
+        // Configuración inicial
+        const canvas = document.getElementById('juego');
+        const ctx = canvas.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
         
-        setTimeout(() => {
-          audioMessage.style.display = 'none';
-        }, 3000);
-      } catch (e) {
-        console.log('Audio no disponible:', e);
-      }
-    }
-
-    function startMusicaArabe() {
-      if (!audioContext || musicaPlaying) return;
-      
-      musicaPlaying = true;
-      ultimoTiempoMusica = Date.now();
-      
-      // Melodía suave con onda senoidal, notas graves y espaciadas
-      const notasGraves = [110, 130.81, 146.83, 164.81, 196.00];
-      let indice = 0;
-      
-      function tocarMelodia() {
-        if (!musicaPlaying || !audioContext) return;
-        
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        
-        osc.type = 'sine';
-        osc.frequency.value = notasGraves[indice];
-        
-        gain.gain.setValueAtTime(0, audioContext.currentTime);
-        gain.gain.linearRampToValueAtTime(0.06, audioContext.currentTime + 0.1);
-        gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1.8);
-        
-        osc.start();
-        osc.stop(audioContext.currentTime + 2.0);
-        
-        indice = (indice + 1) % notasGraves.length;
-        
-        setTimeout(tocarMelodia, 2400);
-      }
-      
-      tocarMelodia();
-    }
-
-    function stopMusicaArabe() {
-      musicaPlaying = false;
-    }
-
-    // Sonido de suspiro (recoger cigarro)
-    function sonidoSuspiro() {
-      if (!audioContext) return;
-      
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-      
-      osc.frequency.value = 300;
-      osc.type = 'sine';
-      gain.gain.value = 0.15;
-      
-      osc.start();
-      osc.stop(audioContext.currentTime + 0.4);
-    }
-
-    // Sonido de choque
-    function sonidoChoque() {
-      if (!audioContext) return;
-      
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-      
-      osc.frequency.value = 120;
-      osc.type = 'square';
-      gain.gain.value = 0.4;
-      
-      osc.start();
-      osc.stop(audioContext.currentTime + 0.15);
-    }
-
-    // Sonido de sirenas (game over)
-    function sonidoSirenas() {
-      if (!audioContext) return;
-      
-      const osc1 = audioContext.createOscillator();
-      const osc2 = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(audioContext.destination);
-      
-      osc1.frequency.value = 650;
-      osc2.frequency.value = 850;
-      gain.gain.value = 0.25;
-      
-      osc1.start();
-      osc2.start();
-      
-      let ascendente = true;
-      const interval = setInterval(() => {
-        if (!audioContext) {
-          clearInterval(interval);
-          return;
+        // Ajustar canvas al tamaño de la ventana
+        function ajustarCanvas() {
+            canvas.width = window.innerWidth * dpr;
+            canvas.height = window.innerHeight * dpr;
+            ctx.scale(dpr, dpr);
         }
         
-        if (ascendente) {
-          osc1.frequency.value = 850;
-          osc2.frequency.value = 1050;
-        } else {
-          osc1.frequency.value = 650;
-          osc2.frequency.value = 850;
-        }
-        ascendente = !ascendente;
-      }, 250);
-      
-      setTimeout(() => {
-        clearInterval(interval);
-        osc1.stop();
-        osc2.stop();
-      }, 2500);
-    }
-
-    // Sonido de celebración (conseguir vida)
-    function sonidoCelebracion() {
-      if (!audioContext) return;
-      
-      for (let i = 0; i < 6; i++) {
-        setTimeout(() => {
-          if (!audioContext) return;
-          
-          const osc = audioContext.createOscillator();
-          const gain = audioContext.createGain();
-          
-          osc.connect(gain);
-          gain.connect(audioContext.destination);
-          
-          osc.frequency.value = 500 + i * 80;
-          osc.type = 'sine';
-          gain.gain.value = 0.18;
-          
-          osc.start();
-          osc.stop(audioContext.currentTime + 0.12);
-        }, i * 120);
-      }
-    }
-
-    // Sonido de salto
-    function sonidoSalto() {
-      if (!audioContext) return;
-      
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-      
-      osc.frequency.value = 450;
-      osc.type = 'sine';
-      gain.gain.value = 0.25;
-      
-      osc.start();
-      osc.stop(audioContext.currentTime + 0.12);
-    }
-
-    // Sonido de tos (final de PAKI RICOH)
-    function sonidoTos() {
-      if (!audioContext) return;
-      
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-      
-      osc.frequency.value = 200;
-      osc.type = 'square';
-      gain.gain.value = 0.6;
-      
-      osc.start();
-      osc.stop(audioContext.currentTime + 0.3);
-      
-      setTimeout(() => {
-        if (!audioContext) return;
+        ajustarCanvas();
+        window.addEventListener('resize', ajustarCanvas);
         
-        const osc2 = audioContext.createOscillator();
-        const gain2 = audioContext.createGain();
+        // Sistema de coordenadas virtual (800x600)
+        const ANCHO_VIRTUAL = 800;
+        const ALTO_VIRTUAL = 600;
+        let escalaX = ANCHO_VIRTUAL / window.innerWidth;
+        let escalaY = ALTO_VIRTUAL / window.innerHeight;
         
-        osc2.connect(gain2);
-        gain2.connect(audioContext.destination);
-        
-        osc2.frequency.value = 100;
-        osc2.type = 'sawtooth';
-        gain2.gain.value = 0.3;
-        
-        osc2.start();
-        osc2.stop(audioContext.currentTime + 0.5);
-      }, 100);
-    }
-
-    // Sonido de moneda (truco EURO)
-    function sonidoEuro() {
-      if (!audioContext) return;
-      
-      const osc = audioContext.createOscillator();
-      const gain = audioContext.createGain();
-      
-      osc.connect(gain);
-      gain.connect(audioContext.destination);
-      
-      osc.frequency.value = 800;
-      osc.type = 'sine';
-      gain.gain.value = 0.3;
-      
-      osc.start();
-      osc.stop(audioContext.currentTime + 0.1);
-      
-      setTimeout(() => {
-        if (!audioContext) return;
-        
-        const osc2 = audioContext.createOscillator();
-        const gain2 = audioContext.createGain();
-        
-        osc2.connect(gain2);
-        gain2.connect(audioContext.destination);
-        
-        osc2.frequency.value = 600;
-        osc2.type = 'sine';
-        gain2.gain.value = 0.25;
-        
-        osc2.start();
-        osc2.stop(audioContext.currentTime + 0.1);
-      }, 100);
-    }
-
-    // Sonido de cerdo (GRUÑIDO SIMPLE Y SEGURO - SIN VIBRATO)
-    function sonidoCerdo() {
-      if (!audioContext) return;
-      
-      try {
-        // Versión SIMPLE y 100% SEGURA
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        
-        // Gruñido grave de cerdo
-        osc.frequency.value = 180;
-        osc.type = 'sawtooth'; // Timbre áspero
-        gain.gain.value = 0.4;
-        
-        osc.start();
-        osc.stop(audioContext.currentTime + 0.3);
-        
-        // Fade out suave
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-      } catch (e) {
-        console.error("Error en sonidoCerdo (ignorado):", e);
-        // Nunca rompe el juego
-      }
-    }
-
-    // Música suave para escena final
-    function startMusicaFinal() {
-      if (!audioContext) return;
-      
-      stopMusicaArabe();
-      
-      const notas = [110, 130.81, 146.83, 164.81, 196.00];
-      let indice = 0;
-      
-      function tocarNota() {
-        if (!audioContext) return;
-        
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        
-        osc.type = 'sine';
-        osc.frequency.value = notas[indice];
-        
-        gain.gain.value = 0.08;
-        
-        osc.start();
-        osc.stop(audioContext.currentTime + 1.0);
-        
-        gain.gain.setValueAtTime(0.08, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1.0);
-        
-        indice = (indice + 1) % notas.length;
-        
-        setTimeout(tocarNota, 1500);
-      }
-      
-      tocarNota();
-    }
-
-    // ==================== ESTADO DEL JUEGO ====================
-    const juego = {
-      estado: 'menu',
-      score: 0,
-      velocidadBase: 4.8,
-      velocidad: 4.8,
-      dificultad: 1,
-      tiempo: 0,
-      frecuenciaObstaculos: 90,
-      contadorObstaculos: 0,
-      pantallaRoja: 0,
-      parpadeoGameOver: 0,
-      record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
-      choquesSinMorir: 0
-    };
-
-    recordDisplay.textContent = `RÉCORD: ${juego.record}`;
-
-    // ==================== JUGADOR ====================
-    const jugador = {
-      carril: CARRILES.CENTRO,
-      y: POS_Y_BASE,
-      vy: 0,
-      ancho: 30,
-      alto: 60,
-      colorPiel: '#5d4037',
-      colorRopa: '#2e7d32',
-      saltando: false,
-      agachado: false,
-      enSuelo: true,
-      gravedad: 0.6,
-      vidas: 1,
-      cigarros: 0,
-      invulnerable: false,
-      tiempoInvulnerable: 0,
-      trucoEuro: {
-        paso1: false,
-        tiempoPaso1: 0,
-        usado: false
-      },
-      pakiRicoh: {
-        activo: false,
-        duracion: 300,
-        contador: 0,
-        cambiosRestantes: 3,
-        proximoCambio: 60,
-        direccion: 0,
-        humoParticulas: []
-      },
-      enEscenaFinal: false,
-      amigos: []
-    };
-
-    // ==================== OBSTÁCULOS, CIGARROS Y CERDOS ====================
-    const obstaculos = [];
-    const cigarros = [];
-    const cerdos = [];
-    const textosEmergentes = [];
-
-    // ==================== TECLADO ====================
-    const teclas = {
-      izquierda: false,
-      derecha: false,
-      arriba: false,
-      abajo: false,
-      abajoPresionado: false,
-      tiempoAbajo: 0
-    };
-
-    window.addEventListener('keydown', (e) => {
-      if (juego.estado !== 'jugando' || jugador.pakiRicoh.activo || jugador.enEscenaFinal) return;
-      
-      switch(e.key) {
-        case 'ArrowLeft':
-          jugador.carril = Math.max(0, jugador.carril - 1);
-          break;
-        case 'ArrowRight':
-          jugador.carril = Math.min(2, jugador.carril + 1);
-          break;
-        case 'ArrowUp':
-          if (jugador.enSuelo) {
-            jugador.vy = -15;
-            jugador.enSuelo = false;
-            jugador.saltando = true;
-            sonidoSalto();
-          }
-          break;
-        case 'ArrowDown':
-          if (!teclas.abajoPresionado) {
-            teclas.abajoPresionado = true;
-            teclas.tiempoAbajo = Date.now();
-            
-            if (jugador.trucoEuro.paso1 && !jugador.trucoEuro.usado) {
-              const tiempoTranscurrido = Date.now() - jugador.trucoEuro.tiempoPaso1;
-              if (tiempoTranscurrido < 2000) {
-                activarTrucoEuro();
-              }
-            }
-          }
-          break;
-      }
-    });
-
-    window.addEventListener('keyup', (e) => {
-      if (e.key === 'ArrowDown') {
-        teclas.abajoPresionado = false;
-        
-        const duracion = Date.now() - teclas.tiempoAbajo;
-        if (duracion < 300 && !jugador.trucoEuro.usado && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
-          jugador.trucoEuro.paso1 = true;
-          jugador.trucoEuro.tiempoPaso1 = Date.now();
-          
-          textosEmergentes.push(new TextoEmergente(
-            "?", 
-            POS_X_CARRIL[jugador.carril], 
-            jugador.y - 20, 
-            '#ffd166',
-            { gigante: false, vibrar: false }
-          ));
-        }
-      }
-    });
-
-    // ==================== CONTROLES TÁCTILES ====================
-    document.getElementById('btn-left').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (juego.estado === 'jugando' && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
-        jugador.carril = Math.max(0, jugador.carril - 1);
-      }
-    });
-
-    document.getElementById('btn-right').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (juego.estado === 'jugando' && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
-        jugador.carril = Math.min(2, jugador.carril + 1);
-      }
-    });
-
-    document.getElementById('btn-center').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (juego.estado === 'jugando' && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
-        jugador.carril = CARRILES.CENTRO;
-      }
-    });
-
-    document.getElementById('btn-up').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (juego.estado === 'jugando' && jugador.enSuelo && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
-        jugador.vy = -15;
-        jugador.enSuelo = false;
-        jugador.saltando = true;
-        sonidoSalto();
-      }
-    });
-
-    document.getElementById('btn-down').addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if (juego.estado !== 'jugando' || jugador.pakiRicoh.activo || jugador.enEscenaFinal) return;
-      
-      if (!teclas.abajoPresionado) {
-        teclas.abajoPresionado = true;
-        teclas.tiempoAbajo = Date.now();
-        
-        if (jugador.trucoEuro.paso1 && !jugador.trucoEuro.usado) {
-          const tiempoTranscurrido = Date.now() - jugador.trucoEuro.tiempoPaso1;
-          if (tiempoTranscurrido < 2000) {
-            activarTrucoEuro();
-          }
-        }
-      }
-    });
-
-    document.getElementById('btn-down').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      teclas.abajoPresionado = false;
-      
-      const duracion = Date.now() - teclas.tiempoAbajo;
-      if (duracion < 300 && !jugador.trucoEuro.usado && !jugador.pakiRicoh.activo && !jugador.enEscenaFinal) {
-        jugador.trucoEuro.paso1 = true;
-        jugador.trucoEuro.tiempoPaso1 = Date.now();
-        
-        textosEmergentes.push(new TextoEmergente(
-          "?", 
-          POS_X_CARRIL[jugador.carril], 
-          jugador.y - 20, 
-          '#ffd166',
-          { gigante: false, vibrar: false }
-        ));
-      }
-    });
-
-    // ==================== CLASES ====================
-
-    class TextoEmergente {
-      constructor(texto, x, y, color = '#ffd166', opciones = {}) {
-        this.texto = texto;
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.vida = opciones.gigante ? 100 : 70;
-        this.velocidadY = -2;
-        this.opacidad = 1.0;
-        this.escala = opciones.gigante ? 1.8 : 1.0;
-        this.vibrar = opciones.vibrar || false;
-        this.tiempo = 0;
-      }
-      
-      actualizar() {
-        this.y += this.velocidadY;
-        this.vida--;
-        this.tiempo++;
-      }
-      
-      dibujar(ctx) {
-        ctx.save();
-        ctx.globalAlpha = this.opacidad;
-        
-        let offsetX = this.x;
-        if (this.vibrar) {
-          offsetX += Math.sin(this.tiempo * 15) * 1.5;
+        function coordenadaVirtual(x, y) {
+            return {
+                x: x * escalaX,
+                y: y * escalaY
+            };
         }
         
-        ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
+        // Estados del juego
+        const ESTADOS = {
+            MENU: 'menu',
+            JUGANDO: 'jugando',
+            PAUSA: 'pausa',
+            GAME_OVER: 'game_over',
+            PAUSADO_TRUCO: 'pausado_truco'
+        };
         
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 4 * this.escala;
-        ctx.lineJoin = 'round';
-        ctx.strokeText(this.texto, offsetX, this.y);
-        
-        ctx.fillStyle = this.color;
-        ctx.fillText(this.texto, offsetX, this.y);
-        
-        ctx.restore();
-      }
-      
-      estaMuerto() {
-        return this.vida <= 0;
-      }
-    }
-
-    class ParticulaHumo {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = -0.5 - Math.random() * 0.3;
-        this.radio = 1.5 + Math.random() * 2;
-        this.opacidad = 0.7;
-        this.vida = 40 + Math.random() * 20;
-      }
-      
-      actualizar() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.radio *= 0.98;
-        this.opacidad *= 0.97;
-        this.vida--;
-      }
-      
-      dibujar(ctx) {
-        ctx.globalAlpha = this.opacidad;
-        ctx.fillStyle = `rgba(200, 200, 200, ${this.opacidad})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-      }
-      
-      estaMuerta() {
-        return this.vida <= 0 || this.radio < 0.5;
-      }
-    }
-
-    // ==================== FUNCIONES DEL JUEGO ====================
-
-    function activarTrucoEuro() {
-      if (jugador.trucoEuro.usado || jugador.pakiRicoh.activo || jugador.enEscenaFinal) return;
-      
-      jugador.trucoEuro.usado = true;
-      jugador.trucoEuro.paso1 = false;
-      
-      juego.estado = 'pausado_truco';
-      
-      jugador.vidas++;
-      vidasDisplay.textContent = jugador.vidas;
-      
-      textosEmergentes.push(new TextoEmergente(
-        "EURO", 
-        POS_X_CARRIL[jugador.carril], 
-        jugador.y - 60, 
-        '#ffd700',
-        { gigante: true, vibrar: true }
-      ));
-      
-      sonidoEuro();
-      
-      setTimeout(() => {
-        if (juego.estado === 'pausado_truco') {
-          juego.estado = 'jugando';
-        }
-      }, 2000);
-    }
-
-    function generarObstaculo() {
-      if (juego.contadorObstaculos >= juego.frecuenciaObstaculos) {
-        const random = Math.random();
-        
-        // NUEVA DISTRIBUCIÓN: 45% policías normales, 22% policías rápidos, 8% cerdos, 25% cigarros
-        if (random < 0.45) {
-          // Policía normal (45%)
-          const carril = Math.floor(Math.random() * 3);
-          obstaculos.push({
-            x: POS_X_CARRIL[carril] - 25,
-            y: -80,
-            ancho: 50,
-            alto: 70,
-            carril: carril,
-            tipo: 'policia',
-            velocidadExtra: 0
-          });
-        } else if (random < 0.67) {
-          // Policía rápido (22%)
-          const carril = Math.floor(Math.random() * 3);
-          obstaculos.push({
-            x: POS_X_CARRIL[carril] - 25,
-            y: -80,
-            ancho: 50,
-            alto: 70,
-            carril: carril,
-            tipo: 'policia',
-            velocidadExtra: 1
-          });
-        } else if (random < 0.75) {
-          // Cerdo (8%)
-          const carril = Math.floor(Math.random() * 3);
-          cerdos.push({
-            x: POS_X_CARRIL[carril] - 25,
-            y: -60,
-            ancho: 50,
-            alto: 40,
-            carril: carril,
-            tipo: 'cerdo'
-          });
-        } else {
-          // Cigarro (25%)
-          const carril = Math.floor(Math.random() * 3);
-          cigarros.push({
-            x: POS_X_CARRIL[carril] - 20,
-            y: -60,
+        // Configuración del jugador
+        const jugador = {
+            x: ANCHO_VIRTUAL / 2,
+            y: ALTO_VIRTUAL - 100,
             ancho: 40,
-            alto: 25,
-            carril: carril,
-            tipo: 'cigarro'
-          });
-        }
-        
-        juego.contadorObstaculos = 0;
-      } else {
-        juego.contadorObstaculos++;
-      }
-    }
-
-    function moverObstaculos() {
-      // Mover policías
-      for (let i = obstaculos.length - 1; i >= 0; i--) {
-        obstaculos[i].y += juego.velocidad + obstaculos[i].velocidadExtra;
-        
-        if (obstaculos[i].y > canvas.height + 100) {
-          obstaculos.splice(i, 1);
-        }
-      }
-      
-      // Mover cerdos (lentamente)
-      for (let i = cerdos.length - 1; i >= 0; i--) {
-        cerdos[i].y += 1.5;
-        
-        if (cerdos[i].y > canvas.height + 100) {
-          cerdos.splice(i, 1);
-        }
-      }
-      
-      // Mover cigarros
-      for (let i = cigarros.length - 1; i >= 0; i--) {
-        cigarros[i].y += juego.velocidad;
-        
-        if (cigarros[i].y > canvas.height + 100) {
-          cigarros.splice(i, 1);
-        }
-      }
-    }
-
-    function detectarColisiones() {
-      const jugadorX = POS_X_CARRIL[jugador.carril] - jugador.ancho / 2;
-      const jugadorY = jugador.y - jugador.alto / 2;
-      
-      // Colisión con policías
-      for (let i = obstaculos.length - 1; i >= 0; i--) {
-        const obs = obstaculos[i];
-        const obsX = obs.x;
-        const obsY = obs.y - obs.alto / 2;
-        
-        if (jugador.pakiRicoh.activo) {
-          if (
-            jugadorX < obsX + obs.ancho &&
-            jugadorX + jugador.ancho > obsX &&
-            jugadorY < obsY + obs.alto &&
-            jugadorY + jugador.alto > obsY
-          ) {
-            if (Math.random() < 0.3) {
-              textosEmergentes.push(new TextoEmergente(
-                "RECISTA", 
-                POS_X_CARRIL[jugador.carril], 
-                jugador.y - 50, 
-                '#ff4d4d',
-                { gigante: false, vibrar: false }
-              ));
+            alto: 60,
+            carril: 1, // 0: izquierda, 1: centro, 2: derecha
+            velocidadX: 0,
+            velocidadY: 0,
+            saltando: false,
+            agachado: false,
+            invulnerable: false,
+            vidas: 1,
+            pakiRicoh: {
+                activo: false,
+                tiempoRestante: 0,
+                humoParticulas: [],
+                cambiosCarril: 0
             }
-          }
-          continue;
+        };
+        
+        // Configuración del juego
+        const juego = {
+            estado: ESTADOS.MENU,
+            puntuacion: 0,
+            record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
+            velocidad: 4.8,
+            velocidadMaxima: 9.0,
+            obstaculos: [],
+            cigarros: [],
+            cerdos: [],
+            textoEmergente: null,
+            ultimaGeneracion: 0,
+            intervaloGeneracion: 1000,
+            tiempoInicio: 0,
+            tiempoPausa: 0,
+            totalCigarrosReales: 0,
+            vidasGanadas: 0,
+            choquesSinMorir: 0,
+            trucoEuroUsado: false,
+            finalAlcanzado: false,
+            musicaArabe: null,
+            audioContext: null,
+            osciladorActual: null,
+            ganancia: null,
+            sirena: null,
+            grunido: null,
+            tos: null
+        };
+        
+        // Constantes de juego
+        const CARRILES = [
+            ANCHO_VIRTUAL * 0.25, // Izquierda
+            ANCHO_VIRTUAL * 0.5,  // Centro
+            ANCHO_VIRTUAL * 0.75  // Derecha
+        ];
+        
+        const PROBABILIDADES = {
+            POLICIA_NORMAL: 0.45,
+            POLICIA_RAPIDO: 0.22,
+            CERDO: 0.08,
+            CIGARRO: 0.25
+        };
+        
+        const TECLAS = {
+            IZQUIERDA: ['ArrowLeft', 'a', 'A'],
+            DERECHA: ['ArrowRight', 'd', 'D'],
+            ARRIBA: ['ArrowUp', 'w', 'W', ' '],
+            ABAJO: ['ArrowDown', 's', 'S']
+        };
+        
+        // Umbral de swipe reducido a 35px para móviles pequeños
+        const umbralSwipe = 35;
+        let toqueInicio = null;
+        let tiempoDobleToque = 0;
+        let permitirScroll = true;
+        
+        // Inicializar audio
+        function initAudio() {
+            if (juego.audioContext) return;
+            
+            juego.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            juego.ganancia = juego.audioContext.createGain();
+            juego.ganancia.gain.value = 0.3; // Volumen general
+            juego.ganancia.connect(juego.audioContext.destination);
         }
         
-        if (
-          jugadorX < obsX + obs.ancho &&
-          jugadorX + jugador.ancho > obsX &&
-          jugadorY < obsY + obs.alto &&
-          jugadorY + jugador.alto > obsY
-        ) {
-          if (!jugador.invulnerable) {
-            sonidoChoque();
+        // Sonidos
+        function reproducirSonido(tipo) {
+            if (!juego.audioContext) return;
             
-            juego.choquesSinMorir++;
+            const ahora = juego.audioContext.currentTime;
             
-            // ¿Tercer choque? Mostrar "MI CARTERA¡" (solo texto)
-            if (juego.choquesSinMorir >= 3) {
-              textosEmergentes.push(new TextoEmergente(
-                "MI CARTERA¡", 
-                POS_X_CARRIL[jugador.carril], 
-                jugador.y - 60, 
-                '#ffd166',
-                { gigante: true, vibrar: true }
-              ));
-              juego.choquesSinMorir = 0;
+            // Detener sonido anterior si existe
+            if (juego.osciladorActual) {
+                juego.osciladorActual.stop(ahora);
+                juego.osciladorActual = null;
             }
             
-            textosEmergentes.push(new TextoEmergente(
-              "RECISTA", 
-              POS_X_CARRIL[jugador.carril], 
-              jugador.y - 50, 
-              '#ff4d4d'
-            ));
+            switch(tipo) {
+                case 'cigarro':
+                    const oscCigarro = juego.audioContext.createOscillator();
+                    const ganCigarro = juego.audioContext.createGain();
+                    oscCigarro.type = 'sine';
+                    oscCigarro.frequency.value = 880; // La5
+                    ganCigarro.gain.setValueAtTime(0.1, ahora);
+                    ganCigarro.gain.exponentialRampToValueAtTime(0.01, ahora + 0.3);
+                    oscCigarro.connect(ganCigarro);
+                    ganCigarro.connect(juego.ganancia);
+                    oscCigarro.start(ahora);
+                    oscCigarro.stop(ahora + 0.3);
+                    juego.osciladorActual = oscCigarro;
+                    break;
+                    
+                case 'policia':
+                    const oscPolicia = juego.audioContext.createOscillator();
+                    const ganPolicia = juego.audioContext.createGain();
+                    oscPolicia.type = 'square';
+                    oscPolicia.frequency.value = 220; // La3
+                    ganPolicia.gain.setValueAtTime(0.2, ahora);
+                    ganPolicia.gain.exponentialRampToValueAtTime(0.01, ahora + 0.5);
+                    oscPolicia.connect(ganPolicia);
+                    ganPolicia.connect(juego.ganancia);
+                    oscPolicia.start(ahora);
+                    oscPolicia.stop(ahora + 0.5);
+                    juego.osciladorActual = oscPolicia;
+                    break;
+                    
+                case 'cerdo':
+                    if (!juego.grunido) {
+                        // Crear sonido de gruñido
+                        const duracion = 0.4;
+                        const sampleRate = juego.audioContext.sampleRate;
+                        const buffer = juego.audioContext.createBuffer(1, sampleRate * duracion, sampleRate);
+                        const data = buffer.getChannelData(0);
+                        
+                        for (let i = 0; i < buffer.length; i++) {
+                            const t = i / sampleRate;
+                            // Sonido de cerdo: frecuencia modulada baja
+                            data[i] = Math.sin(2 * Math.PI * (80 + 20 * Math.sin(2 * Math.PI * 5 * t)) * t) * 
+                                      Math.exp(-3 * t) * 0.3;
+                        }
+                        
+                        juego.grunido = juego.audioContext.createBufferSource();
+                        juego.grunido.buffer = buffer;
+                    }
+                    
+                    const grunidoSource = juego.audioContext.createBufferSource();
+                    grunidoSource.buffer = juego.grunido.buffer;
+                    const ganGrunido = juego.audioContext.createGain();
+                    ganGrunido.gain.value = 0.4;
+                    grunidoSource.connect(ganGrunido);
+                    ganGrunido.connect(juego.ganancia);
+                    grunidoSource.start(ahora);
+                    break;
+                    
+                case 'euro':
+                    const oscEuro = juego.audioContext.createOscillator();
+                    const ganEuro = juego.audioContext.createGain();
+                    oscEuro.type = 'sine';
+                    oscEuro.frequency.value = 1046.5; // Do6
+                    ganEuro.gain.setValueAtTime(0.3, ahora);
+                    ganEuro.gain.exponentialRampToValueAtTime(0.01, ahora + 0.4);
+                    oscEuro.connect(ganEuro);
+                    ganEuro.connect(juego.ganancia);
+                    oscEuro.start(ahora);
+                    oscEuro.stop(ahora + 0.4);
+                    juego.osciladorActual = oscEuro;
+                    break;
+                    
+                case 'tos':
+                    if (!juego.tos) {
+                        // Crear sonido de tos
+                        const duracion = 0.3;
+                        const sampleRate = juego.audioContext.sampleRate;
+                        const buffer = juego.audioContext.createBuffer(1, sampleRate * duracion, sampleRate);
+                        const data = buffer.getChannelData(0);
+                        
+                        for (let i = 0; i < buffer.length; i++) {
+                            const t = i / sampleRate;
+                            // Sonido de tos: ruido con envolvente
+                            const ruido = (Math.random() * 2 - 1) * 0.3;
+                            data[i] = ruido * Math.exp(-10 * t) * (1 + Math.sin(2 * Math.PI * 100 * t));
+                        }
+                        
+                        juego.tos = juego.audioContext.createBufferSource();
+                        juego.tos.buffer = buffer;
+                    }
+                    
+                    const tosSource = juego.audioContext.createBufferSource();
+                    tosSource.buffer = juego.tos.buffer;
+                    const ganTos = juego.audioContext.createGain();
+                    ganTos.gain.value = 0.5;
+                    tosSource.connect(ganTos);
+                    ganTos.connect(juego.ganancia);
+                    tosSource.start(ahora);
+                    break;
+                    
+                case 'gameover':
+                    const oscGameOver = juego.audioContext.createOscillator();
+                    const ganGameOver = juego.audioContext.createGain();
+                    oscGameOver.type = 'sawtooth';
+                    oscGameOver.frequency.value = 110; // La2
+                    ganGameOver.gain.setValueAtTime(0.3, ahora);
+                    ganGameOver.gain.exponentialRampToValueAtTime(0.01, ahora + 1.5);
+                    oscGameOver.connect(ganGameOver);
+                    ganGameOver.connect(juego.ganancia);
+                    oscGameOver.start(ahora);
+                    oscGameOver.stop(ahora + 1.5);
+                    juego.osciladorActual = oscGameOver;
+                    break;
+            }
+        }
+        
+        // Música árabe
+        function iniciarMusicaArabe() {
+            if (!juego.audioContext || juego.musicaArabe) return;
             
-            juego.pantallaRoja = 25;
+            const ahora = juego.audioContext.currentTime;
+            const duracionNota = 0.8;
+            const silencio = 0.2;
+            const frecuencias = [
+                261.63, // Do4
+                293.66, // Re4
+                329.63, // Mi4
+                349.23, // Fa4
+                392.00, // Sol4
+                440.00, // La4
+                493.88, // Si4
+                523.25  // Do5
+            ];
             
-            if (jugador.vidas > 1) {
-              jugador.vidas--;
-              vidasDisplay.textContent = jugador.vidas;
-              jugador.invulnerable = true;
-              jugador.tiempoInvulnerable = 90;
+            // Melodía árabe simple (notas graves y espaciadas)
+            const melodía = [
+                {freq: frecuencias[3], tiempo: 0},
+                {freq: frecuencias[2], tiempo: duracionNota + silencio},
+                {freq: frecuencias[0], tiempo: (duracionNota + silencio) * 2},
+                {freq: frecuencias[3], tiempo: (duracionNota + silencio) * 3},
+                {freq: frecuencias[5], tiempo: (duracionNota + silencio) * 4},
+                {freq: frecuencias[3], tiempo: (duracionNota + silencio) * 5},
+                {freq: frecuencias[2], tiempo: (duracionNota + silencio) * 6},
+                {freq: frecuencias[0], tiempo: (duracionNota + silencio) * 7}
+            ];
+            
+            juego.musicaArabe = {
+                notas: melodía,
+                duracionNota: duracionNota,
+                silencio: silencio,
+                ultimoTiempo: ahora,
+                indice: 0,
+                activa: true
+            };
+            
+            programarSiguienteNota();
+        }
+        
+        function programarSiguienteNota() {
+            if (!juego.musicaArabe || !juego.musicaArabe.activa) return;
+            
+            const ahora = juego.audioContext.currentTime;
+            const notaActual = juego.musicaArabe.notas[juego.musicaArabe.indice];
+            
+            if (ahora >= juego.musicaArabe.ultimoTiempo + notaActual.tiempo) {
+                const osc = juego.audioContext.createOscillator();
+                const gan = juego.audioContext.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.value = notaActual.freq;
+                gan.gain.setValueAtTime(0.15, ahora);
+                gan.gain.exponentialRampToValueAtTime(0.01, ahora + juego.musicaArabe.duracionNota);
+                
+                osc.connect(gan);
+                gan.connect(juego.ganancia);
+                
+                osc.start(ahora);
+                osc.stop(ahora + juego.musicaArabe.duracionNota);
+                
+                juego.musicaArabe.indice = (juego.musicaArabe.indice + 1) % juego.musicaArabe.notas.length;
+                juego.musicaArabe.ultimoTiempo = ahora;
+            }
+            
+            // Programar siguiente nota
+            setTimeout(programarSiguienteNota, 100);
+        }
+        
+        function detenerMusicaArabe() {
+            if (juego.musicaArabe) {
+                juego.musicaArabe.activa = false;
+                juego.musicaArabe = null;
+            }
+        }
+        
+        // Sirena de policía
+        function iniciarSirena() {
+            if (!juego.audioContext || juego.sirena) return;
+            
+            const ahora = juego.audioContext.currentTime;
+            const osc1 = juego.audioContext.createOscillator();
+            const osc2 = juego.audioContext.createOscillator();
+            const gan = juego.audioContext.createGain();
+            
+            osc1.type = 'sawtooth';
+            osc2.type = 'sawtooth';
+            osc1.frequency.value = 660; // Mi5
+            osc2.frequency.value = 880; // La5
+            gan.gain.value = 0.2;
+            
+            osc1.connect(gan);
+            osc2.connect(gan);
+            gan.connect(juego.ganancia);
+            
+            osc1.start(ahora);
+            osc2.start(ahora);
+            
+            // Modulación de frecuencia para efecto sirena
+            const modulador = juego.audioContext.createOscillator();
+            const moduladorGanancia = juego.audioContext.createGain();
+            modulador.type = 'sine';
+            modulador.frequency.value = 1.5; // 1.5 Hz
+            moduladorGanancia.gain.value = 100;
+            
+            modulador.connect(moduladorGanancia);
+            moduladorGanancia.connect(osc1.frequency);
+            moduladorGanancia.connect(osc2.frequency);
+            modulador.start(ahora);
+            
+            juego.sirena = {
+                osc1: osc1,
+                osc2: osc2,
+                modulador: modulador
+            };
+        }
+        
+        function detenerSirena() {
+            if (juego.sirena) {
+                const ahora = juego.audioContext.currentTime;
+                juego.sirena.osc1.stop(ahora + 0.5);
+                juego.sirena.osc2.stop(ahora + 0.5);
+                juego.sirena.modulador.stop(ahora + 0.5);
+                juego.sirena = null;
+            }
+        }
+        
+        // Clase para textos emergentes
+        class TextoEmergente {
+            constructor(texto, opciones = {}) {
+                this.texto = texto;
+                this.x = opciones.x || ANCHO_VIRTUAL / 2;
+                this.y = opciones.y || ALTO_VIRTUAL / 2;
+                this.vida = opciones.gigante ? 80 : 50; // Reducido de 80 a 50 para normal, 120 a 80 para gigante
+                this.opacidad = 1.0;
+                this.escala = opciones.gigante ? 1.5 : 1.0;
+                this.gigante = opciones.gigante || false;
+                this.color = opciones.color || '#ffffff';
+            }
+            
+            actualizar() {
+                this.vida--;
+                if (this.vida > 40) {
+                    // Aparecer
+                    this.opacidad = Math.min(1.0, this.opacidad + 0.1);
+                } else if (this.vida < 10) {
+                    // Desaparecer
+                    this.opacidad = Math.max(0, this.opacidad - 0.1);
+                    this.escala += 0.02;
+                }
+            }
+            
+            dibujar(ctxVirtual) {
+                if (this.vida <= 0) return;
+                
+                ctxVirtual.save();
+                ctxVirtual.globalAlpha = this.opacidad;
+                ctxVirtual.font = `${this.gigante ? 'bold 48px' : 'bold 32px'} Arial`;
+                ctxVirtual.textAlign = 'center';
+                ctxVirtual.fillStyle = this.color;
+                ctxVirtual.strokeStyle = '#000000';
+                ctxVirtual.lineWidth = this.gigante ? 4 : 2;
+                ctxVirtual.scale(this.escala, this.escala);
+                
+                // Dibujar contorno
+                ctxVirtual.strokeText(this.texto, this.x / this.escala, this.y / this.escala);
+                // Dibujar texto
+                ctxVirtual.fillText(this.texto, this.x / this.escala, this.y / this.escala);
+                
+                ctxVirtual.restore();
+            }
+            
+            estaVivo() {
+                return this.vida > 0;
+            }
+        }
+        
+        // Generar obstáculos
+        function generarObstaculo() {
+            const ahora = Date.now();
+            if (ahora - juego.ultimaGeneracion < juego.intervaloGeneracion) return;
+            
+            juego.ultimaGeneracion = ahora;
+            
+            // Ajustar intervalo de generación según puntuación
+            if (juego.puntuacion > 5000) juego.intervaloGeneracion = 800;
+            if (juego.puntuacion > 15000) juego.intervaloGeneracion = 600;
+            if (juego.puntuacion > 25000) juego.intervaloGeneracion = 400;
+            
+            // Elegir tipo de obstáculo
+            const rand = Math.random();
+            let tipo = '';
+            
+            if (rand < PROBABILIDADES.POLICIA_NORMAL) {
+                tipo = 'policia_normal';
+            } else if (rand < PROBABILIDADES.POLICIA_NORMAL + PROBABILIDADES.POLICIA_RAPIDO) {
+                tipo = 'policia_rapido';
+            } else if (rand < PROBABILIDADES.POLICIA_NORMAL + PROBABILIDADES.POLICIA_RAPIDO + PROBABILIDADES.CERDO) {
+                tipo = 'cerdo';
             } else {
-              gameOver();
+                tipo = 'cigarro';
             }
-          }
-          obstaculos.splice(i, 1);
-        }
-      }
-      
-      // Colisión con cerdos
-      for (let i = cerdos.length - 1; i >= 0; i--) {
-        const cerdo = cerdos[i];
-        const cerdoX = cerdo.x;
-        const cerdoY = cerdo.y - cerdo.alto / 2;
-        
-        if (
-          jugadorX < cerdoX + cerdo.ancho &&
-          jugadorX + jugador.ancho > cerdoX &&
-          jugadorY < cerdoY + cerdo.alto &&
-          jugadorY + jugador.alto > cerdoY
-        ) {
-          if (!jugador.invulnerable) {
-            sonidoCerdo(); // ¡GRUÑIDO SEGURO!
             
-            jugador.vidas--;
-            vidasDisplay.textContent = jugador.vidas;
+            // Elegir carril aleatorio
+            const carril = Math.floor(Math.random() * 3);
+            const x = CARRILES[carril];
             
-            textosEmergentes.push(new TextoEmergente(
-              "YALLAH", 
-              POS_X_CARRIL[jugador.carril], 
-              jugador.y - 50, 
-              '#ff4d4d',
-              { gigante: true, vibrar: true }
-            ));
-            
-            juego.pantallaRoja = 30;
-            
-            if (jugador.vidas <= 0) {
-              gameOver();
-            } else {
-              jugador.invulnerable = true;
-              jugador.tiempoInvulnerable = 90;
+            switch(tipo) {
+                case 'policia_normal':
+                    juego.obstaculos.push({
+                        x: x,
+                        y: -50,
+                        ancho: 40,
+                        alto: 60,
+                        velocidad: juego.velocidad,
+                        tipo: 'policia',
+                        subtipo: 'normal'
+                    });
+                    break;
+                    
+                case 'policia_rapido':
+                    juego.obstaculos.push({
+                        x: x,
+                        y: -50,
+                        ancho: 40,
+                        alto: 60,
+                        velocidad: juego.velocidad + 1,
+                        tipo: 'policia',
+                        subtipo: 'rapido'
+                    });
+                    break;
+                    
+                case 'cerdo':
+                    juego.cerdos.push({
+                        x: x,
+                        y: -50,
+                        ancho: 50,
+                        alto: 40,
+                        velocidad: 1.5,
+                        tipo: 'cerdo'
+                    });
+                    break;
+                    
+                case 'cigarro':
+                    juego.cigarros.push({
+                        x: x,
+                        y: -50,
+                        ancho: 30,
+                        alto: 30,
+                        velocidad: juego.velocidad,
+                        tipo: 'cigarro'
+                    });
+                    break;
             }
-          }
-          cerdos.splice(i, 1);
         }
-      }
-      
-      // Colisión con cigarros
-      for (let i = cigarros.length - 1; i >= 0; i--) {
-        const cig = cigarros[i];
-        const cigX = cig.x;
-        const cigY = cig.y - cig.alto / 2;
         
-        if (
-          jugadorX < cigX + cig.ancho &&
-          jugadorX + jugador.ancho > cigX &&
-          jugadorY < cigY + cig.alto &&
-          jugadorY + jugador.alto > cigY
-        ) {
-          sonidoSuspiro();
-          
-          textosEmergentes.push(new TextoEmergente(
-            "SEGARRO", 
-            POS_X_CARRIL[jugador.carril], 
-            jugador.y - 40, 
-            '#ffd166'
-          ));
-          
-          jugador.cigarros++;
-          cigarrosDisplay.textContent = jugador.cigarros;
-          
-          // ¿Quinto cigarro?
-          if (jugador.cigarros >= 5) {
+        // Actualizar juego
+        function actualizar() {
+            if (juego.estado !== ESTADOS.JUGANDO && juego.estado !== ESTADOS.PAUSADO_TRUCO) return;
+            
+            // Aumentar puntuación
+            juego.puntuacion += Math.floor(juego.velocidad);
+            
+            // Aumentar velocidad gradualmente
+            if (juego.puntuacion % 1000 === 0 && juego.velocidad < juego.velocidadMaxima) {
+                juego.velocidad += 0.1;
+            }
+            
+            // Generar obstáculos
+            generarObstaculo();
+            
+            // Actualizar obstáculos
+            juego.obstaculos.forEach((obs, index) => {
+                obs.y += obs.velocidad;
+                
+                // Eliminar si sale de pantalla
+                if (obs.y > ALTO_VIRTUAL + 100) {
+                    juego.obstaculos.splice(index, 1);
+                }
+                
+                // Colisión con jugador
+                if (!jugador.invulnerable && !jugador.pakiRicoh.activo && 
+                    obs.y + obs.alto > jugador.y && 
+                    obs.y < jugador.y + jugador.alto &&
+                    obs.x + obs.ancho > jugador.x - jugador.ancho/2 &&
+                    obs.x < jugador.x + jugador.ancho/2) {
+                    
+                    // Colisión con policía
+                    reproducirSonido('policia');
+                    juego.obstaculos.splice(index, 1);
+                    
+                    if (jugador.vidas > 1) {
+                        jugador.vidas--;
+                        juego.choquesSinMorir++;
+                        juego.textoEmergente = new TextoEmergente('RECISTA', { gigante: true, color: '#ffd700' });
+                        
+                        // Mostrar "MI CARTERA" al tercer choque sin morir
+                        if (juego.choquesSinMorir >= 3) {
+                            juego.textoEmergente = new TextoEmergente('MI CARTERA¡', { gigante: true, color: '#ff4444' });
+                            juego.choquesSinMorir = 0;
+                        }
+                    } else {
+                        // Game over
+                        gameOver();
+                    }
+                    
+                    // Invulnerabilidad temporal
+                    jugador.invulnerable = true;
+                    setTimeout(() => {
+                        jugador.invulnerable = false;
+                    }, 1500);
+                }
+            });
+            
+            // Actualizar cerdos
+            juego.cerdos.forEach((cerdo, index) => {
+                cerdo.y += cerdo.velocidad;
+                
+                // Eliminar si sale de pantalla
+                if (cerdo.y > ALTO_VIRTUAL + 100) {
+                    juego.cerdos.splice(index, 1);
+                }
+                
+                // Colisión con jugador
+                if (!jugador.invulnerable && !jugador.pakiRicoh.activo && 
+                    cerdo.y + cerdo.alto > jugador.y && 
+                    cerdo.y < jugador.y + jugador.alto &&
+                    cerdo.x + cerdo.ancho > jugador.x - jugador.ancho/2 &&
+                    cerdo.x < jugador.x + jugador.ancho/2) {
+                    
+                    // Colisión con cerdo
+                    reproducirSonido('cerdo');
+                    juego.cerdos.splice(index, 1);
+                    
+                    if (jugador.vidas > 1) {
+                        jugador.vidas--;
+                        juego.textoEmergente = new TextoEmergente('YALLAH', { gigante: true, color: '#ff4444' });
+                    } else {
+                        // Game over
+                        gameOver();
+                    }
+                    
+                    // Invulnerabilidad temporal
+                    jugador.invulnerable = true;
+                    setTimeout(() => {
+                        jugador.invulnerable = false;
+                    }, 1500);
+                }
+            });
+            
+            // Actualizar cigarros
+            juego.cigarros.forEach((cigarro, index) => {
+                cigarro.y += cigarro.velocidad;
+                
+                // Eliminar si sale de pantalla
+                if (cigarro.y > ALTO_VIRTUAL + 100) {
+                    juego.cigarros.splice(index, 1);
+                }
+                
+                // Colisión con jugador
+                if (cigarro.y + cigarro.alto > jugador.y && 
+                    cigarro.y < jugador.y + jugador.alto &&
+                    cigarro.x + cigarro.ancho > jugador.x - jugador.ancho/2 &&
+                    cigarro.x < jugador.x + jugador.ancho/2) {
+                    
+                    // Coger cigarro
+                    reproducirSonido('cigarro');
+                    juego.cigarros.splice(index, 1);
+                    
+                    juego.totalCigarrosReales++;
+                    juego.textoEmergente = new TextoEmergente('SEGARRO', { gigante: true, color: '#ffd700' });
+                    
+                    // Cada 5 cigarros = +1 vida
+                    if (juego.totalCigarrosReales % 5 === 0) {
+                        jugador.vidas++;
+                        juego.vidasGanadas++;
+                    }
+                    
+                    // Cada 10 cigarros = PAKI RICOH
+                    if (juego.totalCigarrosReales % 10 === 0) {
+                        activarPakiRicoh();
+                    }
+                }
+            });
+            
+            // Actualizar PAKI RICOH
+            if (jugador.pakiRicoh.activo) {
+                jugador.pakiRicoh.tiempoRestante--;
+                
+                // Generar partículas de humo
+                if (Math.random() > 0.7 && jugador.pakiRicoh.humoParticulas.length < 30) { // Reducido a 30 partículas
+                    jugador.pakiRicoh.humoParticulas.push({
+                        x: jugador.x + (Math.random() - 0.5) * 30,
+                        y: jugador.y - 20 + Math.random() * 10,
+                        radio: Math.random() * 8 + 4,
+                        opacidad: 0.8,
+                        velocidadX: (Math.random() - 0.5) * 2,
+                        velocidadY: -Math.random() * 1.5 - 0.5
+                    });
+                }
+                
+                // Actualizar partículas
+                jugador.pakiRicoh.humoParticulas.forEach((particula, index) => {
+                    particula.x += particula.velocidadX;
+                    particula.y += particula.velocidadY;
+                    particula.opacidad -= 0.02;
+                    particula.radio *= 0.98;
+                    
+                    if (particula.opacidad <= 0 || particula.radio <= 0.5) {
+                        jugador.pakiRicoh.humoParticulas.splice(index, 1);
+                    }
+                });
+                
+                // Movimiento aleatorio cada 20 frames (aprox 0.3 segundos)
+                if (jugador.pakiRicoh.tiempoRestante % 20 === 0 && jugador.pakiRicoh.cambiosCarril < 5) {
+                    const cambio = Math.random() > 0.5 ? 1 : -1;
+                    jugador.carril = Math.max(0, Math.min(2, jugador.carril + cambio));
+                    jugador.pakiRicoh.cambiosCarril++;
+                }
+                
+                // Finalizar PAKI RICOH
+                if (jugador.pakiRicoh.tiempoRestante <= 0) {
+                    jugador.pakiRicoh.activo = false;
+                    jugador.pakiRicoh.humoParticulas = [];
+                    jugador.pakiRicoh.cambiosCarril = 0;
+                    juego.textoEmergente = new TextoEmergente('..', { gigante: true, color: '#ffffff' });
+                    reproducirSonido('tos');
+                }
+            }
+            
+            // Actualizar texto emergente
+            if (juego.textoEmergente) {
+                juego.textoEmergente.actualizar();
+                if (!juego.textoEmergente.estaVivo()) {
+                    juego.textoEmergente = null;
+                }
+            }
+            
+            // Final secreto a los 30.000 puntos
+            if (juego.puntuacion >= 30000 && !juego.finalAlcanzado) {
+                finalSecreto();
+            }
+        }
+        
+        // Dibujar juego
+        function dibujar() {
+            // Limpiar canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Crear contexto virtual
+            const ctxVirtual = canvas.getContext('2d');
+            ctxVirtual.setTransform(1, 0, 0, 1, 0, 0);
+            ctxVirtual.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Escalar a coordenadas virtuales
+            const escalaXReal = canvas.width / ANCHO_VIRTUAL;
+            const escalaYReal = canvas.height / ALTO_VIRTUAL;
+            ctxVirtual.scale(escalaXReal, escalaYReal);
+            
+            // Fondo
+            ctxVirtual.fillStyle = '#1a1a1a';
+            ctxVirtual.fillRect(0, 0, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+            
+            // Dibujar montañas (parallax)
+            dibujarMontañas(ctxVirtual);
+            
+            // Dibujar carriles
+            ctxVirtual.strokeStyle = '#333333';
+            ctxVirtual.lineWidth = 2;
+            ctxVirtual.setLineDash([10, 10]);
+            for (let i = 0; i < 4; i++) {
+                ctxVirtual.beginPath();
+                ctxVirtual.moveTo(ANCHO_VIRTUAL * 0.25 * i, 0);
+                ctxVirtual.lineTo(ANCHO_VIRTUAL * 0.25 * i, ALTO_VIRTUAL);
+                ctxVirtual.stroke();
+            }
+            ctxVirtual.setLineDash([]);
+            
+            // Dibujar obstáculos
+            juego.obstaculos.forEach(obs => {
+                // Cuerpo del policía
+                ctxVirtual.fillStyle = '#228B22'; // Verde bosque
+                ctxVirtual.fillRect(obs.x - obs.ancho/2, obs.y - obs.alto/2, obs.ancho, obs.alto * 0.8);
+                
+                // Cabeza del policía
+                ctxVirtual.fillStyle = '#f0e6d2'; // Color piel
+                ctxVirtual.fillRect(obs.x - obs.ancho/3, obs.y - obs.alto, obs.ancho * 0.66, obs.alto * 0.3);
+                
+                // Gorra
+                ctxVirtual.fillStyle = '#000080'; // Azul marino
+                ctxVirtual.fillRect(obs.x - obs.ancho/2.5, obs.y - obs.alto * 0.9, obs.ancho * 0.8, obs.alto * 0.15);
+                
+                // Ojos
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.fillRect(obs.x - obs.ancho/5, obs.y - obs.alto * 0.85, obs.ancho/8, obs.alto/15);
+                ctxVirtual.fillRect(obs.x + obs.ancho/10, obs.y - obs.alto * 0.85, obs.ancho/8, obs.alto/15);
+                
+                // Boca
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.fillRect(obs.x - obs.ancho/10, obs.y - obs.alto * 0.75, obs.ancho/5, obs.alto/25);
+                
+                // Brazos
+                ctxVirtual.fillStyle = '#228B22';
+                ctxVirtual.fillRect(obs.x - obs.ancho/2 - 5, obs.y - obs.alto/2 + 10, 8, obs.alto * 0.3);
+                ctxVirtual.fillRect(obs.x + obs.ancho/2 - 3, obs.y - obs.alto/2 + 10, 8, obs.alto * 0.3);
+                
+                // Piernas
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.fillRect(obs.x - obs.ancho/4, obs.y - obs.alto/2 + obs.alto * 0.8, obs.ancho/6, obs.alto * 0.3);
+                ctxVirtual.fillRect(obs.x + obs.ancho/12, obs.y - obs.alto/2 + obs.alto * 0.8, obs.ancho/6, obs.alto * 0.3);
+                
+                // Detalle: si es rápido, añadir rayo
+                if (obs.subtipo === 'rapido') {
+                    ctxVirtual.fillStyle = '#ffd700';
+                    ctxVirtual.beginPath();
+                    ctxVirtual.moveTo(obs.x, obs.y - obs.alto * 0.95);
+                    ctxVirtual.lineTo(obs.x + 8, obs.y - obs.alto * 0.85);
+                    ctxVirtual.lineTo(obs.x - 3, obs.y - obs.alto * 0.85);
+                    ctxVirtual.closePath();
+                    ctxVirtual.fill();
+                }
+            });
+            
+            // Dibujar cerdos
+            juego.cerdos.forEach(cerdo => {
+                // Cuerpo del cerdo
+                ctxVirtual.fillStyle = '#ffb6c1'; // Rosa claro
+                ctxVirtual.beginPath();
+                ctxVirtual.ellipse(cerdo.x, cerdo.y, cerdo.ancho/2, cerdo.alto/2, 0, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                // Ojos
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(cerdo.x - 10, cerdo.y - 5, 4, 0, Math.PI * 2);
+                ctxVirtual.arc(cerdo.x + 10, cerdo.y - 5, 4, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                // Nariz
+                ctxVirtual.fillStyle = '#ff69b4';
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(cerdo.x, cerdo.y + 5, 8, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                // Orificios nasales
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(cerdo.x - 4, cerdo.y + 5, 2, 0, Math.PI * 2);
+                ctxVirtual.arc(cerdo.x + 4, cerdo.y + 5, 2, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                // Espiral
+                ctxVirtual.strokeStyle = '#000000';
+                ctxVirtual.lineWidth = 2;
+                ctxVirtual.beginPath();
+                ctxVirtual.moveTo(cerdo.x + 15, cerdo.y - 15);
+                for (let i = 0; i < 3; i++) {
+                    ctxVirtual.arc(cerdo.x + 15, cerdo.y - 15, 5 + i*3, 0, Math.PI * 2);
+                }
+                ctxVirtual.stroke();
+            });
+            
+            // Dibujar cigarros
+            juego.cigarros.forEach(cigarro => {
+                // Cigarro
+                ctxVirtual.fillStyle = '#f5deb3'; // Beige
+                ctxVirtual.fillRect(cigarro.x - cigarro.ancho/2, cigarro.y - cigarro.alto/2, cigarro.ancho, cigarro.alto * 0.7);
+                
+                // Punta roja
+                ctxVirtual.fillStyle = '#ff4500'; // Rojo anaranjado
+                ctxVirtual.beginPath();
+                ctxVirtual.moveTo(cigarro.x - cigarro.ancho/2, cigarro.y - cigarro.alto/2 + cigarro.alto * 0.35);
+                ctxVirtual.lineTo(cigarro.x - cigarro.ancho/2 + 10, cigarro.y - cigarro.alto/2 + cigarro.alto * 0.35);
+                ctxVirtual.lineTo(cigarro.x - cigarro.ancho/2 + 5, cigarro.y - cigarro.alto/2);
+                ctxVirtual.closePath();
+                ctxVirtual.fill();
+                
+                // Humo
+                ctxVirtual.fillStyle = 'rgba(200, 200, 200, 0.7)';
+                for (let i = 0; i < 3; i++) {
+                    ctxVirtual.beginPath();
+                    ctxVirtual.arc(cigarro.x - cigarro.ancho/2 + 3, cigarro.y - cigarro.alto/2 - i*8, 3 + i*1.5, 0, Math.PI * 2);
+                    ctxVirtual.fill();
+                }
+            });
+            
+            // Dibujar jugador
+            if (juego.estado === ESTADOS.JUGANDO || juego.estado === ESTADOS.PAUSADO_TRUCO) {
+                // Cuerpo
+                ctxVirtual.fillStyle = jugador.invulnerable ? '#ffd700' : '#333333';
+                if (jugador.agachado) {
+                    ctxVirtual.fillRect(jugador.x - jugador.ancho/2, jugador.y - 20, jugador.ancho, jugador.alto/2);
+                } else {
+                    ctxVirtual.fillRect(jugador.x - jugador.ancho/2, jugador.y - jugador.alto, jugador.ancho, jugador.alto * 0.8);
+                }
+                
+                // Cabeza
+                ctxVirtual.fillStyle = '#8b4513'; // Marrón piel oscura
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(jugador.x, jugador.y - jugador.alto + 20, jugador.ancho/3, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                // Pelo
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(jugador.x, jugador.y - jugador.alto + 15, jugador.ancho/3 + 2, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                // Ojos
+                ctxVirtual.fillStyle = '#ffffff';
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(jugador.x - 8, jugador.y - jugador.alto + 20, 5, 0, Math.PI * 2);
+                ctxVirtual.arc(jugador.x + 8, jugador.y - jugador.alto + 20, 5, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(jugador.x - 8, jugador.y - jugador.alto + 20, 2, 0, Math.PI * 2);
+                ctxVirtual.arc(jugador.x + 8, jugador.y - jugador.alto + 20, 2, 0, Math.PI * 2);
+                ctxVirtual.fill();
+                
+                // Gafas (si está en PAKI RICOH)
+                if (jugador.pakiRicoh.activo) {
+                    ctxVirtual.strokeStyle = '#000000';
+                    ctxVirtual.lineWidth = 2;
+                    ctxVirtual.beginPath();
+                    ctxVirtual.arc(jugador.x - 8, jugador.y - jugador.alto + 20, 6, 0, Math.PI * 2);
+                    ctxVirtual.arc(jugador.x + 8, jugador.y - jugador.alto + 20, 6, 0, Math.PI * 2);
+                    ctxVirtual.stroke();
+                    
+                    ctxVirtual.beginPath();
+                    ctxVirtual.moveTo(jugador.x - 2, jugador.y - jugador.alto + 20);
+                    ctxVirtual.lineTo(jugador.x + 2, jugador.y - jugador.alto + 20);
+                    ctxVirtual.stroke();
+                }
+                
+                // Boca
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(jugador.x, jugador.y - jugador.alto + 30, 4, 0, Math.PI);
+                ctxVirtual.fill();
+                
+                // Brazos (con mayor amplitud para móvil)
+                ctxVirtual.fillStyle = '#8b4513';
+                const tiempo = Date.now() / 100;
+                const amplitud = jugador.pakiRicoh.activo ? 20 : 15; // Mayor amplitud en PAKI RICOH
+                
+                // Brazo izquierdo
+                ctxVirtual.fillRect(
+                    jugador.x - jugador.ancho/2 - 10 + Math.sin(tiempo) * amplitud,
+                    jugador.y - jugador.alto/2 + 10,
+                    10,
+                    jugador.alto * 0.3
+                );
+                
+                // Brazo derecho
+                ctxVirtual.fillRect(
+                    jugador.x + jugador.ancho/2 - Math.sin(tiempo + 1) * amplitud,
+                    jugador.y - jugador.alto/2 + 10,
+                    10,
+                    jugador.alto * 0.3
+                );
+                
+                // Piernas
+                ctxVirtual.fillStyle = '#000000';
+                ctxVirtual.fillRect(jugador.x - jugador.ancho/4, jugador.y - jugador.alto/2 + jugador.alto * 0.8, jugador.ancho/6, jugador.alto * 0.3);
+                ctxVirtual.fillRect(jugador.x + jugador.ancho/12, jugador.y - jugador.alto/2 + jugador.alto * 0.8, jugador.ancho/6, jugador.alto * 0.3);
+                
+                // Ropa
+                ctxVirtual.fillStyle = '#8b0000'; // Rojo oscuro
+                ctxVirtual.fillRect(jugador.x - jugador.ancho/2 + 5, jugador.y - jugador.alto/2 + 25, jugador.ancho - 10, jugador.alto * 0.2);
+                
+                // Dibujar partículas de humo si está en PAKI RICOH
+                if (jugador.pakiRicoh.activo) {
+                    jugador.pakiRicoh.humoParticulas.forEach(particula => {
+                        ctxVirtual.fillStyle = `rgba(200, 200, 200, ${particula.opacidad})`;
+                        ctxVirtual.beginPath();
+                        ctxVirtual.arc(particula.x, particula.y, particula.radio, 0, Math.PI * 2);
+                        ctxVirtual.fill();
+                    });
+                }
+            }
+            
+            // Dibujar texto emergente
+            if (juego.textoEmergente) {
+                juego.textoEmergente.dibujar(ctxVirtual);
+            }
+            
+            // Dibujar HUD
+            if (juego.estado === ESTADOS.JUGANDO || juego.estado === ESTADOS.PAUSADO_TRUCO) {
+                // Puntuación
+                ctxVirtual.fillStyle = '#ffd700';
+                ctxVirtual.font = 'bold 36px Arial';
+                ctxVirtual.textAlign = 'right';
+                ctxVirtual.fillText(juego.puntuacion, ANCHO_VIRTUAL - 30, 50);
+                
+                // Vidas
+                ctxVirtual.fillStyle = '#ff4444';
+                for (let i = 0; i < jugador.vidas; i++) {
+                    ctxVirtual.beginPath();
+                    ctxVirtual.arc(50 + i * 30, 40, 12, 0, Math.PI * 2);
+                    ctxVirtual.fill();
+                }
+            }
+        }
+        
+        // Dibujar montañas con parallax
+        function dibujarMontañas(ctxVirtual) {
+            const tiempo = Date.now() / 1000;
+            
+            // Fondo estrellado
+            ctxVirtual.fillStyle = '#0a0a2a';
+            ctxVirtual.fillRect(0, 0, ANCHO_VIRTUAL, ALTO_VIRTUAL * 0.6);
+            
+            // Estrellas
+            ctxVirtual.fillStyle = '#ffffff';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 73) % ANCHO_VIRTUAL;
+                const y = (Math.sin(i + tiempo * 2) * 0.5 + 0.5) * ALTO_VIRTUAL * 0.5;
+                const size = Math.sin(i + tiempo * 5) * 0.5 + 1.5;
+                ctxVirtual.fillRect(x, y, size, size);
+            }
+            
+            // Montañas lejanas
+            ctxVirtual.fillStyle = '#1a1a4a';
+            for (let i = 0; i < 5; i++) {
+                const baseX = (i * 200 - (tiempo * 20) % 1000);
+                ctxVirtual.beginPath();
+                ctxVirtual.moveTo(baseX, ALTO_VIRTUAL * 0.6);
+                ctxVirtual.lineTo(baseX + 150, ALTO_VIRTUAL * 0.3);
+                ctxVirtual.lineTo(baseX + 300, ALTO_VIRTUAL * 0.6);
+                ctxVirtual.fill();
+            }
+            
+            // Montañas cercanas
+            ctxVirtual.fillStyle = '#0a0a2a';
+            for (let i = 0; i < 3; i++) {
+                const baseX = (i * 300 - (tiempo * 40) % 900);
+                ctxVirtual.beginPath();
+                ctxVirtual.moveTo(baseX, ALTO_VIRTUAL * 0.6);
+                ctxVirtual.lineTo(baseX + 200, ALTO_VIRTUAL * 0.2);
+                ctxVirtual.lineTo(baseX + 400, ALTO_VIRTUAL * 0.6);
+                ctxVirtual.fill();
+            }
+            
+            // Nubes
+            ctxVirtual.fillStyle = 'rgba(200, 200, 255, 0.3)';
+            for (let i = 0; i < 5; i++) {
+                const x = (i * 200 - (tiempo * 10) % 1000) % ANCHO_VIRTUAL;
+                const y = ALTO_VIRTUAL * 0.15 + Math.sin(i + tiempo) * 20;
+                ctxVirtual.beginPath();
+                ctxVirtual.arc(x, y, 30, 0, Math.PI * 2);
+                ctxVirtual.arc(x + 25, y - 10, 25, 0, Math.PI * 2);
+                ctxVirtual.arc(x + 50, y, 30, 0, Math.PI * 2);
+                ctxVirtual.fill();
+            }
+            
+            // Suelo
+            ctxVirtual.fillStyle = '#1a1a1a';
+            ctxVirtual.fillRect(0, ALTO_VIRTUAL * 0.6, ANCHO_VIRTUAL, ALTO_VIRTUAL * 0.4);
+            
+            // Línea de carriles
+            ctxVirtual.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctxVirtual.lineWidth = 2;
+            ctxVirtual.setLineDash([10, 10]);
+            for (let i = 1; i < 3; i++) {
+                ctxVirtual.beginPath();
+                ctxVirtual.moveTo(ANCHO_VIRTUAL * 0.25 * i, ALTO_VIRTUAL * 0.6);
+                ctxVirtual.lineTo(ANCHO_VIRTUAL * 0.25 * i, ALTO_VIRTUAL);
+                ctxVirtual.stroke();
+            }
+            ctxVirtual.setLineDash([]);
+        }
+        
+        // Activar PAKI RICOH
+        function activarPakiRicoh() {
+            jugador.pakiRicoh.activo = true;
+            jugador.pakiRicoh.tiempoRestante = 300; // 5 segundos a 60 FPS
+            jugador.pakiRicoh.humoParticulas = [];
+            jugador.pakiRicoh.cambiosCarril = 0;
+            jugador.invulnerable = true;
+            
+            juego.textoEmergente = new TextoEmergente('¡PAKI RICOH!', { gigante: true, color: '#ffd700' });
+            
+            // Desactivar invulnerabilidad después de PAKI RICOH
+            setTimeout(() => {
+                jugador.invulnerable = false;
+            }, 5000);
+        }
+        
+        // Game Over
+        function gameOver() {
+            juego.estado = ESTADOS.GAME_OVER;
+            
+            // Guardar récord
+            if (juego.puntuacion > juego.record) {
+                juego.record = juego.puntuacion;
+                localStorage.setItem('segarroRecord', juego.puntuacion.toString());
+            }
+            
+            // Mostrar panel game over
+            document.getElementById('game-over').style.display = 'block';
+            document.getElementById('puntuacion-final').textContent = juego.puntuacion;
+            document.getElementById('record-final').textContent = juego.record;
+            document.getElementById('cigarros-final').textContent = juego.totalCigarrosReales;
+            
+            // Detener música y sirena
+            detenerMusicaArabe();
+            detenerSirena();
+            reproducirSonido('gameover');
+            
+            // Permitir scroll en game over
+            permitirScroll = true;
+            document.body.style.touchAction = 'auto';
+        }
+        
+        // Final secreto
+        function finalSecreto() {
+            juego.finalAlcanzado = true;
+            juego.estado = ESTADOS.GAME_OVER;
+            
+            // Detener música árabe
+            detenerMusicaArabe();
+            
+            // Mostrar escena de la terraza
+            const canvasFinal = document.createElement('canvas');
+            canvasFinal.width = ANCHO_VIRTUAL;
+            canvasFinal.height = ALTO_VIRTUAL;
+            const ctxFinal = canvasFinal.getContext('2d');
+            
+            // Fondo: terraza al atardecer
+            const gradiente = ctxFinal.createLinearGradient(0, 0, 0, ALTO_VIRTUAL);
+            gradiente.addColorStop(0, '#ff7733');
+            gradiente.addColorStop(0.5, '#ff4400');
+            gradiente.addColorStop(1, '#221133');
+            ctxFinal.fillStyle = gradiente;
+            ctxFinal.fillRect(0, 0, ANCHO_VIRTUAL, ALTO_VIRTUAL);
+            
+            // Suelo de la terraza
+            ctxFinal.fillStyle = '#8B4513';
+            ctxFinal.fillRect(0, ALTO_VIRTUAL * 0.7, ANCHO_VIRTUAL, ALTO_VIRTUAL * 0.3);
+            
+            // Mesa
+            ctxFinal.fillStyle = '#A0522D';
+            ctxFinal.fillRect(ANCHO_VIRTUAL * 0.4, ALTO_VIRTUAL * 0.75, ANCHO_VIRTUAL * 0.2, ALTO_VIRTUAL * 0.15);
+            
+            // Mantel
+            ctxFinal.fillStyle = '#8B0000';
+            ctxFinal.fillRect(ANCHO_VIRTUAL * 0.38, ALTO_VIRTUAL * 0.73, ANCHO_VIRTUAL * 0.24, ALTO_VIRTUAL * 0.05);
+            
+            // Sillas (5 amigos)
+            for (let i = 0; i < 5; i++) {
+                const x = ANCHO_VIRTUAL * 0.2 + i * ANCHO_VIRTUAL * 0.15;
+                // Cuerpo
+                ctxFinal.fillStyle = '#333333';
+                ctxFinal.fillRect(x - 10, ALTO_VIRTUAL * 0.65, 20, 40);
+                // Cabeza
+                ctxFinal.fillStyle = '#8b4513';
+                ctxFinal.beginPath();
+                ctxFinal.arc(x, ALTO_VIRTUAL * 0.6, 12, 0, Math.PI * 2);
+                ctxFinal.fill();
+            }
+            
+            // Jugador sentado
+            ctxFinal.fillStyle = '#333333';
+            ctxFinal.fillRect(ANCHO_VIRTUAL * 0.5 - 15, ALTO_VIRTUAL * 0.65, 30, 40);
+            ctxFinal.fillStyle = '#8b4513';
+            ctxFinal.beginPath();
+            ctxFinal.arc(ANCHO_VIRTUAL * 0.5, ALTO_VIRTUAL * 0.6, 15, 0, Math.PI * 2);
+            ctxFinal.fill();
+            
+            // Cigarro en mano
+            ctxFinal.fillStyle = '#f5deb3';
+            ctxFinal.fillRect(ANCHO_VIRTUAL * 0.5 + 20, ALTO_VIRTUAL * 0.7, 25, 8);
+            ctxFinal.fillStyle = '#ff4500';
+            ctxFinal.beginPath();
+            ctxFinal.arc(ANCHO_VIRTUAL * 0.5 + 45, ALTO_VIRTUAL * 0.74, 5, 0, Math.PI * 2);
+            ctxFinal.fill();
+            
+            // Humo
+            ctxFinal.fillStyle = 'rgba(200, 200, 200, 0.7)';
+            for (let i = 0; i < 5; i++) {
+                ctxFinal.beginPath();
+                ctxFinal.arc(ANCHO_VIRTUAL * 0.5 + 45 + i*8, ALTO_VIRTUAL * 0.7 - i*10, 6 + i*2, 0, Math.PI * 2);
+                ctxFinal.fill();
+            }
+            
+            // Créditos
+            ctxFinal.fillStyle = '#ffd700';
+            ctxFinal.font = 'bold 24px Arial';
+            ctxFinal.textAlign = 'center';
+            ctxFinal.fillText('ESTE ES DEL BUENO,', ANCHO_VIRTUAL / 2, ALTO_VIRTUAL * 0.3);
+            ctxFinal.fillText('RESINA PEGAJOSA', ANCHO_VIRTUAL / 2, ALTO_VIRTUAL * 0.35);
+            ctxFinal.font = '16px Arial';
+            ctxFinal.fillText('Gracias por jugar al Segarro Runner', ANCHO_VIRTUAL / 2, ALTO_VIRTUAL * 0.42);
+            ctxFinal.fillText('Hecho con ❤️ y mucho humo', ANCHO_VIRTUAL / 2, ALTO_VIRTUAL * 0.46);
+            
+            // Dibujar en el canvas principal
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(canvasFinal, 0, 0, ANCHO_VIRTUAL, ALTO_VIRTUAL, 0, 0, canvas.width, canvas.height);
+            
+            // Guardar récord
+            if (juego.puntuacion > juego.record) {
+                juego.record = juego.puntuacion;
+                localStorage.setItem('segarroRecord', juego.puntuacion.toString());
+            }
+            
+            // Mostrar panel game over con mensaje especial
+            document.getElementById('game-over').style.display = 'block';
+            document.getElementById('game-over').querySelector('h2').textContent = '¡HAS LLEGADO A LA TERRAZA!';
+            document.getElementById('puntuacion-final').textContent = juego.puntuacion;
+            document.getElementById('record-final').textContent = juego.record;
+            document.getElementById('cigarros-final').textContent = juego.totalCigarrosReales;
+            
+            // Permitir scroll
+            permitirScroll = true;
+            document.body.style.touchAction = 'auto';
+        }
+        
+        // Reiniciar juego
+        function reiniciarJuego() {
+            // Reiniciar jugador
+            jugador.x = ANCHO_VIRTUAL / 2;
+            jugador.y = ALTO_VIRTUAL - 100;
+            jugador.carril = 1;
+            jugador.saltando = false;
+            jugador.agachado = false;
+            jugador.invulnerable = false;
+            jugador.vidas = 1;
+            jugador.pakiRicoh.activo = false;
+            jugador.pakiRicoh.tiempoRestante = 0;
+            jugador.pakiRicoh.humoParticulas = [];
+            jugador.pakiRicoh.cambiosCarril = 0;
+            
+            // Reiniciar juego
+            juego.estado = ESTADOS.JUGANDO;
+            juego.puntuacion = 0;
+            juego.velocidad = 4.8;
+            juego.obstaculos = [];
+            juego.cigarros = [];
+            juego.cerdos = [];
+            juego.textoEmergente = null;
+            juego.ultimaGeneracion = 0;
+            juego.intervaloGeneracion = 1000;
+            juego.totalCigarrosReales = 0;
+            juego.vidasGanadas = 0;
+            juego.choquesSinMorir = 0;
+            juego.trucoEuroUsado = false;
+            juego.finalAlcanzado = false;
+            
+            // Ocultar paneles
+            document.getElementById('inicio').style.display = 'none';
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('overlay-pausa').style.display = 'none';
+            
+            // Iniciar música
+            initAudio();
+            iniciarMusicaArabe();
+            
+            // Bloquear scroll durante el juego
+            permitirScroll = false;
+            document.body.style.touchAction = 'none';
+        }
+        
+        // Manejar controles
+        function manejarControles() {
+            // Teclado
+            document.addEventListener('keydown', (e) => {
+                if (juego.estado !== ESTADOS.JUGANDO) return;
+                
+                if (TECLAS.IZQUIERDA.includes(e.key) && jugador.carril > 0) {
+                    jugador.carril--;
+                } else if (TECLAS.DERECHA.includes(e.key) && jugador.carril < 2) {
+                    jugador.carril++;
+                } else if (TECLAS.ARRIBA.includes(e.key)) {
+                    // Saltar (no implementado en esta versión)
+                } else if (TECLAS.ABAJO.includes(e.key)) {
+                    jugador.agachado = true;
+                    setTimeout(() => { jugador.agachado = false; }, 500);
+                }
+            });
+            
+            // Touch (swipe)
+            let toqueInicio = null;
+            
+            canvas.addEventListener('touchstart', (e) => {
+                if (juego.estado !== ESTADOS.JUGANDO && juego.estado !== ESTADOS.PAUSADO_TRUCO) return;
+                if (e.touches.length > 1) return;
+                
+                // Prevenir scroll durante el juego
+                if (!permitirScroll) {
+                    e.preventDefault();
+                }
+                
+                toqueInicio = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    tiempo: Date.now()
+                };
+                
+                // Doble toque para truco EURO
+                const ahora = Date.now();
+                if (ahora - tiempoDobleToque < 300 && !juego.trucoEuroUsado) {
+                    activarTrucoEuro();
+                }
+                tiempoDobleToque = ahora;
+            }, { passive: false });
+            
+            canvas.addEventListener('touchend', (e) => {
+                if (!toqueInicio || juego.estado !== ESTADOS.JUGANDO) return;
+                if (e.touches.length > 0) return;
+                
+                const toqueFin = {
+                    x: e.changedTouches[0].clientX,
+                    y: e.changedTouches[0].clientY,
+                    tiempo: Date.now()
+                };
+                
+                const diffX = toqueFin.x - toqueInicio.x;
+                const diffY = toqueFin.y - toqueInicio.y;
+                const diffTiempo = toqueFin.tiempo - toqueInicio.tiempo;
+                
+                // Ignorar si el movimiento fue muy lento o muy rápido
+                if (diffTiempo > 1000 || diffTiempo < 50) return;
+                
+                // Detectar swipe
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    // Swipe horizontal
+                    if (diffX > umbralSwipe && jugador.carril > 0) {
+                        jugador.carril--;
+                    } else if (diffX < -umbralSwipe && jugador.carril < 2) {
+                        jugador.carril++;
+                    }
+                } else {
+                    // Swipe vertical
+                    if (diffY < -umbralSwipe) {
+                        // Arriba (saltar)
+                    } else if (diffY > umbralSwipe) {
+                        // Abajo (agacharse)
+                        jugador.agachado = true;
+                        setTimeout(() => { jugador.agachado = false; }, 500);
+                    }
+                }
+                
+                toqueInicio = null;
+            });
+            
+            // Mantener para truco EURO
+            let mantenerEuro = false;
+            let timeoutEuro = null;
+            
+            canvas.addEventListener('touchmove', (e) => {
+                if (!toqueInicio) return;
+                
+                const toqueActual = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY
+                };
+                
+                const diffX = toqueActual.x - toqueInicio.x;
+                const diffY = toqueActual.y - toqueInicio.y;
+                
+                // Si se mueve demasiado, cancelar el posible doble toque
+                if (Math.abs(diffX) > 20 || Math.abs(diffY) > 20) {
+                    tiempoDobleToque = 0;
+                }
+            });
+            
+            // Botones
+            document.getElementById('btn-iniciar').addEventListener('click', () => {
+                reiniciarJuego();
+            });
+            
+            document.getElementById('btn-reiniciar').addEventListener('click', () => {
+                document.getElementById('game-over').style.display = 'none';
+                reiniciarJuego();
+            });
+            
+            document.getElementById('btn-continuar').addEventListener('click', () => {
+                juego.estado = ESTADOS.JUGANDO;
+                document.getElementById('overlay-pausa').style.display = 'none';
+                permitirScroll = false;
+                document.body.style.touchAction = 'none';
+            });
+            
+            document.getElementById('btn-reiniciar-pausa').addEventListener('click', () => {
+                document.getElementById('overlay-pausa').style.display = 'none';
+                reiniciarJuego();
+            });
+            
+            // Pausa con botón físico de atrás en móvil (simulado con tecla P)
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'p' || e.key === 'P') {
+                    if (juego.estado === ESTADOS.JUGANDO) {
+                        juego.estado = ESTADOS.PAUSA;
+                        document.getElementById('overlay-pausa').style.display = 'flex';
+                        permitirScroll = true;
+                        document.body.style.touchAction = 'auto';
+                    } else if (juego.estado === ESTADOS.PAUSA) {
+                        juego.estado = ESTADOS.JUGANDO;
+                        document.getElementById('overlay-pausa').style.display = 'none';
+                        permitirScroll = false;
+                        document.body.style.touchAction = 'none';
+                    }
+                }
+            });
+        }
+        
+        // Activar truco EURO
+        function activarTrucoEuro() {
+            if (juego.trucoEuroUsado || juego.estado !== ESTADOS.JUGANDO) return;
+            
+            juego.trucoEuroUsado = true;
             jugador.vidas++;
-            jugador.cigarros = 0;
-            cigarrosDisplay.textContent = jugador.cigarros;
-            vidasDisplay.textContent = jugador.vidas;
             
-            sonidoCelebracion();
+            // Mostrar destello amarillo
+            const destello = document.getElementById('destello-euro');
+            destello.style.display = 'block';
             
-            textosEmergentes.push(new TextoEmergente(
-              "AMIGOO", 
-              POS_X_CARRIL[jugador.carril], 
-              jugador.y - 80, 
-              '#ffd700',
-              { gigante: true, vibrar: true }
-            ));
-          }
-          
-          // ¿Décimo cigarro?
-          if ((jugador.cigarros + 5 * (jugador.vidas - 1)) % 10 === 0 && jugador.cigarros !== 0) {
-            activarPakiRicoh();
-          }
-          
-          cigarros.splice(i, 1);
-        }
-      }
-    }
-
-    function activarPakiRicoh() {
-      jugador.pakiRicoh.activo = true;
-      jugador.pakiRicoh.contador = 0;
-      jugador.pakiRicoh.cambiosRestantes = 3;
-      jugador.pakiRicoh.proximoCambio = 60;
-      jugador.pakiRicoh.direccion = 0;
-      jugador.pakiRicoh.humoParticulas = [];
-      
-      textosEmergentes.push(new TextoEmergente(
-        "¡PAKI RICOH!", 
-        POS_X_CARRIL[jugador.carril], 
-        jugador.y - 100, 
-        '#ffd700',
-        { gigante: true, vibrar: true }
-      ));
-      
-      if (audioContext) {
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-        
-        osc.frequency.value = 600;
-        osc.type = 'sine';
-        gain.gain.value = 0.3;
-        
-        osc.start();
-        osc.stop(audioContext.currentTime + 0.3);
-      }
-    }
-
-    function actualizarPakiRicoh() {
-      if (!jugador.pakiRicoh.activo) return;
-      
-      jugador.pakiRicoh.contador++;
-      
-      // Generar humo (máximo 50 partículas)
-      if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.3) {
-        jugador.pakiRicoh.humoParticulas.push(new ParticulaHumo(
-          POS_X_CARRIL[jugador.carril] + (Math.random() - 0.5) * 20,
-          jugador.y - 20
-        ));
-      }
-      
-      // Actualizar partículas de humo
-      for (let i = jugador.pakiRicoh.humoParticulas.length - 1; i >= 0; i--) {
-        jugador.pakiRicoh.humoParticulas[i].actualizar();
-        if (jugador.pakiRicoh.humoParticulas[i].estaMuerta()) {
-          jugador.pakiRicoh.humoParticulas.splice(i, 1);
-        }
-      }
-      
-      // ¿Es momento de cambiar de dirección?
-      if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.proximoCambio && 
-          jugador.pakiRicoh.cambiosRestantes > 0) {
-        
-        jugador.pakiRicoh.direccion = Math.random() > 0.5 ? 1 : -1;
-        jugador.pakiRicoh.proximoCambio += 60 + Math.random() * 60;
-        jugador.pakiRicoh.cambiosRestantes--;
-      }
-      
-      // Mover personaje automáticamente
-      if (jugador.pakiRicoh.direccion !== 0) {
-        jugador.carril += jugador.pakiRicoh.direccion * 0.05;
-        jugador.carril = Math.max(0, Math.min(2, jugador.carril));
-      }
-      
-      // ¿Se acabó el tiempo?
-      if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.duracion) {
-        terminarPakiRicoh();
-      }
-    }
-
-    function terminarPakiRicoh() {
-      jugador.pakiRicoh.activo = false;
-      jugador.pakiRicoh.humoParticulas = [];
-      
-      textosEmergentes.push(new TextoEmergente(
-        "..", 
-        POS_X_CARRIL[jugador.carril], 
-        jugador.y - 20, 
-        '#ffffff',
-        { gigante: false, vibrar: false }
-      ));
-      
-      sonidoTos();
-    }
-
-    function actualizarJugador() {
-      if (juego.pantallaRoja > 0) {
-        juego.pantallaRoja--;
-      }
-      
-      if (!jugador.enSuelo) {
-        jugador.vy += jugador.gravedad;
-        jugador.y += jugador.vy;
-        
-        if (jugador.y >= POS_Y_BASE) {
-          jugador.y = POS_Y_BASE;
-          jugador.vy = 0;
-          jugador.enSuelo = true;
-          jugador.saltando = false;
-        }
-      }
-      
-      if (jugador.invulnerable) {
-        jugador.tiempoInvulnerable--;
-        if (jugador.tiempoInvulnerable <= 0) {
-          jugador.invulnerable = false;
-        }
-      }
-      
-      actualizarPakiRicoh();
-    }
-
-    function actualizarDificultad() {
-      juego.score++;
-      scoreDisplay.textContent = `SCORE: ${juego.score}`;
-      
-      // Progresión más agresiva
-      juego.velocidad = 4.8;
-      if (juego.score >= 1000) juego.velocidad += 0.6;
-      if (juego.score >= 2000) juego.velocidad += 0.6;
-      if (juego.score >= 3500) juego.velocidad += 0.6;
-      if (juego.score >= 5500) juego.velocidad += 0.6;
-      if (juego.score >= 8000) juego.velocidad += 0.6;
-      if (juego.score >= 11000) juego.velocidad += 0.6;
-      if (juego.score >= 15000) juego.velocidad += 0.6;
-      
-      // Verificar final secreto
-      if (juego.score >= 30000 && juego.estado !== 'final') {
-        escenaFinal();
-        return;
-      }
-      
-      // Aumentar frecuencia de obstáculos cada 1200 puntos
-      if (juego.score % 1200 === 0 && juego.frecuenciaObstaculos > 40) {
-        juego.frecuenciaObstaculos -= 6;
-      }
-    }
-
-    function actualizarTextos() {
-      for (let i = textosEmergentes.length - 1; i >= 0; i--) {
-        textosEmergentes[i].actualizar();
-        if (textosEmergentes[i].estaMuerto()) {
-          textosEmergentes.splice(i, 1);
-        }
-      }
-    }
-
-    function escenaFinal() {
-      juego.estado = 'final';
-      jugador.enEscenaFinal = true;
-      stopMusicaArabe();
-      startMusicaFinal();
-      
-      // Generar amigos (5 siluetas alrededor)
-      jugador.amigos = [];
-      const posicionesAmigos = [
-        { x: 300, y: 400, carril: 0 },
-        { x: 350, y: 420, carril: 0 },
-        { x: 450, y: 420, carril: 2 },
-        { x: 500, y: 400, carril: 2 },
-        { x: 400, y: 440, carril: 1 }
-      ];
-      
-      for (let i = 0; i < 5; i++) {
-        jugador.amigos.push({
-          x: posicionesAmigos[i].x,
-          y: posicionesAmigos[i].y,
-          carril: posicionesAmigos[i].carril,
-          colorPiel: '#795548',
-          colorRopa: '#388e3c'
-        });
-      }
-    }
-
-    function gameOver() {
-      juego.estado = 'gameover';
-      
-      if (juego.score > juego.record) {
-        juego.record = juego.score;
-        localStorage.setItem('segarroRecord', juego.record.toString());
-        recordDisplay.textContent = `RÉCORD: ${juego.record}`;
-      }
-      
-      finalScoreDisplay.textContent = `SCORE: ${juego.score}`;
-      bestRecordDisplay.textContent = `MEJOR RÉCORD: ${juego.record}`;
-      gameOverPanel.style.display = 'block';
-      
-      sonidoSirenas();
-      stopMusicaArabe();
-    }
-
-    function reiniciarJuego() {
-      juego.estado = 'jugando';
-      juego.score = 0;
-      juego.velocidad = juego.velocidadBase;
-      juego.frecuenciaObstaculos = 90;
-      juego.contadorObstaculos = 0;
-      juego.pantallaRoja = 0;
-      juego.choquesSinMorir = 0;
-      
-      jugador.carril = CARRILES.CENTRO;
-      jugador.y = POS_Y_BASE;
-      jugador.vy = 0;
-      jugador.saltando = false;
-      jugador.agachado = false;
-      jugador.enSuelo = true;
-      jugador.vidas = 1;
-      jugador.cigarros = 0;
-      jugador.invulnerable = false;
-      jugador.tiempoInvulnerable = 0;
-      jugador.trucoEuro = {
-        paso1: false,
-        tiempoPaso1: 0,
-        usado: false
-      };
-      jugador.pakiRicoh = {
-        activo: false,
-        duracion: 300,
-        contador: 0,
-        cambiosRestantes: 3,
-        proximoCambio: 60,
-        direccion: 0,
-        humoParticulas: []
-      };
-      jugador.enEscenaFinal = false;
-      jugador.amigos = [];
-      
-      obstaculos.length = 0;
-      cigarros.length = 0;
-      cerdos.length = 0;
-      textosEmergentes.length = 0;
-      
-      scoreDisplay.textContent = `SCORE: 0`;
-      vidasDisplay.textContent = jugador.vidas;
-      cigarrosDisplay.textContent = jugador.cigarros;
-      
-      gameOverPanel.style.display = 'none';
-      
-      if (audioHabilitado) {
-        startMusicaArabe();
-      }
-    }
-
-    // ==================== RENDERIZADO ====================
-
-    function dibujarFondo() {
-      const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      gradient.addColorStop(0, '#1a1a2e');
-      gradient.addColorStop(0.5, '#162447');
-      gradient.addColorStop(1, '#0f3460');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      ctx.fillStyle = '#2d3142';
-      ctx.beginPath();
-      ctx.moveTo(0, 400);
-      ctx.lineTo(200, 250);
-      ctx.lineTo(400, 350);
-      ctx.lineTo(600, 200);
-      ctx.lineTo(800, 300);
-      ctx.lineTo(800, 600);
-      ctx.lineTo(0, 600);
-      ctx.fill();
-      
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-      ctx.lineWidth = 2;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(i * 200, 0);
-        ctx.lineTo(i * 200, canvas.height);
-        ctx.stroke();
-      }
-      
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.setLineDash([15, 10]);
-      ctx.beginPath();
-      ctx.moveTo(canvas.width / 2, 0);
-      ctx.lineTo(canvas.width / 2, canvas.height);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      
-      ctx.strokeStyle = 'rgba(255, 209, 102, 0.3)';
-      ctx.lineWidth = 2;
-      for (let i = 0; i < 15; i++) {
-        const y = (juego.tiempo * juego.velocidad * 0.2 + i * 40) % canvas.height;
-        ctx.beginPath();
-        ctx.moveTo(350, y);
-        ctx.lineTo(450, y);
-        ctx.stroke();
-      }
-    }
-
-    function dibujarJugador() {
-      if (jugador.enEscenaFinal) {
-        // Dibujar jugador sentado en la escena final
-        const x = 400;
-        const y = 400;
-        
-        // Mesa
-        ctx.fillStyle = '#5d4037';
-        ctx.fillRect(350, 420, 100, 15);
-        ctx.fillStyle = '#3e2723';
-        ctx.fillRect(355, 435, 8, 50);
-        ctx.fillRect(437, 435, 8, 50);
-        ctx.fillStyle = '#d32f2f';
-        ctx.fillRect(345, 415, 110, 10);
-        
-        // Silla
-        ctx.fillStyle = '#4e342e';
-        ctx.fillRect(370, 370, 30, 25);
-        ctx.fillStyle = '#2e1b1b';
-        ctx.fillRect(370, 340, 8, 30);
-        ctx.fillRect(370, 395, 6, 50);
-        ctx.fillRect(394, 395, 6, 50);
-        
-        // Cabeza
-        ctx.fillStyle = jugador.colorPiel;
-        ctx.fillRect(x - 10, y - 50, 20, 20);
-        
-        // Ojos cerrados (relajado)
-        ctx.fillStyle = '#2e1b1b';
-        ctx.fillRect(x - 6, y - 42, 4, 2);
-        ctx.fillRect(x + 2, y - 42, 4, 2);
-        
-        // Sonrisa
-        ctx.strokeStyle = '#2e1b1b';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.arc(x, y - 35, 5, Math.PI, 2 * Math.PI);
-        ctx.stroke();
-        
-        // Cuerpo
-        ctx.fillStyle = jugador.colorRopa;
-        ctx.fillRect(x - 12, y - 30, 24, 35);
-        
-        // Brazo derecho con cigarro
-        ctx.fillStyle = jugador.colorPiel;
-        ctx.fillRect(x + 12, y - 25, 20, 8);
-        
-        // Cigarro
-        ctx.fillStyle = '#8d6e63';
-        ctx.fillRect(x + 32, y - 28, 18, 5);
-        ctx.fillStyle = '#ff9800';
-        ctx.beginPath();
-        ctx.arc(x + 50, y - 30, 3, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Piernas cruzadas
-        ctx.fillStyle = '#1a237e';
-        ctx.fillRect(x - 8, y + 5, 8, 25);
-        ctx.fillRect(x, y + 10, 8, 20);
-        
-        // Amigos alrededor
-        jugador.amigos.forEach(amigo => {
-          ctx.fillStyle = amigo.colorPiel;
-          ctx.fillRect(amigo.x - 8, amigo.y - 30, 16, 16);
-          
-          ctx.fillStyle = amigo.colorRopa;
-          ctx.fillRect(amigo.x - 10, amigo.y - 15, 20, 25);
-          
-          ctx.fillStyle = '#2e1b1b';
-          ctx.fillRect(amigo.x - 6, amigo.y - 25, 3, 2);
-          ctx.fillRect(amigo.x + 3, amigo.y - 25, 3, 2);
-        });
-        
-        // Créditos subiendo
-        const creditY = 650 - (juego.tiempo % 1800) * 0.6;
-        
-        ctx.font = 'bold 28px "Courier New", monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#ffd166';
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.lineWidth = 4;
-        
-        ctx.strokeText("ESTE ES DEL BUENO", 400, creditY);
-        ctx.fillText("ESTE ES DEL BUENO", 400, creditY);
-        
-        ctx.strokeText("RESINA PEGAJOSA", 400, creditY + 45);
-        ctx.fillText("RESINA PEGAJOSA", 400, creditY + 45);
-        
-        ctx.font = 'bold 20px "Courier New", monospace';
-        ctx.fillStyle = '#a5d6a7';
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
-        ctx.lineWidth = 3;
-        ctx.strokeText("la paz del segarrero", 400, 80);
-        ctx.fillText("la paz del segarrero", 400, 80);
-        
-        return;
-      }
-      
-      const x = POS_X_CARRIL[jugador.carril] - jugador.ancho / 2;
-      const y = jugador.y;
-      
-      ctx.save();
-      
-      if (jugador.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
-        ctx.globalAlpha = 0.6;
-      }
-      
-      if (jugador.pakiRicoh.activo) {
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 20;
-      }
-      
-      ctx.fillStyle = jugador.colorRopa;
-      ctx.fillRect(x, y - jugador.alto, jugador.ancho, jugador.alto - 10);
-      
-      ctx.fillStyle = jugador.colorPiel;
-      ctx.fillRect(x + 5, y - jugador.alto - 15, jugador.ancho - 10, 15);
-      
-      if (jugador.pakiRicoh.activo) {
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(x + 7, y - jugador.alto - 12, 16, 6);
-        ctx.fillRect(x + 7, y - jugador.alto - 12, 4, 6);
-        ctx.fillRect(x + 19, y - jugador.alto - 12, 4, 6);
-      } else {
-        ctx.fillStyle = 'white';
-        ctx.fillRect(x + 8, y - jugador.alto - 10, 5, 5);
-        ctx.fillRect(x + 17, y - jugador.alto - 10, 5, 5);
-        ctx.fillStyle = 'black';
-        ctx.fillRect(x + 9, y - jugador.alto - 8, 2, 2);
-        ctx.fillRect(x + 18, y - jugador.alto - 8, 2, 2);
-      }
-      
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(x + 15, y - jugador.alto - 5, 4, 0, Math.PI);
-      ctx.stroke();
-      
-      const offsetBrazos = Math.sin(juego.tiempo / 5) * 10;
-      ctx.fillStyle = jugador.colorPiel;
-      
-      if (jugador.agachado) {
-        ctx.fillRect(x - 8, y - 30, 8, 20);
-        ctx.fillRect(x + jugador.ancho, y - 30, 8, 20);
-      } else if (jugador.saltando) {
-        ctx.fillRect(x - 8, y - jugador.alto - 5, 8, 25);
-        ctx.fillRect(x + jugador.ancho, y - jugador.alto - 5, 8, 25);
-      } else {
-        ctx.fillRect(x - 8, y - 40 + offsetBrazos, 8, 25);
-        ctx.fillRect(x + jugador.ancho, y - 40 - offsetBrazos, 8, 25);
-      }
-      
-      ctx.fillStyle = '#1a237e';
-      if (jugador.agachado) {
-        ctx.fillRect(x + 5, y - 20, 10, 25);
-        ctx.fillRect(x + 15, y - 20, 10, 25);
-      } else {
-        const offsetPiernas = Math.sin(juego.tiempo / 5) * 8;
-        ctx.fillRect(x + 5, y - 15 + offsetPiernas, 10, 30);
-        ctx.fillRect(x + 15, y - 15 - offsetPiernas, 10, 30);
-      }
-      
-      ctx.fillStyle = '#212121';
-      ctx.fillRect(x + 5, y + 5, 10, 5);
-      ctx.fillRect(x + 15, y + 5, 10, 5);
-      
-      ctx.shadowBlur = 0;
-      ctx.restore();
-    }
-
-    function dibujarPolicia(obs) {
-      const x = obs.x;
-      const y = obs.y;
-      
-      ctx.fillStyle = '#2196f3';
-      ctx.fillRect(x + 5, y - 60, 40, 60);
-      
-      ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(x + 15, y - 75, 20, 15);
-      
-      ctx.fillStyle = '#1565c0';
-      ctx.fillRect(x + 10, y - 80, 30, 10);
-      ctx.fillRect(x + 12, y - 85, 26, 5);
-      
-      ctx.fillStyle = 'black';
-      ctx.fillRect(x + 18, y - 70, 3, 3);
-      ctx.fillRect(x + 25, y - 70, 3, 3);
-      
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x + 18, y - 65);
-      ctx.lineTo(x + 27, y - 65);
-      ctx.stroke();
-      
-      ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(x - 5, y - 50, 10, 30);
-      ctx.fillRect(x + 45, y - 50, 10, 30);
-      
-      ctx.fillStyle = '#424242';
-      ctx.fillRect(x - 8, y - 30, 6, 25);
-      
-      ctx.fillStyle = '#0d47a1';
-      ctx.fillRect(x + 10, y - 10, 12, 25);
-      ctx.fillRect(x + 28, y - 10, 12, 25);
-      
-      ctx.fillStyle = '#212121';
-      ctx.fillRect(x + 10, y + 10, 12, 5);
-      ctx.fillRect(x + 28, y + 10, 12, 5);
-      
-      if (obs.velocidadExtra > 0) {
-        ctx.fillStyle = '#ff4d4d';
-        ctx.font = 'bold 12px Courier New';
-        ctx.textAlign = 'center';
-        ctx.fillText('RAPIDO', x + 25, y - 85);
-      }
-    }
-
-    function dibujarCerdo(cerdo) {
-      const x = cerdo.x;
-      const y = cerdo.y;
-      
-      // Cuerpo (rosa)
-      ctx.fillStyle = '#ff80ab';
-      ctx.beginPath();
-      ctx.ellipse(x + 25, y - 20, 25, 20, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Cabeza
-      ctx.fillStyle = '#ff80ab';
-      ctx.beginPath();
-      ctx.arc(x + 25, y - 40, 15, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Ojos
-      ctx.fillStyle = 'black';
-      ctx.beginPath();
-      ctx.arc(x + 18, y - 42, 3, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x + 32, y - 42, 3, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Hocico
-      ctx.fillStyle = '#e91e63';
-      ctx.beginPath();
-      ctx.arc(x + 25, y - 35, 8, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Nariz
-      ctx.fillStyle = 'black';
-      ctx.beginPath();
-      ctx.arc(x + 22, y - 35, 2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x + 28, y - 35, 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Orejas
-      ctx.fillStyle = '#ff80ab';
-      ctx.beginPath();
-      ctx.arc(x + 15, y - 45, 8, 0, Math.PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(x + 35, y - 45, 8, 0, Math.PI);
-      ctx.fill();
-      
-      // Patas
-      ctx.fillStyle = '#e91e63';
-      ctx.fillRect(x + 10, y - 5, 10, 15);
-      ctx.fillRect(x + 30, y - 5, 10, 15);
-      
-      // Cola (espiral simple)
-      ctx.strokeStyle = '#e91e63';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x + 45, y - 25);
-      ctx.quadraticCurveTo(x + 55, y - 20, x + 50, y - 10);
-      ctx.stroke();
-    }
-
-    function dibujarCigarro(cig) {
-      const x = cig.x;
-      const y = cig.y;
-      
-      ctx.fillStyle = '#8d6e63';
-      ctx.fillRect(x + 5, y - 20, 30, 15);
-      
-      ctx.fillStyle = '#9e9e9e';
-      ctx.fillRect(x + 5, y - 25, 10, 5);
-      
-      ctx.fillStyle = '#ff9800';
-      ctx.beginPath();
-      ctx.arc(x + 10, y - 22, 3, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.strokeStyle = 'white';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(x + 10, y - 15);
-      ctx.lineTo(x + 30, y - 15);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x + 10, y - 10);
-      ctx.lineTo(x + 30, y - 10);
-      ctx.stroke();
-    }
-
-    function dibujarObstaculos() {
-      obstaculos.forEach(obs => {
-        dibujarPolicia(obs);
-      });
-      
-      cerdos.forEach(cerdo => {
-        dibujarCerdo(cerdo);
-      });
-      
-      cigarros.forEach(cig => {
-        dibujarCigarro(cig);
-      });
-    }
-
-    function dibujarParticulasPakiRicoh() {
-      if (jugador.pakiRicoh.activo) {
-        jugador.pakiRicoh.humoParticulas.forEach(p => p.dibujar(ctx));
-      }
-    }
-
-    function dibujarTextos() {
-      textosEmergentes.forEach(t => t.dibujar(ctx));
-    }
-
-    function dibujarEfectoPantallaRoja() {
-      if (juego.pantallaRoja > 0) {
-        ctx.fillStyle = `rgba(255, 50, 50, ${juego.pantallaRoja / 40})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
-    }
-
-    function actualizarIndicadorCarril() {
-      if (jugador.enEscenaFinal) return;
-      
-      const posicionesX = [170, 370, 570];
-      carrilIndicator.style.left = `${posicionesX[jugador.carril]}px`;
-    }
-
-    // ==================== BUCLE PRINCIPAL ====================
-
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      if (juego.estado === 'jugando' || juego.estado === 'pausado_truco') {
-        actualizarJugador();
-        
-        if (juego.estado === 'jugando' && !jugador.enEscenaFinal) {
-          generarObstaculo();
-          moverObstaculos();
-          detectarColisiones();
-          actualizarDificultad();
+            // Vibración si está disponible
+            if ('vibrate' in navigator) {
+                navigator.vibrate([100, 50, 100]);
+            }
+            
+            // Efecto visual de vibración en canvas (fallback para PC)
+            let vibracion = 5;
+            const vibracionInterval = setInterval(() => {
+                canvas.style.transform = `translate(${(Math.random() - 0.5) * vibracion}px, ${(Math.random() - 0.5) * vibracion}px)`;
+                vibracion *= 0.9;
+                if (vibracion < 0.5) {
+                    clearInterval(vibracionInterval);
+                    canvas.style.transform = 'translate(0, 0)';
+                }
+            }, 30);
+            
+            // Ocultar destello después de 300ms
+            setTimeout(() => {
+                destello.style.display = 'none';
+            }, 300);
+            
+            // Mostrar texto
+            juego.textoEmergente = new TextoEmergente('UN EURO', { gigante: true, color: '#ffd700' });
+            reproducirSonido('euro');
         }
         
-        actualizarTextos();
-        actualizarIndicadorCarril();
-        
-        juego.tiempo++;
-      }
-      
-      // Renderizar
-      if (juego.estado !== 'gameover') {
-        dibujarFondo();
-        if (!jugador.enEscenaFinal) {
-          dibujarObstaculos();
-          dibujarParticulasPakiRicoh();
+        // Bucle principal
+        function bucle() {
+            // Actualizar posición del jugador según carril
+            if (juego.estado === ESTADOS.JUGANDO || juego.estado === ESTADOS.PAUSADO_TRUCO) {
+                const objetivoX = CARRILES[jugador.carril];
+                jugador.x += (objetivoX - jugador.x) * 0.2;
+            }
+            
+            // Actualizar juego
+            actualizar();
+            
+            // Dibujar
+            dibujar();
+            
+            // Actualizar HUD
+            if (juego.estado === ESTADOS.JUGANDO || juego.estado === ESTADOS.PAUSADO_TRUCO) {
+                document.getElementById('puntuacion').textContent = juego.puntuacion;
+                
+                // Actualizar vidas en HUD
+                const vidasContainer = document.getElementById('vidas-container');
+                vidasContainer.innerHTML = '';
+                for (let i = 0; i < jugador.vidas; i++) {
+                    const vida = document.createElement('div');
+                    vida.className = 'vida';
+                    vidasContainer.appendChild(vida);
+                }
+                
+                // Actualizar indicador de carril
+                const indicadores = document.querySelectorAll('.carril-indicador');
+                indicadores.forEach((ind, index) => {
+                    if (index === jugador.carril) {
+                        ind.classList.add('activo');
+                    } else {
+                        ind.classList.remove('activo');
+                    }
+                });
+            }
+            
+            requestAnimationFrame(bucle);
         }
-        dibujarJugador();
-        dibujarTextos();
-        dibujarEfectoPantallaRoja();
-      }
-      
-      requestAnimationFrame(gameLoop);
-    }
-
-    // ==================== INICIAR ====================
-
-    startBtn.addEventListener('click', () => {
-      titleScreen.style.display = 'none';
-      juego.estado = 'jugando';
-      initAudio();
-    });
-    
-    restartBtn.addEventListener('click', reiniciarJuego);
-    
-    gameLoop();
-  </script>
+        
+        // Inicializar
+        function init() {
+            // Iniciar audio al primer clic
+            document.getElementById('btn-iniciar').addEventListener('click', () => {
+                initAudio();
+            }, { once: true });
+            
+            // Manejar controles
+            manejarControles();
+            
+            // Iniciar bucle
+            bucle();
+        }
+        
+        // Cargar cuando esté listo
+        window.addEventListener('load', init);
+    </script>
 </body>
 </html>
 
