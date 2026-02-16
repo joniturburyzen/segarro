@@ -713,11 +713,11 @@
       jugador.vidas++;
       vidasDisplay.textContent = jugador.vidas;
       
-      // TEXTO EN CENTRO
+      // TEXTO EN CENTRO - COORDENADAS CORREGIDAS
       textosEmergentes.push(new TextoEmergente(
         "EURO", 
-        canvas.width / 2,
-        canvas.height / 2,
+        virtualX(400),  // ← CORREGIDO: centro virtual convertido a CSS
+        virtualY(300),  // ← CORREGIDO: centro virtual convertido a CSS
         '#ffd700',
         { gigante: true, vibrar: true }
       ));
@@ -960,13 +960,20 @@
     function activarPakiRicoh() {
       jugador.pakiRicoh.activo = true;
       jugador.pakiRicoh.contador = 0;
-      jugador.pakiRicoh.cambiosRestantes = 3;
+      jugador.pakiRicoh.cambiosRestantes = 0;  // ← CORREGIDO: 0 cambios (sin movimiento automático)
       jugador.pakiRicoh.proximoCambio = 60;
       jugador.pakiRicoh.direccion = 0;
+      jugador.pakiRicoh.duracion = 420;  // ← CORREGIDO: 420 frames = 7 segundos
       jugador.pakiRicoh.humoParticulas = [];
       
-      // TEXTO EN CENTRO
-      textosEmergentes.push(new TextoEmergente("¡PAKI RICOH!", canvas.width / 2, canvas.height / 2, '#ffd700', { gigante: true, vibrar: true }));
+      // TEXTO EN CENTRO - COORDENADAS CORREGIDAS
+      textosEmergentes.push(new TextoEmergente(
+        "¡PAKI RICOH!", 
+        virtualX(400),  // ← CORREGIDO: centro virtual convertido a CSS
+        virtualY(300),  // ← CORREGIDO: centro virtual convertido a CSS
+        '#ffd700', 
+        { gigante: true, vibrar: true }
+      ));
       
       if (audioContext) {
         const osc = audioContext.createOscillator();
@@ -986,6 +993,7 @@
       
       jugador.pakiRicoh.contador++;
       
+      // Humo (sin cambios)
       if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.4) {
         jugador.pakiRicoh.humoParticulas.push(new ParticulaHumo(
           virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril] + (Math.random() - 0.5) * 25),
@@ -1000,16 +1008,9 @@
         }
       }
       
-      if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.proximoCambio && jugador.pakiRicoh.cambiosRestantes > 0) {
-        jugador.pakiRicoh.direccion = Math.random() > 0.5 ? 1 : -1;
-        jugador.pakiRicoh.proximoCambio += 60 + Math.random() * 60;
-        jugador.pakiRicoh.cambiosRestantes--;
-      }
+      // ← ELIMINADO: Bloque de cambios automáticos de carril (ya no existe)
       
-      if (jugador.pakiRicoh.direccion !== 0) {
-        jugador.carril += jugador.pakiRicoh.direccion * 0.06;
-        jugador.carril = Math.max(0, Math.min(2, jugador.carril));
-      }
+      // ← ELIMINADO: Movimiento automático de carril (ya no existe)
       
       if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.duracion) {
         terminarPakiRicoh();
