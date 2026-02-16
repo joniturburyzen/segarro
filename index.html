@@ -82,7 +82,7 @@
       transform: translate(-50%, -50%);
       background: rgba(0, 0, 0, 0.92);
       color: #ff4d4d;
-      padding: 4vh 6vw; /* Compacto para móvil */
+      padding: 4vh 6vw;
       border-radius: 4vh;
       border: 4px solid #ff4d4d;
       text-align: center;
@@ -96,7 +96,7 @@
     }
 
     #game-over h2 {
-      font-size: 5vh; /* Compacto para móvil */
+      font-size: 5vh;
       margin-bottom: 4vh;
       text-shadow: 0 0 15px rgba(255, 77, 77, 0.95);
       font-family: 'Courier New', monospace;
@@ -109,7 +109,7 @@
     }
 
     #game-over p {
-      font-size: 3.5vh; /* Compacto para móvil */
+      font-size: 3.5vh;
       margin-bottom: 6vh;
       color: #ffd166;
       font-family: 'Courier New', monospace;
@@ -353,61 +353,61 @@
     const CENTRO_Y_VIRTUAL = 300;
     
     // SWIPE ULTRA-SENSIBLE (VALIDADO)
-    const umbralSwipe = 20;           // 20px = ultra-sensible (~6% pantalla móvil)
-    const umbralSwipeEURO = 40;       // EURO requiere swipe más largo (no interfiera)
-    const tiempoMaximoSwipe = 400;    // Máximo 400ms por swipe (evita falsos positivos)
+    const umbralSwipe = 20;
+    const umbralSwipeEURO = 40;
+    const tiempoMaximoSwipe = 400;
 
     // ==================== CLASES (TEXTOS INSTANTÁNEOS) ====================
-class TextoEmergente {
-  constructor(texto, xVirtual, yVirtual, color = '#ffd166', opciones = {}) {
-    // LIMITAR POSICIÓN PARA QUE NUNCA SE SALGA DE LA PANTALLA VISIBLE
-    this.xVirtual = Math.max(100, Math.min(700, xVirtual));   // x: 100-700
-    this.yVirtual = Math.max(120, Math.min(480, yVirtual));   // y: 120-480
-    
-    this.texto = texto;
-    this.color = color;
-    this.vida = 100;              // Aumentar a 100 frames (1.67 segundos) para mejor visibilidad
-    this.velocidadY = 0;
-    this.opacidad = 1.0;
-    this.escala = opciones.gigante ? 2.0 : 1.2;
-    this.vibrar = opciones.vibrar || false;
-    this.tiempo = 0;
-  }
-  
-  actualizar() {
-    this.vida--;
-    this.tiempo++;
-    if (this.vida < 30) {         // Fade out más largo (últimos 30 frames)
-      this.opacidad = this.vida / 30;
+    class TextoEmergente {
+      constructor(texto, xVirtual, yVirtual, color = '#ffd166', opciones = {}) {
+        // POSICIÓN REAL del suceso (sin limitar artificialmente)
+        this.xVirtual = xVirtual;
+        this.yVirtual = yVirtual;
+        
+        this.texto = texto;
+        this.color = color;
+        this.vida = 100;            // 100 frames = 1.67 segundos
+        this.velocidadY = 0;
+        this.opacidad = 1.0;
+        this.escala = opciones.gigante ? 2.0 : 1.2;
+        this.vibrar = opciones.vibrar || false;
+        this.tiempo = 0;
+      }
+      
+      actualizar() {
+        this.vida--;
+        this.tiempo++;
+        if (this.vida < 30) {
+          this.opacidad = this.vida / 30;
+        }
+      }
+      
+      dibujar(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.opacidad;
+        
+        let offsetX = this.xVirtual;
+        if (this.vibrar) offsetX += Math.sin(this.tiempo * 20) * 2;
+        
+        ctx.font = `bold ${Math.floor(32 * this.escala)}px 'Courier New', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Sombra gruesa para mejor contraste
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 8 * this.escala;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
+        
+        // Texto principal
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
+        
+        ctx.restore();
+      }
+      
+      estaMuerto() { return this.vida <= 0; }
     }
-  }
-  
-  dibujar(ctx) {
-    ctx.save();
-    ctx.globalAlpha = this.opacidad;
-    
-    let offsetX = this.xVirtual;
-    if (this.vibrar) offsetX += Math.sin(this.tiempo * 20) * 2;
-    
-    ctx.font = `bold ${Math.floor(32 * this.escala)}px 'Courier New', monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Sombra más gruesa para mejor contraste
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 8 * this.escala;
-    ctx.lineJoin = 'round';
-    ctx.strokeText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
-    
-    // Texto principal
-    ctx.fillStyle = this.color;
-    ctx.fillText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
-    
-    ctx.restore();
-  }
-  
-  estaMuerto() { return this.vida <= 0; }
-}
 
     class ParticulaHumo {
       constructor(xVirtual, yVirtual) {
@@ -539,12 +539,10 @@ class TextoEmergente {
     let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
     let touchStartTime = 0;
     
-    // VARIABLES PARA EURO (3 SWIPES ABAJO)
     let contadorSwipesAbajo = 0;
     let tiempoPrimerSwipeAbajo = 0;
     let timeoutResetEURO = null;
     
-    // Reset automático del contador EURO
     function resetContadorEURO() {
       contadorSwipesAbajo = 0;
       tiempoPrimerSwipeAbajo = 0;
@@ -573,7 +571,6 @@ class TextoEmergente {
       touchEndX = e.changedTouches[0].clientX;
       touchEndY = e.changedTouches[0].clientY;
       
-      // Ignorar swipes demasiado lentos (>400ms)
       if (duracionSwipe <= tiempoMaximoSwipe) {
         detectarSwipe();
       }
@@ -589,7 +586,6 @@ class TextoEmergente {
       const diffX = touchEndX - touchStartX;
       const diffY = touchEndY - touchStartY;
       
-      // PRIORIDAD 1: SWIPE HORIZONTAL (carriles) - RESETEA CONTADOR EURO
       if (Math.abs(diffX) > Math.abs(diffY)) {
         resetContadorEURO();
         
@@ -601,8 +597,6 @@ class TextoEmergente {
         return;
       }
       
-      // PRIORIDAD 2: SWIPE VERTICAL
-      // Agacharse normal (20-40px) - RESETEA CONTADOR EURO
       if (diffY > umbralSwipe && diffY < umbralSwipeEURO && jugador.enSuelo && !jugador.agachado) {
         resetContadorEURO();
         jugador.agachado = true;
@@ -610,7 +604,6 @@ class TextoEmergente {
         return;
       }
       
-      // Salto (20px+) - RESETEA CONTADOR EURO
       if (diffY < -umbralSwipe && jugador.enSuelo) {
         resetContadorEURO();
         jugador.vy = -15;
@@ -620,16 +613,13 @@ class TextoEmergente {
         return;
       }
       
-      // EURO: SWIPE ABAJO LARGO (>40px)
       if (diffY >= umbralSwipeEURO) {
         const ahora = Date.now();
         
         if (contadorSwipesAbajo === 0) {
-          // Primer swipe
           tiempoPrimerSwipeAbajo = ahora;
           contadorSwipesAbajo = 1;
         } else if (ahora - tiempoPrimerSwipeAbajo < 1000) {
-          // Segundo o tercer swipe dentro de 1 segundo
           contadorSwipesAbajo++;
           
           if (contadorSwipesAbajo >= 3 && !jugador.trucoEuro.usado) {
@@ -638,13 +628,11 @@ class TextoEmergente {
             return;
           }
         } else {
-          // Más de 1 segundo desde el primer swipe: resetear
           resetContadorEURO();
           contadorSwipesAbajo = 1;
           tiempoPrimerSwipeAbajo = ahora;
         }
         
-        // Auto-reset después de 1 segundo de inactividad
         if (timeoutResetEURO) clearTimeout(timeoutResetEURO);
         timeoutResetEURO = setTimeout(resetContadorEURO, 1000);
       }
@@ -716,7 +704,7 @@ class TextoEmergente {
       jugador.vidas++;
       vidasDisplay.textContent = jugador.vidas;
       
-      // TEXTO INSTANTÁNEO EN CENTRO
+      // TEXTO EN CENTRO
       textosEmergentes.push(new TextoEmergente(
         "EURO", 
         CENTRO_X_VIRTUAL,
@@ -823,7 +811,7 @@ class TextoEmergente {
           if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
                       obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
             if (Math.random() < 0.3) {
-              // Texto en posición del carril del policía (siempre visible)
+              // Texto arriba del policía
               textosEmergentes.push(new TextoEmergente(
                 "RECISTA", 
                 POS_X_CARRIL_VIRTUAL[obs.carril],
@@ -842,7 +830,7 @@ class TextoEmergente {
             juego.choquesSinMorir++;
             
             if (juego.choquesSinMorir >= 3) {
-              // Texto en posición del carril del policía (siempre visible)
+              // Texto arriba del policía
               textosEmergentes.push(new TextoEmergente(
                 "MI CARTERA¡", 
                 POS_X_CARRIL_VIRTUAL[obs.carril],
@@ -853,7 +841,7 @@ class TextoEmergente {
               juego.choquesSinMorir = 0;
             }
             
-            // Texto en posición del carril del policía (siempre visible)
+            // Texto arriba del policía
             textosEmergentes.push(new TextoEmergente(
               "RECISTA", 
               POS_X_CARRIL_VIRTUAL[obs.carril],
@@ -888,7 +876,7 @@ class TextoEmergente {
             jugador.vidas--;
             vidasDisplay.textContent = jugador.vidas;
             
-            // Texto en posición del carril del cerdo (siempre visible)
+            // Texto arriba del cerdo
             textosEmergentes.push(new TextoEmergente(
               "YALLAH", 
               POS_X_CARRIL_VIRTUAL[cerdo.carril],
@@ -919,7 +907,7 @@ class TextoEmergente {
                     cigXVirtual, cigYVirtual, cig.anchoVirtual, cig.altoVirtual)) {
           sonidoSuspiro();
           
-          // Texto en posición del carril del cigarro (siempre visible)
+          // Texto arriba del cigarro
           textosEmergentes.push(new TextoEmergente(
             "SEGARRO", 
             POS_X_CARRIL_VIRTUAL[cig.carril],
@@ -937,7 +925,7 @@ class TextoEmergente {
             cigarrosDisplay.textContent = jugador.cigarros;
             vidasDisplay.textContent = jugador.vidas;
             
-            // Texto en posición del jugador (siempre visible)
+            // Texto arriba del jugador
             textosEmergentes.push(new TextoEmergente(
               "AMIGOO", 
               POS_X_CARRIL_VIRTUAL[jugador.carril],
@@ -968,7 +956,7 @@ class TextoEmergente {
       jugador.pakiRicoh.direccion = 0;
       jugador.pakiRicoh.humoParticulas = [];
       
-      // TEXTO INSTANTÁNEO EN CENTRO
+      // TEXTO EN CENTRO
       textosEmergentes.push(new TextoEmergente("¡PAKI RICOH!", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffd700', { gigante: true, vibrar: true }));
       
       if (audioContext) {
@@ -1023,7 +1011,7 @@ class TextoEmergente {
       jugador.pakiRicoh.activo = false;
       jugador.pakiRicoh.humoParticulas = [];
       
-      // Texto en posición del jugador (siempre visible)
+      // Texto arriba del jugador
       textosEmergentes.push(new TextoEmergente(
         "..", 
         POS_X_CARRIL_VIRTUAL[jugador.carril],
@@ -1209,7 +1197,6 @@ class TextoEmergente {
       cerdos.length = 0;
       textosEmergentes.length = 0;
       
-      // Reset contador EURO
       resetContadorEURO();
       
       scoreDisplay.textContent = `SCORE: 0`;
@@ -1843,38 +1830,38 @@ class TextoEmergente {
     }
 
     // ==================== BUCLE PRINCIPAL ====================
-function gameLoop() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  if (juego.estado === 'jugando' || juego.estado === 'pausado_truco') {
-    actualizarJugador();
-    
-    if (juego.estado === 'jugando' && !jugador.enEscenaFinal) {
-      generarObstaculo();
-      moverObstaculos();
-      detectarColisiones();
-      actualizarDificultad();
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      if (juego.estado === 'jugando' || juego.estado === 'pausado_truco') {
+        actualizarJugador();
+        
+        if (juego.estado === 'jugando' && !jugador.enEscenaFinal) {
+          generarObstaculo();
+          moverObstaculos();
+          detectarColisiones();
+          actualizarDificultad();
+        }
+        
+        actualizarTextos();
+        actualizarIndicadorCarril();
+        
+        juego.tiempo++;
+      }
+      
+      if (juego.estado !== 'gameover') {
+        dibujarFondo();
+        if (!jugador.enEscenaFinal) {
+          dibujarObstaculos();
+          dibujarParticulasPakiRicoh();
+        }
+        dibujarJugador();
+        dibujarEfectoPantallaRoja(); // ← Efecto rojo PRIMERO
+        dibujarTextos();              // ← Textos ÚLTIMOS (encima)
+      }
+      
+      requestAnimationFrame(gameLoop);
     }
-    
-    actualizarTextos();
-    actualizarIndicadorCarril();
-    
-    juego.tiempo++;
-  }
-  
-  if (juego.estado !== 'gameover') {
-    dibujarFondo();
-    if (!jugador.enEscenaFinal) {
-      dibujarObstaculos();
-      dibujarParticulasPakiRicoh();
-    }
-    dibujarJugador();
-    dibujarEfectoPantallaRoja(); // ← MOVER ESTA LÍNEA ANTES
-    dibujarTextos();              // ← DE ESTA LÍNEA
-  }
-  
-  requestAnimationFrame(gameLoop);
-}
 
     // ==================== INICIAR ====================
     startBtn.addEventListener('click', () => {
@@ -1891,4 +1878,3 @@ function gameLoop() {
   </script>
 </body>
 </html>
-
