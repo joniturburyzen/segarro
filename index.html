@@ -82,7 +82,7 @@
       transform: translate(-50%, -50%);
       background: rgba(0, 0, 0, 0.92);
       color: #ff4d4d;
-      padding: 4vh 6vw; /* CAMBIO 3: Padding reducido */
+      padding: 4vh 6vw; /* Compacto para móvil */
       border-radius: 4vh;
       border: 4px solid #ff4d4d;
       text-align: center;
@@ -96,7 +96,7 @@
     }
 
     #game-over h2 {
-      font-size: 5vh; /* CAMBIO 3: Fuente reducida */
+      font-size: 5vh; /* Compacto para móvil */
       margin-bottom: 4vh;
       text-shadow: 0 0 15px rgba(255, 77, 77, 0.95);
       font-family: 'Courier New', monospace;
@@ -109,7 +109,7 @@
     }
 
     #game-over p {
-      font-size: 3.5vh; /* CAMBIO 3: Fuente reducida */
+      font-size: 3.5vh; /* Compacto para móvil */
       margin-bottom: 6vh;
       color: #ffd166;
       font-family: 'Courier New', monospace;
@@ -352,7 +352,8 @@
     const CARRILES = { IZQUIERDA: 0, CENTRO: 1, DERECHA: 2 };
     const POS_X_CARRIL_VIRTUAL = [200, 400, 600];
     const POS_Y_BASE_VIRTUAL = 350;
-    const CENTRO_X_VIRTUAL = 400; // ¡CENTRO DE PANTALLA PARA TEXTOS!
+    const CENTRO_X_VIRTUAL = 400;
+    const CENTRO_Y_VIRTUAL = 300; // ← NUEVO: Centro vertical para textos
 
     // ==================== AUDIO (MEJORADO Y SEGURO) ====================
     let audioContext;
@@ -448,12 +449,12 @@
       crearSonido(800, 'sine', 0.1, 0.3)();
       setTimeout(() => crearSonido(600, 'sine', 0.1, 0.25)(), 100);
     };
-    const sonidoCerdo = crearSonido(180, 'sawtooth', 0.3, 0.4); // Gruñido seguro
+    const sonidoCerdo = crearSonido(180, 'sawtooth', 0.3, 0.4);
 
     // ==================== GESTOS MÓVIL (MEJORADOS) ====================
     let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
     let ultimoToque = 0, primerToqueRapido = false;
-    const umbralSwipe = 35; // CAMBIO 1: Umbral reducido a 35px
+    const umbralSwipe = 50; // ← CORREGIDO: Volver a 50px
     const umbralTiempoDobleToque = 500;
 
     canvas.addEventListener('touchstart', (e) => {
@@ -463,11 +464,9 @@
       const tiempoDesdeUltimo = ahora - ultimoToque;
       
       if (tiempoDesdeUltimo < umbralTiempoDobleToque && !jugador.trucoEuro.usado) {
-        // Segundo toque: activar modo espera para "mantener"
         jugador.trucoEuro.esperandoMantener = true;
         jugador.trucoEuro.tiempoInicioMantener = ahora;
       } else {
-        // Primer toque: registrar posición
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         primerToqueRapido = false;
@@ -483,7 +482,6 @@
       touchEndX = e.changedTouches[0].clientX;
       touchEndY = e.changedTouches[0].clientY;
       
-      // Si estábamos esperando "mantener" para EURO
       if (jugador.trucoEuro.esperandoMantener) {
         const tiempoMantenido = Date.now() - jugador.trucoEuro.tiempoInicioMantener;
         if (tiempoMantenido > 500) {
@@ -494,12 +492,10 @@
         return;
       }
       
-      // Detectar swipe normal
       detectarSwipe();
       e.preventDefault();
     }, { passive: false });
 
-    // Bloquear scroll SOLO durante el juego
     canvas.addEventListener('touchmove', (e) => {
       if (juego.estado === 'jugando') e.preventDefault();
     }, { passive: false });
@@ -509,14 +505,12 @@
       const diffY = touchEndY - touchStartY;
       
       if (Math.abs(diffX) > Math.abs(diffY)) {
-        // HORIZONTAL
         if (diffX > umbralSwipe && jugador.carril < 2) {
           jugador.carril++;
         } else if (diffX < -umbralSwipe && jugador.carril > 0) {
           jugador.carril--;
         }
       } else {
-        // VERTICAL
         if (diffY < -umbralSwipe && jugador.enSuelo) {
           jugador.vy = -15;
           jugador.enSuelo = false;
@@ -541,7 +535,7 @@
       pantallaRoja: 0,
       record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
       choquesSinMorir: 0,
-      totalCigarrosReales: 0 // ¡CONTADOR ABSOLUTO PARA PAKI RICOH!
+      totalCigarrosReales: 0
     };
 
     recordDisplay.textContent = `RÉCORD: ${juego.record}`;
@@ -551,9 +545,9 @@
       carril: CARRILES.CENTRO,
       yVirtual: POS_Y_BASE_VIRTUAL,
       vy: 0,
-      anchoVirtual: 35, // Más ancho para mejor visual
-      altoVirtual: 65,  // Más alto
-      colorPiel: '#6d4c41', // Más realista
+      anchoVirtual: 35,
+      altoVirtual: 65,
+      colorPiel: '#6d4c41',
       colorRopa: '#2e7d32',
       colorZapatos: '#212121',
       saltando: false,
@@ -595,8 +589,8 @@
         this.xVirtual = xVirtual;
         this.yVirtual = yVirtual;
         this.color = color;
-        this.vida = opciones.gigante ? 80 : 50; // CAMBIO 2: Vida reducida (80→50 normal, 120→80 gigante)
-        this.velocidadY = -2.5;
+        this.vida = 70; // ← CORREGIDO: 70 frames (intermedio)
+        this.velocidadY = -2.5; // Mantener animación de subida
         this.opacidad = 1.0;
         this.escala = opciones.gigante ? 2.0 : 1.2;
         this.vibrar = opciones.vibrar || false;
@@ -620,13 +614,11 @@
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // Sombra gruesa
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 6 * this.escala;
         ctx.lineJoin = 'round';
         ctx.strokeText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
         
-        // Texto principal
         ctx.fillStyle = this.color;
         ctx.fillText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
         
@@ -642,7 +634,7 @@
         this.yVirtual = yVirtual;
         this.vx = (Math.random() - 0.5) * 0.8;
         this.vy = -0.8 - Math.random() * 0.5;
-        this.radio = 2 + Math.random() * 3; // Más grande
+        this.radio = 2 + Math.random() * 3;
         this.opacidad = 0.85;
         this.vida = 50 + Math.random() * 30;
       }
@@ -677,11 +669,10 @@
       jugador.vidas++;
       vidasDisplay.textContent = jugador.vidas;
       
-      // ¡TEXTO CENTRADO INMEDIATAMENTE!
       textosEmergentes.push(new TextoEmergente(
         "EURO", 
-        CENTRO_X_VIRTUAL, // ¡CENTRADO!
-        jugador.yVirtual - 70, 
+        CENTRO_X_VIRTUAL,
+        CENTRO_Y_VIRTUAL, // ← CORREGIDO: Centro de pantalla
         '#ffd700',
         { gigante: true, vibrar: true }
       ));
@@ -698,7 +689,6 @@
         const random = Math.random();
         
         if (random < 0.45) {
-          // Policía normal (45%)
           const carril = Math.floor(Math.random() * 3);
           obstaculos.push({
             xVirtual: POS_X_CARRIL_VIRTUAL[carril] - 28,
@@ -712,7 +702,6 @@
             colorGorra: '#1565c0'
           });
         } else if (random < 0.67) {
-          // Policía rápido (22%)
           const carril = Math.floor(Math.random() * 3);
           obstaculos.push({
             xVirtual: POS_X_CARRIL_VIRTUAL[carril] - 28,
@@ -726,7 +715,6 @@
             colorGorra: '#0a3a75'
           });
         } else if (random < 0.75) {
-          // Cerdo (8%)
           const carril = Math.floor(Math.random() * 3);
           cerdos.push({
             xVirtual: POS_X_CARRIL_VIRTUAL[carril] - 30,
@@ -737,7 +725,6 @@
             tipo: 'cerdo'
           });
         } else {
-          // Cigarro (25%)
           const carril = Math.floor(Math.random() * 3);
           cigarros.push({
             xVirtual: POS_X_CARRIL_VIRTUAL[carril] - 22,
@@ -788,8 +775,7 @@
           if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
                       obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
             if (Math.random() < 0.3) {
-              // ¡TEXTO CENTRADO INMEDIATAMENTE!
-              textosEmergentes.push(new TextoEmergente("RECISTA", CENTRO_X_VIRTUAL, jugador.yVirtual - 55, '#ff4d4d'));
+              textosEmergentes.push(new TextoEmergente("RECISTA", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ff4d4d'));
             }
           }
           continue;
@@ -802,13 +788,11 @@
             juego.choquesSinMorir++;
             
             if (juego.choquesSinMorir >= 3) {
-              // ¡TEXTO CENTRADO INMEDIATAMENTE!
-              textosEmergentes.push(new TextoEmergente("MI CARTERA¡", CENTRO_X_VIRTUAL, jugador.yVirtual - 65, '#ffd166', { gigante: true, vibrar: true }));
+              textosEmergentes.push(new TextoEmergente("MI CARTERA¡", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffd166', { gigante: true, vibrar: true }));
               juego.choquesSinMorir = 0;
             }
             
-            // ¡TEXTO CENTRADO INMEDIATAMENTE!
-            textosEmergentes.push(new TextoEmergente("RECISTA", CENTRO_X_VIRTUAL, jugador.yVirtual - 50, '#ff4d4d'));
+            textosEmergentes.push(new TextoEmergente("RECISTA", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ff4d4d'));
             juego.pantallaRoja = 30;
             
             if (jugador.vidas > 1) {
@@ -837,8 +821,7 @@
             jugador.vidas--;
             vidasDisplay.textContent = jugador.vidas;
             
-            // ¡TEXTO CENTRADO INMEDIATAMENTE!
-            textosEmergentes.push(new TextoEmergente("YALLAH", CENTRO_X_VIRTUAL, jugador.yVirtual - 55, '#ff4d4d', { gigante: true, vibrar: true }));
+            textosEmergentes.push(new TextoEmergente("YALLAH", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ff4d4d', { gigante: true, vibrar: true }));
             juego.pantallaRoja = 35;
             
             if (jugador.vidas <= 0) {
@@ -862,25 +845,21 @@
                     cigXVirtual, cigYVirtual, cig.anchoVirtual, cig.altoVirtual)) {
           sonidoSuspiro();
           
-          // ¡TEXTO CENTRADO INMEDIATAMENTE!
-          textosEmergentes.push(new TextoEmergente("SEGARRO", CENTRO_X_VIRTUAL, jugador.yVirtual - 45, '#ffd166'));
+          textosEmergentes.push(new TextoEmergente("SEGARRO", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffd166'));
           
           jugador.cigarros++;
-          juego.totalCigarrosReales++; // ¡CONTADOR ABSOLUTO!
+          juego.totalCigarrosReales++;
           cigarrosDisplay.textContent = jugador.cigarros;
           
-          // Cada 5 cigarros = +1 vida
           if (jugador.cigarros >= 5) {
             jugador.vidas++;
             jugador.cigarros = 0;
             cigarrosDisplay.textContent = jugador.cigarros;
             vidasDisplay.textContent = jugador.vidas;
             
-            // ¡TEXTO CENTRADO INMEDIATAMENTE!
-            textosEmergentes.push(new TextoEmergente("AMIGOO", CENTRO_X_VIRTUAL, jugador.yVirtual - 85, '#ffd700', { gigante: true, vibrar: true }));
+            textosEmergentes.push(new TextoEmergente("AMIGOO", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffd700', { gigante: true, vibrar: true }));
           }
           
-          // Cada 10 cigarros ABSOLUTOS = PAKI RICOH
           if (juego.totalCigarrosReales % 10 === 0 && juego.totalCigarrosReales > 0) {
             activarPakiRicoh();
           }
@@ -902,8 +881,7 @@
       jugador.pakiRicoh.direccion = 0;
       jugador.pakiRicoh.humoParticulas = [];
       
-      // ¡TEXTO CENTRADO INMEDIATAMENTE!
-      textosEmergentes.push(new TextoEmergente("¡PAKI RICOH!", CENTRO_X_VIRTUAL, jugador.yVirtual - 110, '#ffd700', { gigante: true, vibrar: true }));
+      textosEmergentes.push(new TextoEmergente("¡PAKI RICOH!", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffd700', { gigante: true, vibrar: true }));
       
       if (audioContext) {
         const osc = audioContext.createOscillator();
@@ -923,7 +901,6 @@
       
       jugador.pakiRicoh.contador++;
       
-      // Generar humo (máximo 50 partículas)
       if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.4) {
         jugador.pakiRicoh.humoParticulas.push(new ParticulaHumo(
           POS_X_CARRIL_VIRTUAL[jugador.carril] + (Math.random() - 0.5) * 25,
@@ -931,7 +908,6 @@
         ));
       }
       
-      // Actualizar partículas
       for (let i = jugador.pakiRicoh.humoParticulas.length - 1; i >= 0; i--) {
         jugador.pakiRicoh.humoParticulas[i].actualizar();
         if (jugador.pakiRicoh.humoParticulas[i].estaMuerta()) {
@@ -939,20 +915,17 @@
         }
       }
       
-      // Cambiar dirección
       if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.proximoCambio && jugador.pakiRicoh.cambiosRestantes > 0) {
         jugador.pakiRicoh.direccion = Math.random() > 0.5 ? 1 : -1;
         jugador.pakiRicoh.proximoCambio += 60 + Math.random() * 60;
         jugador.pakiRicoh.cambiosRestantes--;
       }
       
-      // Mover personaje
       if (jugador.pakiRicoh.direccion !== 0) {
         jugador.carril += jugador.pakiRicoh.direccion * 0.06;
         jugador.carril = Math.max(0, Math.min(2, jugador.carril));
       }
       
-      // Terminar
       if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.duracion) {
         terminarPakiRicoh();
       }
@@ -962,8 +935,7 @@
       jugador.pakiRicoh.activo = false;
       jugador.pakiRicoh.humoParticulas = [];
       
-      // ¡TEXTO CENTRADO INMEDIATAMENTE!
-      textosEmergentes.push(new TextoEmergente("..", CENTRO_X_VIRTUAL, jugador.yVirtual - 25, '#ffffff'));
+      textosEmergentes.push(new TextoEmergente("..", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffffff'));
       sonidoTos();
     }
 
@@ -998,7 +970,6 @@
       juego.score++;
       scoreDisplay.textContent = `SCORE: ${juego.score}`;
       
-      // Progresión mejorada
       juego.velocidad = 4.8;
       if (juego.score >= 1000) juego.velocidad += 0.6;
       if (juego.score >= 2000) juego.velocidad += 0.6;
@@ -1008,13 +979,11 @@
       if (juego.score >= 11000) juego.velocidad += 0.6;
       if (juego.score >= 15000) juego.velocidad += 0.6;
       
-      // Final secreto
       if (juego.score >= 30000 && juego.estado !== 'final') {
         escenaFinal();
         return;
       }
       
-      // Frecuencia obstáculos
       if (juego.score % 1200 === 0 && juego.frecuenciaObstaculos > 40) {
         juego.frecuenciaObstaculos -= 6;
       }
@@ -1032,7 +1001,6 @@
       jugador.enEscenaFinal = true;
       stopMusicaArabe();
       
-      // Música suave final
       if (audioContext) {
         const notas = [110, 130.81, 146.83];
         let indice = 0;
@@ -1055,7 +1023,6 @@
         tocar();
       }
       
-      // Amigos
       jugador.amigos = [];
       const posiciones = [
         { x: 300, y: 410, colorPiel: '#795548', colorRopa: '#d32f2f' },
@@ -1088,7 +1055,6 @@
       bestRecordDisplay.textContent = `MEJOR RÉCORD: ${juego.record}`;
       gameOverPanel.style.display = 'block';
       
-      // Sirenas suaves
       if (audioContext) {
         const osc1 = audioContext.createOscillator();
         const osc2 = audioContext.createOscillator();
@@ -1128,7 +1094,6 @@
       juego.contadorObstaculos = 0;
       juego.pantallaRoja = 0;
       juego.choquesSinMorir = 0;
-      // ¡NO resetear totalCigarrosReales! (para PAKI RICOH)
       
       jugador.carril = CARRILES.CENTRO;
       jugador.yVirtual = POS_Y_BASE_VIRTUAL;
@@ -1164,7 +1129,6 @@
       ctx.save();
       ctx.scale(scaleX, scaleY);
       
-      // Cielo con degradado suave
       const grad = ctx.createLinearGradient(0, 0, 0, 600);
       grad.addColorStop(0, '#0f0c29');
       grad.addColorStop(0.4, '#1a1a2e');
@@ -1173,7 +1137,6 @@
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 800, 600);
       
-      // Montañas con parallax
       ctx.fillStyle = '#2d3142';
       dibujarMontanas(0.3, 0, 250, 200, 350, 200, 400, 300, 600, 200, 800, 300);
       ctx.fillStyle = '#1e2736';
@@ -1181,7 +1144,6 @@
       ctx.fillStyle = '#141e2b';
       dibujarMontanas(0.9, 0, 400, 100, 300, 400, 100, 600, 300, 800, 400, 800, 600);
       
-      // Nubes suaves
       ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
       for (let i = 0; i < 5; i++) {
         const x = (juego.tiempo * 0.1 + i * 200) % 1000 - 100;
@@ -1193,7 +1155,6 @@
         ctx.fill();
       }
       
-      // Líneas de carril
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.lineWidth = 3;
       for (let i = 0; i < 4; i++) {
@@ -1203,7 +1164,6 @@
         ctx.stroke();
       }
       
-      // Línea central punteada
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
       ctx.setLineDash([20, 15]);
       ctx.beginPath();
@@ -1212,7 +1172,6 @@
       ctx.stroke();
       ctx.setLineDash([]);
       
-      // Efecto velocidad
       ctx.strokeStyle = 'rgba(255, 209, 102, 0.4)';
       ctx.lineWidth = 3;
       for (let i = 0; i < 20; i++) {
@@ -1236,7 +1195,6 @@
       ctx.lineTo(0, 600);
       ctx.fill();
       
-      // Detalles con sombra
       ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
       ctx.beginPath();
       ctx.moveTo(puntos[0], puntos[1]);
@@ -1253,31 +1211,26 @@
         ctx.save();
         ctx.scale(scaleX, scaleY);
         
-        // Mesa de madera con textura
         ctx.fillStyle = '#5d4037';
         ctx.fillRect(340, 415, 120, 20);
         ctx.fillStyle = '#3e2723';
         ctx.fillRect(345, 435, 10, 60);
         ctx.fillRect(445, 435, 10, 60);
-        // Mantel rojo
         ctx.fillStyle = '#d32f2f';
         ctx.fillRect(335, 410, 130, 15);
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.fillRect(340, 412, 120, 5);
         
-        // Silla detallada
         ctx.fillStyle = '#4e342e';
-        ctx.fillRect(380, 360, 40, 30); // Asiento
+        ctx.fillRect(380, 360, 40, 30);
         ctx.fillStyle = '#2e1b1b';
-        ctx.fillRect(385, 330, 8, 30); // Respaldo izq
-        ctx.fillRect(407, 330, 8, 30); // Respaldo der
-        ctx.fillRect(380, 390, 8, 60); // Pata izq
-        ctx.fillRect(412, 390, 8, 60); // Pata der
+        ctx.fillRect(385, 330, 8, 30);
+        ctx.fillRect(407, 330, 8, 30);
+        ctx.fillRect(380, 390, 8, 60);
+        ctx.fillRect(412, 390, 8, 60);
         
-        // Personaje sentado (detallado)
         const x = 400, y = 380;
         
-        // Cabeza con pelo
         ctx.fillStyle = '#4e342e';
         ctx.beginPath();
         ctx.arc(x, y - 45, 18, 0, Math.PI * 2);
@@ -1287,26 +1240,22 @@
         ctx.arc(x, y - 45, 16, 0, Math.PI * 2);
         ctx.fill();
         
-        // Ojos cerrados (relajado)
         ctx.fillStyle = '#2e1b1b';
         ctx.fillRect(x - 8, y - 48, 5, 2);
         ctx.fillRect(x + 3, y - 48, 5, 2);
         
-        // Sonrisa suave
         ctx.strokeStyle = '#2e1b1b';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(x, y - 40, 6, Math.PI, 2 * Math.PI);
         ctx.stroke();
         
-        // Gafas de sol (PAKI RICOH level)
         ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(x - 10, y - 47, 20, 6);
         ctx.fillStyle = '#ffd700';
         ctx.fillRect(x - 9, y - 46, 3, 4);
         ctx.fillRect(x + 6, y - 46, 3, 4);
         
-        // Cuerpo con camiseta detallada
         ctx.fillStyle = jugador.colorRopa;
         ctx.beginPath();
         ctx.moveTo(x - 15, y - 30);
@@ -1316,7 +1265,6 @@
         ctx.closePath();
         ctx.fill();
         
-        // Pliegues en camiseta
         ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
         ctx.beginPath();
         ctx.moveTo(x - 10, y - 25);
@@ -1326,10 +1274,8 @@
         ctx.closePath();
         ctx.fill();
         
-        // Brazo con cigarro
         ctx.fillStyle = jugador.colorPiel;
         ctx.fillRect(x + 15, y - 25, 25, 10);
-        // Cigarro detallado
         ctx.fillStyle = '#8d6e63';
         ctx.fillRect(x + 40, y - 28, 22, 6);
         ctx.fillStyle = '#9e9e9e';
@@ -1338,17 +1284,14 @@
         ctx.beginPath();
         ctx.arc(x + 62, y - 30, 4, 0, Math.PI * 2);
         ctx.fill();
-        // Brillo en brasa
         ctx.fillStyle = '#ffeb3b';
         ctx.beginPath();
         ctx.arc(x + 62, y - 31, 1.5, 0, Math.PI * 2);
         ctx.fill();
         
-        // Piernas cruzadas con detalle
         ctx.fillStyle = '#1a237e';
         ctx.fillRect(x - 10, y + 5, 12, 28);
         ctx.fillRect(x + 2, y + 12, 12, 22);
-        // Zapatos
         ctx.fillStyle = jugador.colorZapatos;
         ctx.fillRect(x - 12, y + 33, 16, 8);
         ctx.fillRect(x, y + 34, 16, 7);
@@ -1356,7 +1299,6 @@
         ctx.fillRect(x - 10, y + 38, 12, 3);
         ctx.fillRect(x + 2, y + 39, 12, 2);
         
-        // Humo animado del cigarro
         for (let i = 0; i < 4; i++) {
           const size = 6 + i * 2.5;
           const opacity = 0.85 - i * 0.2;
@@ -1371,21 +1313,17 @@
         }
         ctx.globalAlpha = 1.0;
         
-        // Amigos detallados alrededor
         jugador.amigos.forEach(amigo => {
-          // Cuerpo
           ctx.fillStyle = amigo.colorRopa;
           ctx.beginPath();
           ctx.arc(amigo.xVirtual, amigo.yVirtual - 15, 18, 0, Math.PI * 2);
           ctx.fill();
           
-          // Cabeza
           ctx.fillStyle = amigo.colorPiel;
           ctx.beginPath();
           ctx.arc(amigo.xVirtual, amigo.yVirtual - 35, 12, 0, Math.PI * 2);
           ctx.fill();
           
-          // Ojos y sonrisa
           ctx.fillStyle = '#2e1b1b';
           ctx.fillRect(amigo.xVirtual - 6, amigo.yVirtual - 38, 3, 2);
           ctx.fillRect(amigo.xVirtual + 3, amigo.yVirtual - 38, 3, 2);
@@ -1394,7 +1332,6 @@
           ctx.stroke();
         });
         
-        // Créditos subiendo
         const creditY = 680 - (juego.tiempo % 2000) * 0.65;
         ctx.font = 'bold 30px "Courier New", monospace';
         ctx.textAlign = 'center';
@@ -1406,7 +1343,6 @@
         ctx.strokeText("RESINA PEGAJOSA", 400, creditY + 50);
         ctx.fillText("RESINA PEGAJOSA", 400, creditY + 50);
         
-        // Texto superior
         ctx.font = 'bold 24px "Courier New", monospace';
         ctx.fillStyle = '#a5d6a7';
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
@@ -1418,27 +1354,21 @@
         return;
       }
       
-      // Jugador normal (detallado)
       ctx.save();
       ctx.scale(scaleX, scaleY);
       
       const xVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
       const yVirtual = jugador.yVirtual;
       
-      // Efecto invulnerabilidad
       if (jugador.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
         ctx.globalAlpha = 0.7;
       }
       
-      // Efecto PAKI RICOH (aura dorada intensa)
       if (jugador.pakiRicoh.activo) {
         ctx.shadowColor = '#ffd700';
         ctx.shadowBlur = 30 * dpr;
       }
       
-      // ==================== DIBUJAR PERSONAJE DETALLADO ====================
-      
-      // Cuerpo (camiseta con detalles)
       ctx.fillStyle = jugador.colorRopa;
       ctx.beginPath();
       ctx.moveTo(xVirtual + 5, yVirtual - jugador.altoVirtual);
@@ -1450,7 +1380,6 @@
       ctx.closePath();
       ctx.fill();
       
-      // Pliegues en camiseta
       ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
       ctx.beginPath();
       ctx.moveTo(xVirtual + 10, yVirtual - jugador.altoVirtual + 10);
@@ -1460,8 +1389,7 @@
       ctx.closePath();
       ctx.fill();
       
-      // Cabeza (redondeada con pelo)
-      ctx.fillStyle = '#4e342e'; // Pelo oscuro
+      ctx.fillStyle = '#4e342e';
       ctx.beginPath();
       ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 16, 0, Math.PI * 2);
       ctx.fill();
@@ -1471,7 +1399,6 @@
       ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 14, 0, Math.PI * 2);
       ctx.fill();
       
-      // Gafas de sol (si PAKI RICOH)
       if (jugador.pakiRicoh.activo) {
         ctx.fillStyle = '#1a1a1a';
         ctx.fillRect(xVirtual + 10, yVirtual - jugador.altoVirtual - 12, 15, 7);
@@ -1481,7 +1408,6 @@
         ctx.fillRect(xVirtual + 11, yVirtual - jugador.altoVirtual - 11, 2, 5);
         ctx.fillRect(xVirtual + 22, yVirtual - jugador.altoVirtual - 11, 2, 5);
       } else {
-        // Ojos expresivos
         ctx.fillStyle = 'white';
         ctx.beginPath();
         ctx.arc(xVirtual + 12, yVirtual - jugador.altoVirtual - 8, 4, 0, Math.PI * 2);
@@ -1494,7 +1420,6 @@
         ctx.arc(xVirtual + 23 + Math.sin(juego.tiempo / 10) * 0.5, yVirtual - jugador.altoVirtual - 8, 2, 0, Math.PI * 2);
         ctx.fill();
         
-        // Sonrisa
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -1502,25 +1427,20 @@
         ctx.stroke();
       }
       
-      // Brazos con animación mejorada
-      const offsetBrazos = Math.sin(juego.tiempo / 4) * 18; // Amplitud x2
+      const offsetBrazos = Math.sin(juego.tiempo / 4) * 18;
       ctx.fillStyle = jugador.colorPiel;
       
       if (jugador.agachado) {
-        // Brazos contraídos al agacharse
         ctx.fillRect(xVirtual - 10, yVirtual - 35, 10, 25);
         ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 35, 10, 25);
       } else if (jugador.saltando) {
-        // Brazos arriba al saltar
         ctx.fillRect(xVirtual - 12, yVirtual - jugador.altoVirtual - 15, 12, 30);
         ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - jugador.altoVirtual - 15, 12, 30);
       } else {
-        // Animación de carrera fluida
         ctx.fillRect(xVirtual - 12, yVirtual - 45 + offsetBrazos, 12, 30);
         ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 45 - offsetBrazos, 12, 30);
       }
       
-      // Piernas con articulación visible
       ctx.fillStyle = '#1a237e';
       const offsetPiernas = Math.sin(juego.tiempo / 4) * 12;
       
@@ -1528,15 +1448,12 @@
         ctx.fillRect(xVirtual + 8, yVirtual - 25, 10, 30);
         ctx.fillRect(xVirtual + 17, yVirtual - 25, 10, 30);
       } else {
-        // Muslos
         ctx.fillRect(xVirtual + 8, yVirtual - 20 + offsetPiernas, 8, 25);
         ctx.fillRect(xVirtual + 19, yVirtual - 20 - offsetPiernas, 8, 25);
-        // Pantorrillas
         ctx.fillRect(xVirtual + 9, yVirtual + 5 + offsetPiernas, 6, 22);
         ctx.fillRect(xVirtual + 20, yVirtual + 5 - offsetPiernas, 6, 22);
       }
       
-      // Zapatos detallados
       ctx.fillStyle = jugador.colorZapatos;
       ctx.fillRect(xVirtual + 7, yVirtual + 27, 10, 8);
       ctx.fillRect(xVirtual + 18, yVirtual + 27, 10, 8);
@@ -1555,7 +1472,6 @@
       const xVirtual = obs.xVirtual;
       const yVirtual = obs.yVirtual;
       
-      // Cuerpo con uniforme detallado
       ctx.fillStyle = obs.colorUniforme;
       ctx.beginPath();
       ctx.moveTo(xVirtual + 8, yVirtual - 70);
@@ -1565,7 +1481,6 @@
       ctx.closePath();
       ctx.fill();
       
-      // Botones en uniforme
       ctx.fillStyle = '#ffc107';
       for (let i = 0; i < 3; i++) {
         ctx.beginPath();
@@ -1573,9 +1488,8 @@
         ctx.fill();
       }
       
-      // Cabeza con gorra 3D
       ctx.fillStyle = obs.colorGorra;
-      ctx.fillRect(xVirtual + 12, yVirtual - 85, 31, 12); // Parte superior
+      ctx.fillRect(xVirtual + 12, yVirtual - 85, 31, 12);
       ctx.beginPath();
       ctx.moveTo(xVirtual + 10, yVirtual - 73);
       ctx.lineTo(xVirtual + 50, yVirtual - 73);
@@ -1587,12 +1501,10 @@
       ctx.fillStyle = '#f5f5f5';
       ctx.fillRect(xVirtual + 15, yVirtual - 75, 25, 15);
       
-      // Cara con expresión
       ctx.fillStyle = 'black';
-      ctx.fillRect(xVirtual + 20, yVirtual - 70, 3, 3); // Ojo izq
-      ctx.fillRect(xVirtual + 32, yVirtual - 70, 3, 3); // Ojo der
+      ctx.fillRect(xVirtual + 20, yVirtual - 70, 3, 3);
+      ctx.fillRect(xVirtual + 32, yVirtual - 70, 3, 3);
       
-      // Ceño fruncido
       ctx.beginPath();
       ctx.moveTo(xVirtual + 19, yVirtual - 67);
       ctx.lineTo(xVirtual + 23, yVirtual - 69);
@@ -1602,40 +1514,33 @@
       ctx.lineTo(xVirtual + 35, yVirtual - 69);
       ctx.stroke();
       
-      // Boca recta (seria)
       ctx.beginPath();
       ctx.moveTo(xVirtual + 22, yVirtual - 63);
       ctx.lineTo(xVirtual + 33, yVirtual - 63);
       ctx.stroke();
       
-      // Brazos
       ctx.fillStyle = '#f5f5f5';
       ctx.fillRect(xVirtual - 5, yVirtual - 60, 10, 35);
       ctx.fillRect(xVirtual + 50, yVirtual - 60, 10, 35);
       
-      // Porra con mango
       ctx.fillStyle = '#5d4037';
       ctx.fillRect(xVirtual - 10, yVirtual - 40, 8, 25);
       ctx.fillStyle = '#424242';
       ctx.fillRect(xVirtual - 12, yVirtual - 45, 12, 5);
       
-      // Piernas
       ctx.fillStyle = '#0d47a1';
       ctx.fillRect(xVirtual + 15, yVirtual - 10, 10, 30);
       ctx.fillRect(xVirtual + 30, yVirtual - 10, 10, 30);
       
-      // Zapatos
       ctx.fillStyle = '#212121';
       ctx.fillRect(xVirtual + 13, yVirtual + 20, 14, 8);
       ctx.fillRect(xVirtual + 28, yVirtual + 20, 14, 8);
       
-      // Insignia en hombro
       ctx.fillStyle = '#ffc107';
       ctx.beginPath();
       ctx.arc(xVirtual + 45, yVirtual - 60, 3, 0, Math.PI * 2);
       ctx.fill();
       
-      // Etiqueta de tipo
       if (obs.velocidadExtra > 0) {
         ctx.fillStyle = '#ff4d4d';
         ctx.font = 'bold 13px Courier New';
@@ -1653,38 +1558,32 @@
       const xVirtual = cerdo.xVirtual;
       const yVirtual = cerdo.yVirtual;
       
-      // Cuerpo redondeado (rosa)
       ctx.fillStyle = '#ff80ab';
       ctx.beginPath();
       ctx.ellipse(xVirtual + 30, yVirtual - 25, 32, 25, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      // Sombra en cuerpo
       ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
       ctx.beginPath();
       ctx.ellipse(xVirtual + 30, yVirtual - 15, 28, 15, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      // Cabeza grande
       ctx.fillStyle = '#ff80ab';
       ctx.beginPath();
       ctx.arc(xVirtual + 30, yVirtual - 45, 20, 0, Math.PI * 2);
       ctx.fill();
       
-      // Hocico grande y expresivo
       ctx.fillStyle = '#e91e63';
       ctx.beginPath();
       ctx.arc(xVirtual + 30, yVirtual - 40, 12, 0, Math.PI * 2);
       ctx.fill();
       
-      // Nariz con orificios
       ctx.fillStyle = 'black';
       ctx.beginPath();
       ctx.arc(xVirtual + 26, yVirtual - 42, 2.5, 0, Math.PI * 2);
       ctx.arc(xVirtual + 34, yVirtual - 42, 2.5, 0, Math.PI * 2);
       ctx.fill();
       
-      // Ojos pequeños y divertidos
       ctx.fillStyle = 'white';
       ctx.beginPath();
       ctx.arc(xVirtual + 23, yVirtual - 48, 4, 0, Math.PI * 2);
@@ -1697,7 +1596,6 @@
       ctx.arc(xVirtual + 36, yVirtual - 48, 2, 0, Math.PI * 2);
       ctx.fill();
       
-      // Cejas expresivas
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -1709,7 +1607,6 @@
       ctx.lineTo(xVirtual + 40, yVirtual - 52);
       ctx.stroke();
       
-      // Orejas caídas con detalle
       ctx.fillStyle = '#ff80ab';
       ctx.beginPath();
       ctx.arc(xVirtual + 18, yVirtual - 55, 9, 0.3 * Math.PI, 1.7 * Math.PI);
@@ -1718,7 +1615,6 @@
       ctx.arc(xVirtual + 42, yVirtual - 55, 9, 0.3 * Math.PI, 1.7 * Math.PI);
       ctx.fill();
       
-      // Interior de orejas
       ctx.fillStyle = '#ff4d4d';
       ctx.beginPath();
       ctx.arc(xVirtual + 18, yVirtual - 55, 5, 0.3 * Math.PI, 1.7 * Math.PI);
@@ -1727,17 +1623,14 @@
       ctx.arc(xVirtual + 42, yVirtual - 55, 5, 0.3 * Math.PI, 1.7 * Math.PI);
       ctx.fill();
       
-      // Patas gruesas
       ctx.fillStyle = '#e91e63';
       ctx.fillRect(xVirtual + 15, yVirtual - 5, 12, 18);
       ctx.fillRect(xVirtual + 33, yVirtual - 5, 12, 18);
       
-      // Pezuñas
       ctx.fillStyle = '#880e4f';
       ctx.fillRect(xVirtual + 17, yVirtual + 10, 8, 5);
       ctx.fillRect(xVirtual + 35, yVirtual + 10, 8, 5);
       
-      // Cola en espiral detallada
       ctx.strokeStyle = '#e91e63';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -1759,11 +1652,9 @@
       const xVirtual = cig.xVirtual;
       const yVirtual = cig.yVirtual;
       
-      // Cuerpo del cigarro con textura
       ctx.fillStyle = '#8d6e63';
       ctx.fillRect(xVirtual + 8, yVirtual - 25, 28, 18);
       
-      // Líneas de tabaco
       ctx.strokeStyle = 'rgba(100, 80, 70, 0.5)';
       ctx.lineWidth = 1;
       for (let i = 0; i < 4; i++) {
@@ -1773,32 +1664,27 @@
         ctx.stroke();
       }
       
-      // Ceniza gris con textura
       ctx.fillStyle = '#9e9e9e';
       ctx.beginPath();
       ctx.arc(xVirtual + 15, yVirtual - 30, 6, 0, Math.PI * 2);
       ctx.fill();
       
-      // Detalle ceniza
       ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
       ctx.beginPath();
       ctx.arc(xVirtual + 14, yVirtual - 31, 2, 0, Math.PI * 2);
       ctx.fill();
       
-      // Brasa naranja parpadeante
       const brillo = 0.7 + Math.sin(cig.tiempoBrasa * 0.3) * 0.3;
       ctx.fillStyle = `rgba(255, 152, 0, ${brillo})`;
       ctx.beginPath();
       ctx.arc(xVirtual + 38, yVirtual - 30, 5, 0, Math.PI * 2);
       ctx.fill();
       
-      // Brillo en brasa
       ctx.fillStyle = `rgba(255, 235, 59, ${brillo * 0.8})`;
       ctx.beginPath();
       ctx.arc(xVirtual + 39, yVirtual - 31, 2, 0, Math.PI * 2);
       ctx.fill();
       
-      // Humo sutil al moverse
       if (Math.random() > 0.7 && !jugador.pakiRicoh.activo) {
         ctx.globalAlpha = 0.3;
         ctx.fillStyle = 'rgba(220, 220, 220, 0.6)';
@@ -1850,7 +1736,6 @@
       ];
       carrilIndicator.style.left = `${posicionesX[jugador.carril]}px`;
       
-      // Efecto de pulso al cambiar de carril
       if (jugador.carrilCambiado) {
         carrilIndicator.style.width = '7vw';
         setTimeout(() => {
@@ -1880,7 +1765,6 @@
         juego.tiempo++;
       }
       
-      // Renderizar
       if (juego.estado !== 'gameover') {
         dibujarFondo();
         if (!jugador.enEscenaFinal) {
@@ -1904,11 +1788,9 @@
     
     restartBtn.addEventListener('click', reiniciarJuego);
     
-    // Permitir scroll en menú
     titleScreen.addEventListener('touchmove', (e) => {}, { passive: true });
     
     gameLoop();
   </script>
 </body>
 </html>
-
