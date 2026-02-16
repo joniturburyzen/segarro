@@ -304,24 +304,33 @@
     const ctx = canvas.getContext('2d');
     
     const dpr = window.devicePixelRatio || 1;
+    
     function resizeCanvas() {
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = `${window.innerWidth}px`;
-      canvas.style.height = `${window.innerHeight}px`;
+      // Usar tamaño CSS × DPR para alta resolución
+      canvas.width = canvas.clientWidth * dpr;
+      canvas.height = canvas.clientHeight * dpr;
       ctx.scale(dpr, dpr);
     }
     
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    const scaleX = canvas.width / (800 * dpr);
-    const scaleY = canvas.height / (600 * dpr);
-    
-    function virtualX(x) { return x * scaleX * dpr; }
-    function virtualY(y) { return y * scaleY * dpr; }
-    function virtualW(w) { return w * scaleX * dpr; }
-    function virtualH(h) { return h * scaleY * dpr; }
+    // NUEVAS funciones de conversión - coordenadas CSS
+    function virtualX(x) {
+      return (x / 800) * canvas.clientWidth;
+    }
+
+    function virtualY(y) {
+      return (y / 600) * canvas.clientHeight;
+    }
+
+    function virtualW(w) {
+      return (w / 800) * canvas.clientWidth;
+    }
+
+    function virtualH(h) {
+      return (h / 600) * canvas.clientHeight;
+    }
 
     // ==================== ELEMENTOS DEL DOM ====================
     const scoreDisplay = document.getElementById('score-display');
@@ -1211,7 +1220,7 @@
     // ==================== RENDERIZADO ====================
     function dibujarFondo() {
       ctx.save();
-      ctx.scale(scaleX, scaleY);
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
       
       const grad = ctx.createLinearGradient(0, 0, 0, 600);
       grad.addColorStop(0, '#0f0c29');
@@ -1293,7 +1302,7 @@
     function dibujarJugador() {
       if (jugador.enEscenaFinal) {
         ctx.save();
-        ctx.scale(scaleX, scaleY);
+        ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
         
         ctx.fillStyle = '#5d4037';
         ctx.fillRect(340, 415, 120, 20);
@@ -1439,7 +1448,7 @@
       }
       
       ctx.save();
-      ctx.scale(scaleX, scaleY);
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
       
       const xVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
       const yVirtual = jugador.yVirtual;
@@ -1551,7 +1560,7 @@
 
     function dibujarPolicia(obs) {
       ctx.save();
-      ctx.scale(scaleX, scaleY);
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
       
       const xVirtual = obs.xVirtual;
       const yVirtual = obs.yVirtual;
@@ -1637,7 +1646,7 @@
 
     function dibujarCerdo(cerdo) {
       ctx.save();
-      ctx.scale(scaleX, scaleY);
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
       
       const xVirtual = cerdo.xVirtual;
       const yVirtual = cerdo.yVirtual;
@@ -1731,7 +1740,7 @@
 
     function dibujarCigarro(cig) {
       ctx.save();
-      ctx.scale(scaleX, scaleY);
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
       
       const xVirtual = cig.xVirtual;
       const yVirtual = cig.yVirtual;
@@ -1790,7 +1799,7 @@
     function dibujarParticulasPakiRicoh() {
       if (jugador.pakiRicoh.activo) {
         ctx.save();
-        ctx.scale(scaleX, scaleY);
+        ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
         jugador.pakiRicoh.humoParticulas.forEach(p => p.dibujar(ctx));
         ctx.restore();
       }
