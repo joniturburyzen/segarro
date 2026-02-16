@@ -358,54 +358,54 @@
     const tiempoMaximoSwipe = 400;
 
     // ==================== CLASES (TEXTOS INSTANTÁNEOS) ====================
-class TextoEmergente {
-  constructor(texto, x, y, color = '#ffd166', opciones = {}) {
-    this.texto = texto;
-    this.x = x;
-    this.y = y;
-    this.color = color;
-    this.vida = opciones.gigante ? 100 : 70;
-    this.velocidadY = -2;
-    this.opacidad = 1.0;
-    this.escala = opciones.gigante ? 1.8 : 1.0;
-    this.vibrar = opciones.vibrar || false;
-    this.tiempo = 0;
-  }
-  
-  actualizar() {
-    this.y += this.velocidadY;
-    this.vida--;
-    this.tiempo++;
-  }
-  
-  dibujar(ctx) {
-    ctx.save();
-    ctx.globalAlpha = this.opacidad;
+    class TextoEmergente {
+      constructor(texto, x, y, color = '#ffd166', opciones = {}) {
+        this.texto = texto;
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        this.vida = opciones.gigante ? 100 : 70;
+        this.velocidadY = -2;
+        this.opacidad = 1.0;
+        this.escala = opciones.gigante ? 1.8 : 1.0;
+        this.vibrar = opciones.vibrar || false;
+        this.tiempo = 0;
+      }
+      
+      actualizar() {
+        this.y += this.velocidadY;
+        this.vida--;
+        this.tiempo++;
+      }
+      
+      dibujar(ctx) {
+        ctx.save();
+        ctx.globalAlpha = this.opacidad;
 
-    let offsetX = this.x;
-    if (this.vibrar) {
-      offsetX += Math.sin(this.tiempo * 15) * 1.5;
+        let offsetX = this.x;
+        if (this.vibrar) {
+          offsetX += Math.sin(this.tiempo * 15) * 1.5;
+        }
+        
+        ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 4 * this.escala;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(this.texto, offsetX, this.y);
+        
+        ctx.fillStyle = this.color;
+        ctx.fillText(this.texto, offsetX, this.y);
+        
+        ctx.restore();
+      }
+      
+      estaMuerto() {
+        return this.vida <= 0;
+      }
     }
-    
-    ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    ctx.strokeStyle = 'black';
-    ctx.lineWidth = 4 * this.escala;
-    ctx.lineJoin = 'round';
-    ctx.strokeText(this.texto, offsetX, this.y);
-    
-    ctx.fillStyle = this.color;
-    ctx.fillText(this.texto, offsetX, this.y);
-    
-    ctx.restore();
-  }
-  
-  estaMuerto() {
-    return this.vida <= 0;
-  }
-}
 
     class ParticulaHumo {
       constructor(x, y) {
@@ -704,7 +704,7 @@ class TextoEmergente {
       jugador.vidas++;
       vidasDisplay.textContent = jugador.vidas;
       
-      // TEXTO EN CENTRO
+      // TEXTO EN CENTRO - coordenadas reales del canvas
       textosEmergentes.push(new TextoEmergente(
         "EURO", 
         canvas.width / 2,
@@ -797,159 +797,152 @@ class TextoEmergente {
       }
     }
 
-function detectarColisiones() {
-  const jugadorXVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
-  const jugadorYVirtual = jugador.yVirtual - jugador.altoVirtual / 2;
-  
-  // PRUEBA: Crear un texto en el CENTRO de la pantalla cada frame
-  if (juego.tiempo % 60 === 0) {
-    textosEmergentes.push(new TextoEmergente(
-      "PRUEBA",
-      canvas.width / 2,      // X: centro del canvas
-      canvas.height / 2,     // Y: centro del canvas
-      '#00ff00',
-      { gigante: true, vibrar: true }
-    ));
-  }
-  
-  // Policías
-  for (let i = obstaculos.length - 1; i >= 0; i--) {
-    const obs = obstaculos[i];
-    const obsXVirtual = obs.xVirtual;
-    const obsYVirtual = obs.yVirtual - obs.altoVirtual / 2;
-    
-    if (jugador.pakiRicoh.activo) {
-      if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                  obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
-        if (Math.random() < 0.3) {
+    function detectarColisiones() {
+      const jugadorXVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
+      const jugadorYVirtual = jugador.yVirtual - jugador.altoVirtual / 2;
+      
+      // Policías
+      for (let i = obstaculos.length - 1; i >= 0; i--) {
+        const obs = obstaculos[i];
+        const obsXVirtual = obs.xVirtual;
+        const obsYVirtual = obs.yVirtual - obs.altoVirtual / 2;
+        
+        if (jugador.pakiRicoh.activo) {
+          if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                      obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
+            if (Math.random() < 0.3) {
+              // Texto arriba del policía - coordenadas reales
+              textosEmergentes.push(new TextoEmergente(
+                "RECISTA", 
+                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
+                virtualY(obs.yVirtual - 60),
+                '#ff4d4d'
+              ));
+            }
+          }
+          continue;
+        }
+        
+        if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                    obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
+          if (!jugador.invulnerable) {
+            sonidoChoque();
+            juego.choquesSinMorir++;
+            
+            if (juego.choquesSinMorir >= 3) {
+              // Texto arriba del policía - coordenadas reales
+              textosEmergentes.push(new TextoEmergente(
+                "MI CARTERA¡", 
+                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
+                virtualY(obs.yVirtual - 70),
+                '#ffd166', 
+                { gigante: true, vibrar: true }
+              ));
+              juego.choquesSinMorir = 0;
+            }
+            
+            // Texto arriba del policía - coordenadas reales
+            textosEmergentes.push(new TextoEmergente(
+              "RECISTA", 
+              virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
+              virtualY(obs.yVirtual - 60),
+              '#ff4d4d'
+            ));
+            juego.pantallaRoja = 30;
+            
+            if (jugador.vidas > 1) {
+              jugador.vidas--;
+              vidasDisplay.textContent = jugador.vidas;
+              jugador.invulnerable = true;
+              jugador.tiempoInvulnerable = 90;
+            } else {
+              gameOver();
+            }
+          }
+          obstaculos.splice(i, 1);
+        }
+      }
+      
+      // Cerdos
+      for (let i = cerdos.length - 1; i >= 0; i--) {
+        const cerdo = cerdos[i];
+        const cerdoXVirtual = cerdo.xVirtual;
+        const cerdoYVirtual = cerdo.yVirtual - cerdo.altoVirtual / 2;
+        
+        if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                    cerdoXVirtual, cerdoYVirtual, cerdo.anchoVirtual, cerdo.altoVirtual)) {
+          if (!jugador.invulnerable) {
+            sonidoCerdo();
+            jugador.vidas--;
+            vidasDisplay.textContent = jugador.vidas;
+            
+            // Texto arriba del cerdo - coordenadas reales
+            textosEmergentes.push(new TextoEmergente(
+              "YALLAH", 
+              virtualX(POS_X_CARRIL_VIRTUAL[cerdo.carril]),
+              virtualY(cerdo.yVirtual - 65),
+              '#ff4d4d', 
+              { gigante: true, vibrar: true }
+            ));
+            juego.pantallaRoja = 35;
+            
+            if (jugador.vidas <= 0) {
+              gameOver();
+            } else {
+              jugador.invulnerable = true;
+              jugador.tiempoInvulnerable = 90;
+            }
+          }
+          cerdos.splice(i, 1);
+        }
+      }
+      
+      // Cigarros
+      for (let i = cigarros.length - 1; i >= 0; i--) {
+        const cig = cigarros[i];
+        const cigXVirtual = cig.xVirtual;
+        const cigYVirtual = cig.yVirtual - cig.altoVirtual / 2;
+        
+        if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                    cigXVirtual, cigYVirtual, cig.anchoVirtual, cig.altoVirtual)) {
+          sonidoSuspiro();
+          
+          // Texto arriba del cigarro - coordenadas reales
           textosEmergentes.push(new TextoEmergente(
-            "RECISTA", 
-            canvas.width / 2,
-            canvas.height / 2,
-            '#ff4d4d'
+            "SEGARRO", 
+            virtualX(POS_X_CARRIL_VIRTUAL[cig.carril]),
+            virtualY(cig.yVirtual - 55),
+            '#ffd166'
           ));
+          
+          jugador.cigarros++;
+          juego.totalCigarrosReales++;
+          cigarrosDisplay.textContent = jugador.cigarros;
+          
+          if (jugador.cigarros >= 5) {
+            jugador.vidas++;
+            jugador.cigarros = 0;
+            cigarrosDisplay.textContent = jugador.cigarros;
+            vidasDisplay.textContent = jugador.vidas;
+            
+            // Texto arriba del jugador - coordenadas reales
+            textosEmergentes.push(new TextoEmergente(
+              "AMIGOO", 
+              virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
+              virtualY(jugador.yVirtual - 60),
+              '#ffd700', 
+              { gigante: true, vibrar: true }
+            ));
+          }
+          
+          if (juego.totalCigarrosReales % 10 === 0 && juego.totalCigarrosReales > 0) {
+            activarPakiRicoh();
+          }
+          
+          cigarros.splice(i, 1);
         }
       }
-      continue;
     }
-    
-    if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
-      if (!jugador.invulnerable) {
-        sonidoChoque();
-        juego.choquesSinMorir++;
-        
-        if (juego.choquesSinMorir >= 3) {
-          textosEmergentes.push(new TextoEmergente(
-            "MI CARTERA¡", 
-            canvas.width / 2,
-            canvas.height / 2,
-            '#ffd166', 
-            { gigante: true, vibrar: true }
-          ));
-          juego.choquesSinMorir = 0;
-        }
-        
-        textosEmergentes.push(new TextoEmergente(
-          "RECISTA", 
-          canvas.width / 2,
-          canvas.height / 2,
-          '#ff4d4d'
-        ));
-        // juego.pantallaRoja = 30;
-        
-        if (jugador.vidas > 1) {
-          jugador.vidas--;
-          vidasDisplay.textContent = jugador.vidas;
-          jugador.invulnerable = true;
-          jugador.tiempoInvulnerable = 90;
-        } else {
-          gameOver();
-        }
-      }
-      obstaculos.splice(i, 1);
-    }
-  }
-  
-  // Cerdos
-  for (let i = cerdos.length - 1; i >= 0; i--) {
-    const cerdo = cerdos[i];
-    const cerdoXVirtual = cerdo.xVirtual;
-    const cerdoYVirtual = cerdo.yVirtual - cerdo.altoVirtual / 2;
-    
-    if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                cerdoXVirtual, cerdoYVirtual, cerdo.anchoVirtual, cerdo.altoVirtual)) {
-      if (!jugador.invulnerable) {
-        sonidoCerdo();
-        jugador.vidas--;
-        vidasDisplay.textContent = jugador.vidas;
-        
-        textosEmergentes.push(new TextoEmergente(
-          "YALLAH", 
-          canvas.width / 2,
-          canvas.height / 2,
-          '#ff4d4d', 
-          { gigante: true, vibrar: true }
-        ));
-        // juego.pantallaRoja = 35;
-        
-        if (jugador.vidas <= 0) {
-          gameOver();
-        } else {
-          jugador.invulnerable = true;
-          jugador.tiempoInvulnerable = 90;
-        }
-      }
-      cerdos.splice(i, 1);
-    }
-  }
-  
-  // Cigarros - AQUÍ DEBE APARECER "SEGARRO"
-  for (let i = cigarros.length - 1; i >= 0; i--) {
-    const cig = cigarros[i];
-    const cigXVirtual = cig.xVirtual;
-    const cigYVirtual = cig.yVirtual - cig.altoVirtual / 2;
-    
-    if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                cigXVirtual, cigYVirtual, cig.anchoVirtual, cig.altoVirtual)) {
-      sonidoSuspiro();
-      
-      // TEXTO EN CENTRO - DEBE VERSE
-     // Ejemplo para "SEGARRO" (cambiar todos los textos igual):
-textosEmergentes.push(new TextoEmergente(
-  "SEGARRO", 
-  canvas.width / 2,              // X: centro REAL del canvas
-  canvas.height / 2,             // Y: centro REAL del canvas
-  '#ffd166'
-));
-      
-      jugador.cigarros++;
-      juego.totalCigarrosReales++;
-      cigarrosDisplay.textContent = jugador.cigarros;
-      
-      if (jugador.cigarros >= 5) {
-        jugador.vidas++;
-        jugador.cigarros = 0;
-        cigarrosDisplay.textContent = jugador.cigarros;
-        vidasDisplay.textContent = jugador.vidas;
-        
-        textosEmergentes.push(new TextoEmergente(
-          "AMIGOO", 
-          canvas.width / 2,
-          canvas.height / 2,
-          '#ffd700', 
-          { gigante: true, vibrar: true }
-        ));
-      }
-      
-      if (juego.totalCigarrosReales % 10 === 0 && juego.totalCigarrosReales > 0) {
-        activarPakiRicoh();
-      }
-      
-      cigarros.splice(i, 1);
-    }
-  }
-}
 
     function colision(x1, y1, w1, h1, x2, y2, w2, h2) {
       return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
@@ -963,7 +956,7 @@ textosEmergentes.push(new TextoEmergente(
       jugador.pakiRicoh.direccion = 0;
       jugador.pakiRicoh.humoParticulas = [];
       
-      // TEXTO EN CENTRO
+      // TEXTO EN CENTRO - coordenadas reales del canvas
       textosEmergentes.push(new TextoEmergente("¡PAKI RICOH!", canvas.width / 2, canvas.height / 2, '#ffd700', { gigante: true, vibrar: true }));
       
       if (audioContext) {
@@ -1018,7 +1011,7 @@ textosEmergentes.push(new TextoEmergente(
       jugador.pakiRicoh.activo = false;
       jugador.pakiRicoh.humoParticulas = [];
       
-      // Texto arriba del jugador
+      // Texto arriba del jugador - coordenadas reales
       textosEmergentes.push(new TextoEmergente(
         "..", 
         virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
@@ -1394,7 +1387,7 @@ textosEmergentes.push(new TextoEmergente(
           const size = 6 + i * 2.5;
           const opacity = 0.85 - i * 0.2;
           const yOffset = -45 - i * 18 + Math.sin(juego.tiempo * 0.07 + i) * 3;
-          const xOffset = 25 + Math.sin(juego.tiempo * 0.1 + i * 2) * 2;
+          const offsetX = 25 + Math.sin(juego.tiempo * 0.1 + i * 2) * 2;
           
           ctx.globalAlpha = opacity;
           ctx.fillStyle = `rgba(230, 230, 230, ${opacity})`;
@@ -1802,20 +1795,13 @@ textosEmergentes.push(new TextoEmergente(
         ctx.restore();
       }
     }
-    
-   function dibujarTextos() {
-  // PRUEBA DE EMERGENCIA: Dibujar un texto fijo en pantalla
-  ctx.save();
-  ctx.font = 'bold 40px Courier New';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillStyle = 'white';
-  ctx.fillText("¿ME VES?", canvas.width / 2, canvas.height / 2);
-  ctx.restore();
-  
-  // Dibujar textos normales
-  textosEmergentes.forEach(t => t.dibujar(ctx));
-}
+
+    // ==================== ¡¡¡FUNCIÓN CLAVE!!! ====================
+    // DIBUJAR TEXTOS SIN ESCALADO ADICIONAL
+    // Los textos usan coordenadas reales del canvas (gracias a virtualX/virtualY)
+    function dibujarTextos() {
+      textosEmergentes.forEach(t => t.dibujar(ctx));
+    }
 
     function dibujarEfectoPantallaRoja() {
       if (juego.pantallaRoja > 0) {
@@ -1870,8 +1856,8 @@ textosEmergentes.push(new TextoEmergente(
           dibujarParticulasPakiRicoh();
         }
         dibujarJugador();
-        dibujarEfectoPantallaRoja(); // ← Efecto rojo PRIMERO
-        dibujarTextos();              // ← Textos ÚLTIMOS (encima)
+        dibujarTextos();              // ← Textos ANTES del efecto rojo
+        dibujarEfectoPantallaRoja();  // ← Efecto rojo DESPUÉS
       }
       
       requestAnimationFrame(gameLoop);
