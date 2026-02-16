@@ -82,7 +82,7 @@
       transform: translate(-50%, -50%);
       background: rgba(0, 0, 0, 0.92);
       color: #ff4d4d;
-      padding: 4vh 6vw; /* Compacto para móvil */
+      padding: 4vh 6vw;
       border-radius: 4vh;
       border: 4px solid #ff4d4d;
       text-align: center;
@@ -96,7 +96,7 @@
     }
 
     #game-over h2 {
-      font-size: 5vh; /* Compacto para móvil */
+      font-size: 5vh;
       margin-bottom: 4vh;
       text-shadow: 0 0 15px rgba(255, 77, 77, 0.95);
       font-family: 'Courier New', monospace;
@@ -109,7 +109,7 @@
     }
 
     #game-over p {
-      font-size: 3.5vh; /* Compacto para móvil */
+      font-size: 3.5vh;
       margin-bottom: 6vh;
       color: #ffd166;
       font-family: 'Courier New', monospace;
@@ -303,7 +303,6 @@
     const canvas = document.getElementById('game-canvas');
     const ctx = canvas.getContext('2d');
     
-    // Alta resolución para móviles Retina/AMOLED
     const dpr = window.devicePixelRatio || 1;
     function resizeCanvas() {
       canvas.width = window.innerWidth * dpr;
@@ -316,7 +315,6 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // Sistema de coordenadas virtual (800x600)
     const scaleX = canvas.width / (800 * dpr);
     const scaleY = canvas.height / (600 * dpr);
     
@@ -340,7 +338,6 @@
     const carrilIndicator = document.getElementById('carril-indicator');
     const instructions = document.getElementById('instructions');
 
-    // Detectar móvil
     const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                     ('ontouchstart' in window || navigator.maxTouchPoints > 0);
     
@@ -353,9 +350,9 @@
     const POS_X_CARRIL_VIRTUAL = [200, 400, 600];
     const POS_Y_BASE_VIRTUAL = 350;
     const CENTRO_X_VIRTUAL = 400;
-    const CENTRO_Y_VIRTUAL = 300; // ← NUEVO: Centro vertical para textos
+    const CENTRO_Y_VIRTUAL = 300;
 
-    // ==================== AUDIO (MEJORADO Y SEGURO) ====================
+    // ==================== AUDIO ====================
     let audioContext;
     let audioHabilitado = false;
     let musicaPlaying = false;
@@ -409,7 +406,6 @@
 
     function stopMusicaArabe() { musicaPlaying = false; }
 
-    // Sonidos mejorados y seguros
     function crearSonido(frecuencia, tipo, duracion, volumen = 0.3) {
       return () => {
         if (!audioContext) return;
@@ -451,16 +447,20 @@
     };
     const sonidoCerdo = crearSonido(180, 'sawtooth', 0.3, 0.4);
 
-    // ==================== GESTOS MÓVIL (MEJORADOS) ====================
+    // ==================== GESTOS MÓVIL (CORREGIDO) ====================
     let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
-    let ultimoToque = 0, primerToqueRapido = false;
-    const umbralSwipe = 50; // ← CORREGIDO: Volver a 50px
+    let touchStartTime = 0; // NUEVO: tiempo de inicio del toque
+    let ultimoToque = 0;
+    const umbralSwipe = 25; // CORREGIDO: 25px para máxima sensibilidad
     const umbralTiempoDobleToque = 500;
+    const tiempoMaximoSwipe = 300; // NUEVO: máximo 300ms para swipe válido
 
     canvas.addEventListener('touchstart', (e) => {
       if (juego.estado !== 'jugando') return;
       
       const ahora = Date.now();
+      touchStartTime = ahora; // NUEVO: registrar tiempo de inicio
+      
       const tiempoDesdeUltimo = ahora - ultimoToque;
       
       if (tiempoDesdeUltimo < umbralTiempoDobleToque && !jugador.trucoEuro.usado) {
@@ -469,7 +469,6 @@
       } else {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
-        primerToqueRapido = false;
       }
       
       ultimoToque = ahora;
@@ -479,11 +478,15 @@
     canvas.addEventListener('touchend', (e) => {
       if (juego.estado !== 'jugando') return;
       
+      const ahora = Date.now();
+      const duracionToque = ahora - touchStartTime; // NUEVO: calcular duración
+      
       touchEndX = e.changedTouches[0].clientX;
       touchEndY = e.changedTouches[0].clientY;
       
+      // Manejar doble toque para EURO
       if (jugador.trucoEuro.esperandoMantener) {
-        const tiempoMantenido = Date.now() - jugador.trucoEuro.tiempoInicioMantener;
+        const tiempoMantenido = ahora - jugador.trucoEuro.tiempoInicioMantener;
         if (tiempoMantenido > 500) {
           activarTrucoEuro();
         }
@@ -492,7 +495,11 @@
         return;
       }
       
-      detectarSwipe();
+      // NUEVO: Solo procesar swipe si duración < 300ms (evita falsos positivos en toques largos)
+      if (duracionToque < tiempoMaximoSwipe) {
+        detectarSwipe();
+      }
+      
       e.preventDefault();
     }, { passive: false });
 
@@ -505,12 +512,14 @@
       const diffY = touchEndY - touchStartY;
       
       if (Math.abs(diffX) > Math.abs(diffY)) {
+        // HORIZONTAL - CORREGIDO: permite swipes consecutivos sin límite de dirección
         if (diffX > umbralSwipe && jugador.carril < 2) {
           jugador.carril++;
         } else if (diffX < -umbralSwipe && jugador.carril > 0) {
           jugador.carril--;
         }
       } else {
+        // VERTICAL
         if (diffY < -umbralSwipe && jugador.enSuelo) {
           jugador.vy = -15;
           jugador.enSuelo = false;
@@ -582,15 +591,15 @@
     const cerdos = [];
     const textosEmergentes = [];
 
-    // ==================== CLASES ====================
+    // ==================== CLASES (CORREGIDO) ====================
     class TextoEmergente {
       constructor(texto, xVirtual, yVirtual, color = '#ffd166', opciones = {}) {
         this.texto = texto;
         this.xVirtual = xVirtual;
         this.yVirtual = yVirtual;
         this.color = color;
-        this.vida = 70; // ← CORREGIDO: 70 frames (intermedio)
-        this.velocidadY = -2.5; // Mantener animación de subida
+        this.vida = 90; // CORREGIDO: 90 frames (~1.5 segundos)
+        this.velocidadY = 0; // CORREGIDO: sin animación de subida (aparece instantáneo)
         this.opacidad = 1.0;
         this.escala = opciones.gigante ? 2.0 : 1.2;
         this.vibrar = opciones.vibrar || false;
@@ -598,7 +607,7 @@
       }
       
       actualizar() {
-        this.yVirtual += this.velocidadY;
+        // CORREGIDO: no hay movimiento vertical
         this.vida--;
         this.tiempo++;
       }
@@ -672,7 +681,7 @@
       textosEmergentes.push(new TextoEmergente(
         "EURO", 
         CENTRO_X_VIRTUAL,
-        CENTRO_Y_VIRTUAL, // ← CORREGIDO: Centro de pantalla
+        CENTRO_Y_VIRTUAL,
         '#ffd700',
         { gigante: true, vibrar: true }
       ));
@@ -765,7 +774,6 @@
       const jugadorXVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
       const jugadorYVirtual = jugador.yVirtual - jugador.altoVirtual / 2;
       
-      // Policías
       for (let i = obstaculos.length - 1; i >= 0; i--) {
         const obs = obstaculos[i];
         const obsXVirtual = obs.xVirtual;
@@ -808,7 +816,6 @@
         }
       }
       
-      // Cerdos
       for (let i = cerdos.length - 1; i >= 0; i--) {
         const cerdo = cerdos[i];
         const cerdoXVirtual = cerdo.xVirtual;
@@ -835,7 +842,6 @@
         }
       }
       
-      // Cigarros
       for (let i = cigarros.length - 1; i >= 0; i--) {
         const cig = cigarros[i];
         const cigXVirtual = cig.xVirtual;
@@ -1124,7 +1130,7 @@
       if (audioHabilitado) startMusicaArabe();
     }
 
-    // ==================== RENDERIZADO DE ALTA CALIDAD ====================
+    // ==================== RENDERIZADO ====================
     function dibujarFondo() {
       ctx.save();
       ctx.scale(scaleX, scaleY);
@@ -1794,3 +1800,4 @@
   </script>
 </body>
 </html>
+
