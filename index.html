@@ -797,152 +797,131 @@
       }
     }
 
-    function detectarColisiones() {
-      const jugadorXVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
-      const jugadorYVirtual = jugador.yVirtual - jugador.altoVirtual / 2;
-      
-      // Policías
-      for (let i = obstaculos.length - 1; i >= 0; i--) {
-        const obs = obstaculos[i];
-        const obsXVirtual = obs.xVirtual;
-        const obsYVirtual = obs.yVirtual - obs.altoVirtual / 2;
-        
-        if (jugador.pakiRicoh.activo) {
-          if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                      obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
-            if (Math.random() < 0.3) {
-              // Texto arriba del policía - coordenadas reales
-              textosEmergentes.push(new TextoEmergente(
-                "RECISTA", 
-                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
-                virtualY(obs.yVirtual - 60),
-                '#ff4d4d'
-              ));
-            }
-          }
-          continue;
-        }
-        
-        if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                    obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
-          if (!jugador.invulnerable) {
-            sonidoChoque();
-            juego.choquesSinMorir++;
-            
-            if (juego.choquesSinMorir >= 3) {
-              // Texto arriba del policía - coordenadas reales
-              textosEmergentes.push(new TextoEmergente(
-                "MI CARTERA¡", 
-                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
-                virtualY(obs.yVirtual - 70),
-                '#ffd166', 
-                { gigante: true, vibrar: true }
-              ));
-              juego.choquesSinMorir = 0;
-            }
-            
-            // Texto arriba del policía - coordenadas reales
-            textosEmergentes.push(new TextoEmergente(
-              "RECISTA", 
-              virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
-              virtualY(obs.yVirtual - 60),
-              '#ff4d4d'
-            ));
-            juego.pantallaRoja = 30;
-            
-            if (jugador.vidas > 1) {
-              jugador.vidas--;
-              vidasDisplay.textContent = jugador.vidas;
-              jugador.invulnerable = true;
-              jugador.tiempoInvulnerable = 90;
-            } else {
-              gameOver();
-            }
-          }
-          obstaculos.splice(i, 1);
+function detectarColisiones() {
+  const jugadorXVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
+  const jugadorYVirtual = jugador.yVirtual - jugador.altoVirtual / 2;
+  
+  // Policías
+  for (let i = obstaculos.length - 1; i >= 0; i--) {
+    const obs = obstaculos[i];
+    const obsXVirtual = obs.xVirtual;
+    const obsYVirtual = obs.yVirtual - obs.altoVirtual / 2;
+    
+    if (jugador.pakiRicoh.activo) {
+      if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                  obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
+        if (Math.random() < 0.3) {
+          // Texto arriba del policía - COORDENADAS CORRECTAS
+          const xReal = (POS_X_CARRIL_VIRTUAL[obs.carril] / 800) * canvas.width;
+          const yReal = ((obs.yVirtual - 60) / 600) * canvas.height;
+          textosEmergentes.push(new TextoEmergente("RECISTA", xReal, yReal, '#ff4d4d'));
         }
       }
-      
-      // Cerdos
-      for (let i = cerdos.length - 1; i >= 0; i--) {
-        const cerdo = cerdos[i];
-        const cerdoXVirtual = cerdo.xVirtual;
-        const cerdoYVirtual = cerdo.yVirtual - cerdo.altoVirtual / 2;
-        
-        if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                    cerdoXVirtual, cerdoYVirtual, cerdo.anchoVirtual, cerdo.altoVirtual)) {
-          if (!jugador.invulnerable) {
-            sonidoCerdo();
-            jugador.vidas--;
-            vidasDisplay.textContent = jugador.vidas;
-            
-            // Texto arriba del cerdo - coordenadas reales
-            textosEmergentes.push(new TextoEmergente(
-              "YALLAH", 
-              virtualX(POS_X_CARRIL_VIRTUAL[cerdo.carril]),
-              virtualY(cerdo.yVirtual - 65),
-              '#ff4d4d', 
-              { gigante: true, vibrar: true }
-            ));
-            juego.pantallaRoja = 35;
-            
-            if (jugador.vidas <= 0) {
-              gameOver();
-            } else {
-              jugador.invulnerable = true;
-              jugador.tiempoInvulnerable = 90;
-            }
-          }
-          cerdos.splice(i, 1);
-        }
-      }
-      
-      // Cigarros
-      for (let i = cigarros.length - 1; i >= 0; i--) {
-        const cig = cigarros[i];
-        const cigXVirtual = cig.xVirtual;
-        const cigYVirtual = cig.yVirtual - cig.altoVirtual / 2;
-        
-        if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
-                    cigXVirtual, cigYVirtual, cig.anchoVirtual, cig.altoVirtual)) {
-          sonidoSuspiro();
-          
-          // Texto arriba del cigarro - coordenadas reales
-          textosEmergentes.push(new TextoEmergente(
-            "SEGARRO", 
-            virtualX(POS_X_CARRIL_VIRTUAL[cig.carril]),
-            virtualY(cig.yVirtual - 55),
-            '#ffd166'
-          ));
-          
-          jugador.cigarros++;
-          juego.totalCigarrosReales++;
-          cigarrosDisplay.textContent = jugador.cigarros;
-          
-          if (jugador.cigarros >= 5) {
-            jugador.vidas++;
-            jugador.cigarros = 0;
-            cigarrosDisplay.textContent = jugador.cigarros;
-            vidasDisplay.textContent = jugador.vidas;
-            
-            // Texto arriba del jugador - coordenadas reales
-            textosEmergentes.push(new TextoEmergente(
-              "AMIGOO", 
-              virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
-              virtualY(jugador.yVirtual - 60),
-              '#ffd700', 
-              { gigante: true, vibrar: true }
-            ));
-          }
-          
-          if (juego.totalCigarrosReales % 10 === 0 && juego.totalCigarrosReales > 0) {
-            activarPakiRicoh();
-          }
-          
-          cigarros.splice(i, 1);
-        }
-      }
+      continue;
     }
+    
+    if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
+      if (!jugador.invulnerable) {
+        sonidoChoque();
+        juego.choquesSinMorir++;
+        
+        if (juego.choquesSinMorir >= 3) {
+          // Texto arriba del policía - COORDENADAS CORRECTAS
+          const xReal = (POS_X_CARRIL_VIRTUAL[obs.carril] / 800) * canvas.width;
+          const yReal = ((obs.yVirtual - 70) / 600) * canvas.height;
+          textosEmergentes.push(new TextoEmergente("MI CARTERA¡", xReal, yReal, '#ffd166', { gigante: true, vibrar: true }));
+          juego.choquesSinMorir = 0;
+        }
+        
+        // Texto arriba del policía - COORDENADAS CORRECTAS
+        const xReal = (POS_X_CARRIL_VIRTUAL[obs.carril] / 800) * canvas.width;
+        const yReal = ((obs.yVirtual - 60) / 600) * canvas.height;
+        textosEmergentes.push(new TextoEmergente("RECISTA", xReal, yReal, '#ff4d4d'));
+        juego.pantallaRoja = 30;
+        
+        if (jugador.vidas > 1) {
+          jugador.vidas--;
+          vidasDisplay.textContent = jugador.vidas;
+          jugador.invulnerable = true;
+          jugador.tiempoInvulnerable = 90;
+        } else {
+          gameOver();
+        }
+      }
+      obstaculos.splice(i, 1);
+    }
+  }
+  
+  // Cerdos
+  for (let i = cerdos.length - 1; i >= 0; i--) {
+    const cerdo = cerdos[i];
+    const cerdoXVirtual = cerdo.xVirtual;
+    const cerdoYVirtual = cerdo.yVirtual - cerdo.altoVirtual / 2;
+    
+    if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                cerdoXVirtual, cerdoYVirtual, cerdo.anchoVirtual, cerdo.altoVirtual)) {
+      if (!jugador.invulnerable) {
+        sonidoCerdo();
+        jugador.vidas--;
+        vidasDisplay.textContent = jugador.vidas;
+        
+        // Texto arriba del cerdo - COORDENADAS CORRECTAS
+        const xReal = (POS_X_CARRIL_VIRTUAL[cerdo.carril] / 800) * canvas.width;
+        const yReal = ((cerdo.yVirtual - 65) / 600) * canvas.height;
+        textosEmergentes.push(new TextoEmergente("YALLAH", xReal, yReal, '#ff4d4d', { gigante: true, vibrar: true }));
+        juego.pantallaRoja = 35;
+        
+        if (jugador.vidas <= 0) {
+          gameOver();
+        } else {
+          jugador.invulnerable = true;
+          jugador.tiempoInvulnerable = 90;
+        }
+      }
+      cerdos.splice(i, 1);
+    }
+  }
+  
+  // Cigarros
+  for (let i = cigarros.length - 1; i >= 0; i--) {
+    const cig = cigarros[i];
+    const cigXVirtual = cig.xVirtual;
+    const cigYVirtual = cig.yVirtual - cig.altoVirtual / 2;
+    
+    if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
+                cigXVirtual, cigYVirtual, cig.anchoVirtual, cig.altoVirtual)) {
+      sonidoSuspiro();
+      
+      // Texto arriba del cigarro - COORDENADAS CORRECTAS
+      const xReal = (POS_X_CARRIL_VIRTUAL[cig.carril] / 800) * canvas.width;
+      const yReal = ((cig.yVirtual - 55) / 600) * canvas.height;
+      textosEmergentes.push(new TextoEmergente("SEGARRO", xReal, yReal, '#ffd166'));
+      
+      jugador.cigarros++;
+      juego.totalCigarrosReales++;
+      cigarrosDisplay.textContent = jugador.cigarros;
+      
+      if (jugador.cigarros >= 5) {
+        jugador.vidas++;
+        jugador.cigarros = 0;
+        cigarrosDisplay.textContent = jugador.cigarros;
+        vidasDisplay.textContent = jugador.vidas;
+        
+        // Texto arriba del jugador - COORDENADAS CORRECTAS
+        const xReal = (POS_X_CARRIL_VIRTUAL[jugador.carril] / 800) * canvas.width;
+        const yReal = ((jugador.yVirtual - 60) / 600) * canvas.height;
+        textosEmergentes.push(new TextoEmergente("AMIGOO", xReal, yReal, '#ffd700', { gigante: true, vibrar: true }));
+      }
+      
+      if (juego.totalCigarrosReales % 10 === 0 && juego.totalCigarrosReales > 0) {
+        activarPakiRicoh();
+      }
+      
+      cigarros.splice(i, 1);
+    }
+  }
+}
 
     function colision(x1, y1, w1, h1, x2, y2, w2, h2) {
       return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
