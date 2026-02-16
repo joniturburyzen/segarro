@@ -358,54 +358,56 @@
     const tiempoMaximoSwipe = 400;    // Máximo 400ms por swipe (evita falsos positivos)
 
     // ==================== CLASES (TEXTOS INSTANTÁNEOS) ====================
-    class TextoEmergente {
-      constructor(texto, xVirtual, yVirtual, color = '#ffd166', opciones = {}) {
-        // LIMITAR POSICIÓN PARA QUE NUNCA SE SALGA DE LA PANTALLA VISIBLE
-        this.xVirtual = Math.max(100, Math.min(700, xVirtual));   // x: 100-700 (bordes seguros)
-        this.yVirtual = Math.max(120, Math.min(480, yVirtual));   // y: 120-480 (evita HUD y botones)
-        
-        this.texto = texto;
-        this.color = color;
-        this.vida = 90;                 // 90 frames = 1.5 segundos
-        this.velocidadY = 0;
-        this.opacidad = 1.0;
-        this.escala = opciones.gigante ? 2.0 : 1.2;
-        this.vibrar = opciones.vibrar || false;
-        this.tiempo = 0;
-      }
-      
-      actualizar() {
-        this.vida--;
-        this.tiempo++;
-        if (this.vida < 20) {
-          this.opacidad = this.vida / 20;
-        }
-      }
-      
-      dibujar(ctx) {
-        ctx.save();
-        ctx.globalAlpha = this.opacidad;
-        
-        let offsetX = this.xVirtual;
-        if (this.vibrar) offsetX += Math.sin(this.tiempo * 20) * 2;
-        
-        ctx.font = `bold ${Math.floor(32 * this.escala)}px 'Courier New', monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 6 * this.escala;
-        ctx.lineJoin = 'round';
-        ctx.strokeText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
-        
-        ctx.fillStyle = this.color;
-        ctx.fillText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
-        
-        ctx.restore();
-      }
-      
-      estaMuerto() { return this.vida <= 0; }
+class TextoEmergente {
+  constructor(texto, xVirtual, yVirtual, color = '#ffd166', opciones = {}) {
+    // LIMITAR POSICIÓN PARA QUE NUNCA SE SALGA DE LA PANTALLA VISIBLE
+    this.xVirtual = Math.max(100, Math.min(700, xVirtual));   // x: 100-700
+    this.yVirtual = Math.max(120, Math.min(480, yVirtual));   // y: 120-480
+    
+    this.texto = texto;
+    this.color = color;
+    this.vida = 100;              // Aumentar a 100 frames (1.67 segundos) para mejor visibilidad
+    this.velocidadY = 0;
+    this.opacidad = 1.0;
+    this.escala = opciones.gigante ? 2.0 : 1.2;
+    this.vibrar = opciones.vibrar || false;
+    this.tiempo = 0;
+  }
+  
+  actualizar() {
+    this.vida--;
+    this.tiempo++;
+    if (this.vida < 30) {         // Fade out más largo (últimos 30 frames)
+      this.opacidad = this.vida / 30;
     }
+  }
+  
+  dibujar(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.opacidad;
+    
+    let offsetX = this.xVirtual;
+    if (this.vibrar) offsetX += Math.sin(this.tiempo * 20) * 2;
+    
+    ctx.font = `bold ${Math.floor(32 * this.escala)}px 'Courier New', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Sombra más gruesa para mejor contraste
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 8 * this.escala;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
+    
+    // Texto principal
+    ctx.fillStyle = this.color;
+    ctx.fillText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
+    
+    ctx.restore();
+  }
+  
+  estaMuerto() { return this.vida <= 0; }
+}
 
     class ParticulaHumo {
       constructor(xVirtual, yVirtual) {
@@ -1841,38 +1843,38 @@
     }
 
     // ==================== BUCLE PRINCIPAL ====================
-    function gameLoop() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      if (juego.estado === 'jugando' || juego.estado === 'pausado_truco') {
-        actualizarJugador();
-        
-        if (juego.estado === 'jugando' && !jugador.enEscenaFinal) {
-          generarObstaculo();
-          moverObstaculos();
-          detectarColisiones();
-          actualizarDificultad();
-        }
-        
-        actualizarTextos();
-        actualizarIndicadorCarril();
-        
-        juego.tiempo++;
-      }
-      
-      if (juego.estado !== 'gameover') {
-        dibujarFondo();
-        if (!jugador.enEscenaFinal) {
-          dibujarObstaculos();
-          dibujarParticulasPakiRicoh();
-        }
-        dibujarJugador();
-        dibujarTextos();
-        dibujarEfectoPantallaRoja();
-      }
-      
-      requestAnimationFrame(gameLoop);
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
+  if (juego.estado === 'jugando' || juego.estado === 'pausado_truco') {
+    actualizarJugador();
+    
+    if (juego.estado === 'jugando' && !jugador.enEscenaFinal) {
+      generarObstaculo();
+      moverObstaculos();
+      detectarColisiones();
+      actualizarDificultad();
     }
+    
+    actualizarTextos();
+    actualizarIndicadorCarril();
+    
+    juego.tiempo++;
+  }
+  
+  if (juego.estado !== 'gameover') {
+    dibujarFondo();
+    if (!jugador.enEscenaFinal) {
+      dibujarObstaculos();
+      dibujarParticulasPakiRicoh();
+    }
+    dibujarJugador();
+    dibujarEfectoPantallaRoja(); // ← MOVER ESTA LÍNEA ANTES
+    dibujarTextos();              // ← DE ESTA LÍNEA
+  }
+  
+  requestAnimationFrame(gameLoop);
+}
 
     // ==================== INICIAR ====================
     startBtn.addEventListener('click', () => {
