@@ -358,54 +358,54 @@
     const tiempoMaximoSwipe = 400;
 
     // ==================== CLASES (TEXTOS INSTANTÁNEOS) ====================
-    class TextoEmergente {
-      constructor(texto, x, y, color = '#ffd166', opciones = {}) {
-        this.texto = texto;
-        this.x = x;
-        this.y = y;
-        this.color = color;
-        this.vida = opciones.gigante ? 100 : 70;
-        this.velocidadY = -2;
-        this.opacidad = 1.0;
-        this.escala = opciones.gigante ? 1.8 : 1.0;
-        this.vibrar = opciones.vibrar || false;
-        this.tiempo = 0;
-      }
-      
-      actualizar() {
-        this.y += this.velocidadY;
-        this.vida--;
-        this.tiempo++;
-      }
-      
-      dibujar(ctx) {
-        ctx.save();
-        ctx.globalAlpha = this.opacidad;
+class TextoEmergente {
+  constructor(texto, x, y, color = '#ffd166', opciones = {}) {
+    this.texto = texto;
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.vida = opciones.gigante ? 100 : 70;
+    this.velocidadY = -2;
+    this.opacidad = 1.0;
+    this.escala = opciones.gigante ? 1.8 : 1.0;
+    this.vibrar = opciones.vibrar || false;
+    this.tiempo = 0;
+  }
+  
+  actualizar() {
+    this.y += this.velocidadY;
+    this.vida--;
+    this.tiempo++;
+  }
+  
+  dibujar(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.opacidad;
 
-        let offsetX = this.x;
-        if (this.vibrar) {
-          offsetX += Math.sin(this.tiempo * 15) * 1.5;
-        }
-        
-        ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 4 * this.escala;
-        ctx.lineJoin = 'round';
-        ctx.strokeText(this.texto, offsetX, this.y);
-        
-        ctx.fillStyle = this.color;
-        ctx.fillText(this.texto, offsetX, this.y);
-        
-        ctx.restore();
-      }
-      
-      estaMuerto() {
-        return this.vida <= 0;
-      }
+    let offsetX = this.x;
+    if (this.vibrar) {
+      offsetX += Math.sin(this.tiempo * 15) * 1.5;
     }
+    
+    ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 4 * this.escala;
+    ctx.lineJoin = 'round';
+    ctx.strokeText(this.texto, offsetX, this.y);
+    
+    ctx.fillStyle = this.color;
+    ctx.fillText(this.texto, offsetX, this.y);
+    
+    ctx.restore();
+  }
+  
+  estaMuerto() {
+    return this.vida <= 0;
+  }
+}
 
     class ParticulaHumo {
       constructor(x, y) {
@@ -915,12 +915,13 @@ function detectarColisiones() {
       sonidoSuspiro();
       
       // TEXTO EN CENTRO - DEBE VERSE
-      textosEmergentes.push(new TextoEmergente(
-        "SEGARRO", 
-        canvas.width / 2,
-        canvas.height / 2,
-        '#ffd166'
-      ));
+     // Ejemplo para "SEGARRO" (cambiar todos los textos igual):
+textosEmergentes.push(new TextoEmergente(
+  "SEGARRO", 
+  canvas.width / 2,              // X: centro REAL del canvas
+  canvas.height / 2,             // Y: centro REAL del canvas
+  '#ffd166'
+));
       
       jugador.cigarros++;
       juego.totalCigarrosReales++;
@@ -1801,10 +1802,20 @@ function detectarColisiones() {
         ctx.restore();
       }
     }
-
-    function dibujarTextos() {
-      textosEmergentes.forEach(t => t.dibujar(ctx));
-    }
+    
+   function dibujarTextos() {
+  // PRUEBA DE EMERGENCIA: Dibujar un texto fijo en pantalla
+  ctx.save();
+  ctx.font = 'bold 40px Courier New';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = 'white';
+  ctx.fillText("¿ME VES?", canvas.width / 2, canvas.height / 2);
+  ctx.restore();
+  
+  // Dibujar textos normales
+  textosEmergentes.forEach(t => t.dibujar(ctx));
+}
 
     function dibujarEfectoPantallaRoja() {
       if (juego.pantallaRoja > 0) {
