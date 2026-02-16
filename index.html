@@ -82,7 +82,7 @@
       transform: translate(-50%, -50%);
       background: rgba(0, 0, 0, 0.92);
       color: #ff4d4d;
-      padding: 4vh 6vw;
+      padding: 4vh 6vw; /* Compacto para móvil */
       border-radius: 4vh;
       border: 4px solid #ff4d4d;
       text-align: center;
@@ -96,7 +96,7 @@
     }
 
     #game-over h2 {
-      font-size: 5vh;
+      font-size: 5vh; /* Compacto para móvil */
       margin-bottom: 4vh;
       text-shadow: 0 0 15px rgba(255, 77, 77, 0.95);
       font-family: 'Courier New', monospace;
@@ -109,7 +109,7 @@
     }
 
     #game-over p {
-      font-size: 3.5vh;
+      font-size: 3.5vh; /* Compacto para móvil */
       margin-bottom: 6vh;
       color: #ffd166;
       font-family: 'Courier New', monospace;
@@ -608,7 +608,10 @@
       pakiRicoh: {
         activo: false,
         contador: 0,
-        duracion: 450, // 7.5 segundos (aumentado de 300)
+        duracion: 300,
+        cambiosRestantes: 3,
+        proximoCambio: 60,
+        direccion: 0,
         humoParticulas: []
       },
       enEscenaFinal: false,
@@ -677,11 +680,11 @@
       constructor(xVirtual, yVirtual) {
         this.xVirtual = xVirtual;
         this.yVirtual = yVirtual;
-        this.vx = (Math.random() - 0.5) * 1.2;  // Más dispersión
-        this.vy = -1.0 - Math.random() * 0.8;   // Más rápido hacia arriba
-        this.radio = 4 + Math.random() * 6;     // Más grande (4-10px)
-        this.opacidad = 0.95;                   // Más opaco
-        this.vida = 60 + Math.random() * 40;    // Más duración
+        this.vx = (Math.random() - 0.5) * 0.8;
+        this.vy = -0.8 - Math.random() * 0.5;
+        this.radio = 2 + Math.random() * 3;
+        this.opacidad = 0.85;
+        this.vida = 50 + Math.random() * 30;
       }
       
       actualizar() {
@@ -693,11 +696,12 @@
       }
       
       dibujar(ctx) {
-        // AMARILLO DORADO BRILLANTE (visible en cualquier fondo)
-        ctx.fillStyle = `rgba(255, 235, 59, ${this.opacidad * 0.8})`;
+        ctx.globalAlpha = this.opacidad * 0.9;
+        ctx.fillStyle = `rgba(220, 220, 220, ${this.opacidad})`;
         ctx.beginPath();
         ctx.arc(virtualX(this.xVirtual), virtualY(this.yVirtual), virtualW(this.radio), 0, Math.PI * 2);
         ctx.fill();
+        ctx.globalAlpha = 1.0;
       }
       
       estaMuerta() { return this.vida <= 0 || this.radio < 0.8; }
@@ -926,6 +930,9 @@
     function activarPakiRicoh() {
       jugador.pakiRicoh.activo = true;
       jugador.pakiRicoh.contador = 0;
+      jugador.pakiRicoh.cambiosRestantes = 3;
+      jugador.pakiRicoh.proximoCambio = 60;
+      jugador.pakiRicoh.direccion = 0;
       jugador.pakiRicoh.humoParticulas = [];
       
       // TEXTO INSTANTÁNEO EN CENTRO
@@ -949,15 +956,13 @@
       
       jugador.pakiRicoh.contador++;
       
-      // Generar partículas de humo (más grandes y visibles)
-      if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.5) {
+      if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.4) {
         jugador.pakiRicoh.humoParticulas.push(new ParticulaHumo(
-          POS_X_CARRIL_VIRTUAL[jugador.carril] + (Math.random() - 0.5) * 30,  // Más dispersión
-          jugador.yVirtual - 20 + Math.random() * 15  // Más altura
+          POS_X_CARRIL_VIRTUAL[jugador.carril] + (Math.random() - 0.5) * 25,
+          jugador.yVirtual - 25
         ));
       }
       
-      // Actualizar partículas
       for (let i = jugador.pakiRicoh.humoParticulas.length - 1; i >= 0; i--) {
         jugador.pakiRicoh.humoParticulas[i].actualizar();
         if (jugador.pakiRicoh.humoParticulas[i].estaMuerta()) {
@@ -965,9 +970,17 @@
         }
       }
       
-      // ELIMINADO: Movimiento automático de carril (el jugador mantiene control total)
+      if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.proximoCambio && jugador.pakiRicoh.cambiosRestantes > 0) {
+        jugador.pakiRicoh.direccion = Math.random() > 0.5 ? 1 : -1;
+        jugador.pakiRicoh.proximoCambio += 60 + Math.random() * 60;
+        jugador.pakiRicoh.cambiosRestantes--;
+      }
       
-      // Terminar después de 450 frames (7.5 segundos)
+      if (jugador.pakiRicoh.direccion !== 0) {
+        jugador.carril += jugador.pakiRicoh.direccion * 0.06;
+        jugador.carril = Math.max(0, Math.min(2, jugador.carril));
+      }
+      
       if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.duracion) {
         terminarPakiRicoh();
       }
@@ -976,12 +989,6 @@
     function terminarPakiRicoh() {
       jugador.pakiRicoh.activo = false;
       jugador.pakiRicoh.humoParticulas = [];
-      
-      // Asegurar que el carril esté en rango válido (0, 1 o 2)
-      jugador.carril = Math.round(Math.max(0, Math.min(2, jugador.carril)));
-      
-      // Restaurar invulnerabilidad
-      jugador.invulnerable = false;
       
       // TEXTO INSTANTÁNEO EN CENTRO
       textosEmergentes.push(new TextoEmergente("..", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffffff'));
@@ -1155,7 +1162,7 @@
       jugador.invulnerable = false;
       jugador.tiempoInvulnerable = 0;
       jugador.trucoEuro = { usado: false };
-      jugador.pakiRicoh = { activo: false, contador: 0, duracion: 450, humoParticulas: [] };
+      jugador.pakiRicoh = { activo: false, contador: 0, duracion: 300, cambiosRestantes: 3, proximoCambio: 60, direccion: 0, humoParticulas: [] };
       jugador.enEscenaFinal = false;
       jugador.amigos = [];
       
@@ -1406,29 +1413,21 @@
         return;
       }
       
-      // ¡CRÍTICO! Guardar estado del contexto ANTES de aplicar efectos
       ctx.save();
+      ctx.scale(scaleX, scaleY);
       
       const xVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
       const yVirtual = jugador.yVirtual;
-      
-      // Efectos visuales PAKI RICOH (SEGURIDAD MÁXIMA)
-      if (jugador.pakiRicoh.activo) {
-        // Sombra dorada intensa
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 40 * dpr;
-        
-        // Parpadeo sutil usando globalAlpha (seguro)
-        if (Math.floor(juego.tiempo / 15) % 2 === 0) {
-          ctx.globalAlpha = 0.95;
-        }
-      }
       
       if (jugador.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
         ctx.globalAlpha = 0.7;
       }
       
-      // Dibujar cuerpo del jugador
+      if (jugador.pakiRicoh.activo) {
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 30 * dpr;
+      }
+      
       ctx.fillStyle = jugador.colorRopa;
       ctx.beginPath();
       ctx.moveTo(xVirtual + 5, yVirtual - jugador.altoVirtual);
@@ -1521,19 +1520,7 @@
       ctx.fillRect(xVirtual + 8, yVirtual + 32, 8, 3);
       ctx.fillRect(xVirtual + 19, yVirtual + 32, 8, 3);
       
-      // Dibujar aura dorada ALREDEDOR del jugador (después del cuerpo)
-      if (jugador.pakiRicoh.activo) {
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(
-          virtualX(xVirtual - 5),
-          virtualY(yVirtual - jugador.altoVirtual - 10),
-          virtualW(jugador.anchoVirtual + 10),
-          virtualH(jugador.altoVirtual + 10)
-        );
-      }
-      
-      // ¡CRÍTICO! Restaurar estado del contexto DESPUÉS de dibujar
+      ctx.shadowBlur = 0;
       ctx.restore();
     }
 
@@ -1784,10 +1771,11 @@
       }
     }
 
-    // ¡¡¡CORRECCIÓN CRÍTICA!!! - Eliminar doble escalado en textos
     function dibujarTextos() {
-      // ctx.save() y ctx.scale() ELIMINADOS para evitar doble escalado
+      ctx.save();
+      ctx.scale(scaleX, scaleY);
       textosEmergentes.forEach(t => t.dibujar(ctx));
+      ctx.restore();
     }
 
     function dibujarEfectoPantallaRoja() {
