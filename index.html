@@ -359,85 +359,85 @@
 
     // ==================== CLASES (TEXTOS INSTANTÁNEOS) ====================
     class TextoEmergente {
-      constructor(texto, xVirtual, yVirtual, color = '#ffd166', opciones = {}) {
-        // POSICIÓN REAL del suceso (sin limitar artificialmente)
-        this.xVirtual = xVirtual;
-        this.yVirtual = yVirtual;
-        
+      constructor(texto, x, y, color = '#ffd166', opciones = {}) {
         this.texto = texto;
+        this.x = x;
+        this.y = y;
         this.color = color;
-        this.vida = 100;            // 100 frames = 1.67 segundos
-        this.velocidadY = 0;
+        this.vida = opciones.gigante ? 100 : 70;
+        this.velocidadY = -2;
         this.opacidad = 1.0;
-        this.escala = opciones.gigante ? 2.0 : 1.2;
+        this.escala = opciones.gigante ? 1.8 : 1.0;
         this.vibrar = opciones.vibrar || false;
         this.tiempo = 0;
       }
       
       actualizar() {
+        this.y += this.velocidadY;
         this.vida--;
         this.tiempo++;
-        if (this.vida < 30) {
-          this.opacidad = this.vida / 30;
-        }
       }
       
       dibujar(ctx) {
         ctx.save();
         ctx.globalAlpha = this.opacidad;
+
+        let offsetX = this.x;
+        if (this.vibrar) {
+          offsetX += Math.sin(this.tiempo * 15) * 1.5;
+        }
         
-        let offsetX = this.xVirtual;
-        if (this.vibrar) offsetX += Math.sin(this.tiempo * 20) * 2;
-        
-        ctx.font = `bold ${Math.floor(32 * this.escala)}px 'Courier New', monospace`;
+        ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // Sombra gruesa para mejor contraste
         ctx.strokeStyle = 'black';
-        ctx.lineWidth = 8 * this.escala;
+        ctx.lineWidth = 4 * this.escala;
         ctx.lineJoin = 'round';
-        ctx.strokeText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
+        ctx.strokeText(this.texto, offsetX, this.y);
         
-        // Texto principal
         ctx.fillStyle = this.color;
-        ctx.fillText(this.texto, virtualX(offsetX), virtualY(this.yVirtual));
+        ctx.fillText(this.texto, offsetX, this.y);
         
         ctx.restore();
       }
       
-      estaMuerto() { return this.vida <= 0; }
+      estaMuerto() {
+        return this.vida <= 0;
+      }
     }
 
     class ParticulaHumo {
-      constructor(xVirtual, yVirtual) {
-        this.xVirtual = xVirtual;
-        this.yVirtual = yVirtual;
-        this.vx = (Math.random() - 0.5) * 0.8;
-        this.vy = -0.8 - Math.random() * 0.5;
-        this.radio = 2 + Math.random() * 3;
-        this.opacidad = 0.85;
-        this.vida = 50 + Math.random() * 30;
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = -0.5 - Math.random() * 0.3;
+        this.radio = 1.5 + Math.random() * 2;
+        this.opacidad = 0.7;
+        this.vida = 40 + Math.random() * 20;
       }
       
       actualizar() {
-        this.xVirtual += this.vx;
-        this.yVirtual += this.vy;
-        this.radio *= 0.97;
-        this.opacidad *= 0.96;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.radio *= 0.98;
+        this.opacidad *= 0.97;
         this.vida--;
       }
       
       dibujar(ctx) {
-        ctx.globalAlpha = this.opacidad * 0.9;
-        ctx.fillStyle = `rgba(220, 220, 220, ${this.opacidad})`;
+        ctx.globalAlpha = this.opacidad;
+        ctx.fillStyle = `rgba(200, 200, 200, ${this.opacidad})`;
         ctx.beginPath();
-        ctx.arc(virtualX(this.xVirtual), virtualY(this.yVirtual), virtualW(this.radio), 0, Math.PI * 2);
+        ctx.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
         ctx.fill();
         ctx.globalAlpha = 1.0;
       }
       
-      estaMuerta() { return this.vida <= 0 || this.radio < 0.8; }
+      estaMuerta() {
+        return this.vida <= 0 || this.radio < 0.5;
+      }
     }
 
     // ==================== AUDIO ====================
@@ -707,8 +707,8 @@
       // TEXTO EN CENTRO
       textosEmergentes.push(new TextoEmergente(
         "EURO", 
-        CENTRO_X_VIRTUAL,
-        CENTRO_Y_VIRTUAL,
+        canvas.width / 2,
+        canvas.height / 2,
         '#ffd700',
         { gigante: true, vibrar: true }
       ));
@@ -814,8 +814,8 @@
               // Texto arriba del policía
               textosEmergentes.push(new TextoEmergente(
                 "RECISTA", 
-                POS_X_CARRIL_VIRTUAL[obs.carril],
-                obs.yVirtual - 60,
+                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
+                virtualY(obs.yVirtual - 60),
                 '#ff4d4d'
               ));
             }
@@ -833,8 +833,8 @@
               // Texto arriba del policía
               textosEmergentes.push(new TextoEmergente(
                 "MI CARTERA¡", 
-                POS_X_CARRIL_VIRTUAL[obs.carril],
-                obs.yVirtual - 70,
+                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
+                virtualY(obs.yVirtual - 70),
                 '#ffd166', 
                 { gigante: true, vibrar: true }
               ));
@@ -844,8 +844,8 @@
             // Texto arriba del policía
             textosEmergentes.push(new TextoEmergente(
               "RECISTA", 
-              POS_X_CARRIL_VIRTUAL[obs.carril],
-              obs.yVirtual - 60,
+              virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
+              virtualY(obs.yVirtual - 60),
               '#ff4d4d'
             ));
             juego.pantallaRoja = 30;
@@ -879,8 +879,8 @@
             // Texto arriba del cerdo
             textosEmergentes.push(new TextoEmergente(
               "YALLAH", 
-              POS_X_CARRIL_VIRTUAL[cerdo.carril],
-              cerdo.yVirtual - 65,
+              virtualX(POS_X_CARRIL_VIRTUAL[cerdo.carril]),
+              virtualY(cerdo.yVirtual - 65),
               '#ff4d4d', 
               { gigante: true, vibrar: true }
             ));
@@ -910,8 +910,8 @@
           // Texto arriba del cigarro
           textosEmergentes.push(new TextoEmergente(
             "SEGARRO", 
-            POS_X_CARRIL_VIRTUAL[cig.carril],
-            cig.yVirtual - 55,
+            virtualX(POS_X_CARRIL_VIRTUAL[cig.carril]),
+            virtualY(cig.yVirtual - 55),
             '#ffd166'
           ));
           
@@ -928,8 +928,8 @@
             // Texto arriba del jugador
             textosEmergentes.push(new TextoEmergente(
               "AMIGOO", 
-              POS_X_CARRIL_VIRTUAL[jugador.carril],
-              jugador.yVirtual - 60,
+              virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
+              virtualY(jugador.yVirtual - 60),
               '#ffd700', 
               { gigante: true, vibrar: true }
             ));
@@ -957,7 +957,7 @@
       jugador.pakiRicoh.humoParticulas = [];
       
       // TEXTO EN CENTRO
-      textosEmergentes.push(new TextoEmergente("¡PAKI RICOH!", CENTRO_X_VIRTUAL, CENTRO_Y_VIRTUAL, '#ffd700', { gigante: true, vibrar: true }));
+      textosEmergentes.push(new TextoEmergente("¡PAKI RICOH!", canvas.width / 2, canvas.height / 2, '#ffd700', { gigante: true, vibrar: true }));
       
       if (audioContext) {
         const osc = audioContext.createOscillator();
@@ -979,8 +979,8 @@
       
       if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.4) {
         jugador.pakiRicoh.humoParticulas.push(new ParticulaHumo(
-          POS_X_CARRIL_VIRTUAL[jugador.carril] + (Math.random() - 0.5) * 25,
-          jugador.yVirtual - 25
+          virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril] + (Math.random() - 0.5) * 25),
+          virtualY(jugador.yVirtual - 25)
         ));
       }
       
@@ -1014,8 +1014,8 @@
       // Texto arriba del jugador
       textosEmergentes.push(new TextoEmergente(
         "..", 
-        POS_X_CARRIL_VIRTUAL[jugador.carril],
-        jugador.yVirtual - 50,
+        virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
+        virtualY(jugador.yVirtual - 50),
         '#ffffff'
       ));
       sonidoTos();
@@ -1392,7 +1392,7 @@
           ctx.globalAlpha = opacity;
           ctx.fillStyle = `rgba(230, 230, 230, ${opacity})`;
           ctx.beginPath();
-          ctx.arc(x + xOffset, y + yOffset, size, 0, Math.PI * 2);
+          ctx.arc(x + offsetX, y + yOffset, size, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.globalAlpha = 1.0;
@@ -1797,10 +1797,7 @@
     }
 
     function dibujarTextos() {
-      ctx.save();
-      ctx.scale(scaleX, scaleY);
       textosEmergentes.forEach(t => t.dibujar(ctx));
-      ctx.restore();
     }
 
     function dibujarEfectoPantallaRoja() {
