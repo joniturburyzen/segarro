@@ -650,9 +650,9 @@
     // ==================== ESTADO DEL JUEGO ====================
     const juego = {
       estado: 'menu',
-      score: 0,
+      score: 0;
       velocidadBase: 4.8,
-      velocidad: 4.8,
+      velocidad: 4.8;
       tiempo: 0,
       frecuenciaObstaculos: 90,
       contadorObstaculos: 0,
@@ -1222,82 +1222,131 @@
     function dibujarFondo() {
       ctx.save();
       ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const grad = ctx.createLinearGradient(0, 0, 0, 600);
-      grad.addColorStop(0, '#0f0c29');
-      grad.addColorStop(0.4, '#1a1a2e');
-      grad.addColorStop(0.7, '#162447');
-      grad.addColorStop(1, '#0f3460');
-      ctx.fillStyle = grad;
+
+      // Cielo estrellado nocturno con gradiente profundo
+      const skyGrad = ctx.createRadialGradient(400, 100, 0, 400, 100, 500);
+      skyGrad.addColorStop(0, '#0a0a14');
+      skyGrad.addColorStop(0.3, '#1a1a2e');
+      skyGrad.addColorStop(0.7, '#0f3460');
+      skyGrad.addColorStop(1, '#000011');
+      ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, 800, 600);
-      
-      ctx.fillStyle = '#2d3142';
-      dibujarMontanas(0.3, 0, 250, 200, 200, 350, 200, 400, 300, 600, 200, 800, 300);
-      ctx.fillStyle = '#1e2736';
-      dibujarMontanas(0.6, 0, 300, 150, 250, 350, 150, 550, 250, 750, 300, 800, 400);
-      ctx.fillStyle = '#141e2b';
-      dibujarMontanas(0.9, 0, 400, 100, 300, 400, 100, 600, 300, 800, 400, 800, 600);
-      
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-      for (let i = 0; i < 5; i++) {
-        const x = (juego.tiempo * 0.1 + i * 200) % 1000 - 100;
-        const y = 80 + Math.sin(juego.tiempo * 0.05 + i) * 20;
+
+      // Estrellas parpadeantes
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+      for (let i = 0; i < 20; i++) {
+        const blink = 0.5 + Math.sin(juego.tiempo * 0.05 + i) * 0.5;
+        ctx.globalAlpha = blink * 0.6;
         ctx.beginPath();
-        ctx.arc(x, y, 30, 0, Math.PI * 2);
-        ctx.arc(x + 25, y - 10, 25, 0, Math.PI * 2);
-        ctx.arc(x + 50, y, 30, 0, Math.PI * 2);
+        ctx.arc(50 + i * 35 + Math.sin(juego.tiempo * 0.03 + i) * 5, 50 + i * 10, 1.5, 0, Math.PI * 2);
         ctx.fill();
       }
-      
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-      ctx.lineWidth = 3;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(i * 200, 0);
-        ctx.lineTo(i * 200, 600);
-        ctx.stroke();
-      }
-      
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
-      ctx.setLineDash([20, 15]);
-      ctx.beginPath();
-      ctx.moveTo(400, 0);
-      ctx.lineTo(400, 600);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      
-      ctx.strokeStyle = 'rgba(255, 209, 102, 0.4)';
-      ctx.lineWidth = 3;
-      for (let i = 0; i < 20; i++) {
-        const y = (juego.tiempo * juego.velocidad * 0.3 + i * 35) % 600;
-        ctx.beginPath();
-        ctx.moveTo(340, y);
-        ctx.lineTo(460, y);
-        ctx.stroke();
-      }
-      
-      ctx.restore();
-    }
+      ctx.globalAlpha = 1;
 
-    function dibujarMontanas(factor, ...puntos) {
-      ctx.beginPath();
-      ctx.moveTo(puntos[0], puntos[1]);
-      for (let i = 2; i < puntos.length; i += 2) {
-        ctx.lineTo(puntos[i], puntos[i+1]);
+      // Edificios con ventanas iluminadas (profundidad)
+      ctx.fillStyle = '#111122';
+      ctx.fillRect(0, 250, 800, 350); // Base oscura
+      // Edificio 1
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(40, 200, 140, 280);
+      for (let j = 0; j < 8; j++) {
+        for (let k = 0; k < 4; k++) {
+          const light = Math.sin(juego.tiempo * 0.08 + j + k) > 0 ? '#ffff88' : '#112244';
+          ctx.fillStyle = light;
+          ctx.fillRect(50 + k * 30, 220 + j * 30, 20, 20);
+        }
       }
-      ctx.lineTo(800, 600);
-      ctx.lineTo(0, 600);
-      ctx.fill();
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.beginPath();
-      ctx.moveTo(puntos[0], puntos[1]);
-      for (let i = 2; i < puntos.length; i += 2) {
-        ctx.lineTo(puntos[i], puntos[i+1] + 10);
+      // Edificio 2, 3... (repite patrón para más)
+      ctx.fillStyle = '#0d1117';
+      ctx.fillRect(220, 230, 100, 260);
+      ctx.fillRect(350, 210, 160, 300);
+      ctx.fillRect(550, 220, 120, 280);
+      ctx.fillRect(680, 190, 110, 320);
+
+      // Neones parpadeantes en edificios
+      const neonPhase = juego.tiempo * 0.15;
+      ctx.shadowColor = '#ff00ff';
+      ctx.shadowBlur = 20;
+      ctx.fillStyle = `rgba(255, 0, 255, ${0.4 + Math.sin(neonPhase) * 0.3})`;
+      ctx.fillRect(360, 215, 140, 8);
+      ctx.shadowColor = '#00ffff';
+      ctx.fillStyle = `rgba(0, 255, 255, ${0.4 + Math.cos(neonPhase * 1.2) * 0.3})`;
+      ctx.fillRect(60, 205, 100, 6);
+      ctx.shadowBlur = 0;
+
+      // Carretera asfalto con textura y líneas
+      const roadGrad = ctx.createLinearGradient(0, 350, 0, 600);
+      roadGrad.addColorStop(0, '#2a2a3a');
+      roadGrad.addColorStop(1, '#1a1a25');
+      ctx.fillStyle = roadGrad;
+      ctx.fillRect(0, 350, 800, 250);
+
+      // Textura asfalto (puntos aleatorios)
+      ctx.fillStyle = 'rgba(50, 50, 60, 0.4)';
+      for (let i = 0; i < 500; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 800, 350 + Math.random() * 250, Math.random() * 2, 0, Math.PI * 2);
+        ctx.fill();
       }
-      ctx.lineTo(800, 600);
-      ctx.lineTo(0, 600);
-      ctx.fill();
+
+      // Líneas de carril animadas (scroll infinito)
+      ctx.strokeStyle = '#ffff88';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.setLineDash([30, 30]);
+      for (let i = 0; i < 5; i++) {
+        const y = (juego.tiempo * juego.velocidad * 0.5 + i * 100) % 250 + 350;
+        ctx.beginPath();
+        ctx.moveTo(200, y);
+        ctx.lineTo(600, y);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // Bordes de carril
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(200, 350);
+      ctx.lineTo(200, 600);
+      ctx.moveTo(600, 350);
+      ctx.lineTo(600, 600);
+      ctx.stroke();
+
+      // Farolas lejanas (luces amarillas)
+      for (let i = 0; i < 6; i++) {
+        const x = 100 + i * 130;
+        const flicker = 0.8 + Math.sin(juego.tiempo * 0.1 + i) * 0.2;
+        ctx.shadowColor = '#ffaa00';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = `rgba(255, 170, 0, ${flicker})`;
+        ctx.beginPath();
+        ctx.arc(x, 380 + Math.sin(juego.tiempo * 0.05) * 5, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = '#444';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x, 380);
+        ctx.lineTo(x, 450);
+        ctx.stroke();
+      }
+
+      // Coches lejanos (sombras moviéndose)
+      ctx.fillStyle = 'rgba(100, 100, 120, 0.6)';
+      for (let i = 0; i < 3; i++) {
+        const x = (juego.tiempo * 2 + i * 300) % 800;
+        ctx.beginPath();
+        ctx.ellipse(x, 410, 40, 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
+        ctx.beginPath();
+        ctx.arc(x - 15, 405, 4, 0, Math.PI * 2);
+        ctx.arc(x + 15, 405, 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
     }
 
     function dibujarJugador() {
@@ -1460,7 +1509,7 @@
       
       if (jugador.pakiRicoh.activo) {
         ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 30 * dpr;
+        ctx.shadowBlur = 30;
       }
       
       ctx.fillStyle = jugador.colorRopa;
@@ -1566,80 +1615,107 @@
       const xVirtual = obs.xVirtual;
       const yVirtual = obs.yVirtual;
       
-      ctx.fillStyle = obs.colorUniforme;
+      // Sombra
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.beginPath();
-      ctx.moveTo(xVirtual + 8, yVirtual - 70);
-      ctx.lineTo(xVirtual + 47, yVirtual - 70);
-      ctx.lineTo(xVirtual + 45, yVirtual);
-      ctx.lineTo(xVirtual + 10, yVirtual);
+      ctx.ellipse(xVirtual + 28, yVirtual + 5, 25, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Uniforme con botones y cinturón
+      const uniformGrad = ctx.createLinearGradient(xVirtual, yVirtual - 75, xVirtual + 56, yVirtual);
+      uniformGrad.addColorStop(0, obs.colorUniforme);
+      uniformGrad.addColorStop(0.5, '#0d47a1');
+      uniformGrad.addColorStop(1, obs.colorUniforme);
+      ctx.fillStyle = uniformGrad;
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 10, yVirtual - 75);
+      ctx.lineTo(xVirtual + 46, yVirtual - 75);
+      ctx.lineTo(xVirtual + 50, yVirtual);
+      ctx.lineTo(xVirtual + 6, yVirtual);
       ctx.closePath();
       ctx.fill();
       
-      ctx.fillStyle = '#ffc107';
-      for (let i = 0; i < 3; i++) {
+      // Botones dorados
+      ctx.fillStyle = '#ffd700';
+      ctx.shadowColor = '#ffaa00';
+      ctx.shadowBlur = 8;
+      for (let i = 0; i < 4; i++) {
         ctx.beginPath();
-        ctx.arc(xVirtual + 28, yVirtual - 50 + i * 12, 2.5, 0, Math.PI * 2);
+        ctx.arc(xVirtual + 18 + i * 8, yVirtual - 50, 3, 0, Math.PI * 2);
         ctx.fill();
       }
+      ctx.shadowBlur = 0;
       
+      // Cinturón
+      ctx.fillStyle = '#4a2c0b';
+      ctx.fillRect(xVirtual + 12, yVirtual - 15, 32, 6);
+      
+      // Placa brillante
+      ctx.shadowColor = '#ffd700';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = '#c0c0c0';
+      ctx.beginPath();
+      ctx.roundRect(xVirtual + 28, yVirtual - 35, 12, 10, 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 8px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('POLI', xVirtual + 34, yVirtual - 30);
+      ctx.shadowBlur = 0;
+      
+      // Gorra con visera
       ctx.fillStyle = obs.colorGorra;
-      ctx.fillRect(xVirtual + 12, yVirtual - 85, 31, 12);
       ctx.beginPath();
-      ctx.moveTo(xVirtual + 10, yVirtual - 73);
-      ctx.lineTo(xVirtual + 50, yVirtual - 73);
-      ctx.lineTo(xVirtual + 45, yVirtual - 80);
-      ctx.lineTo(xVirtual + 15, yVirtual - 80);
-      ctx.closePath();
+      ctx.roundRect(xVirtual + 12, yVirtual - 90, 32, 14, 3);
+      ctx.fill();
+      ctx.fillStyle = '#ffd700';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 28, yVirtual - 85, 8, Math.PI, 0);
       ctx.fill();
       
+      // Cara con bigote y ojos serios
       ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(xVirtual + 15, yVirtual - 75, 25, 15);
-      
-      ctx.fillStyle = 'black';
-      ctx.fillRect(xVirtual + 20, yVirtual - 70, 3, 3);
-      ctx.fillRect(xVirtual + 32, yVirtual - 70, 3, 3);
-      
       ctx.beginPath();
-      ctx.moveTo(xVirtual + 19, yVirtual - 67);
-      ctx.lineTo(xVirtual + 23, yVirtual - 69);
-      ctx.stroke();
+      ctx.arc(xVirtual + 28, yVirtual - 78, 12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#333';
       ctx.beginPath();
-      ctx.moveTo(xVirtual + 31, yVirtual - 67);
-      ctx.lineTo(xVirtual + 35, yVirtual - 69);
-      ctx.stroke();
-      
+      ctx.arc(xVirtual + 24, yVirtual - 80, 2.5, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 32, yVirtual - 80, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      // Bigote
+      ctx.strokeStyle = '#4a2c0b';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(xVirtual + 22, yVirtual - 63);
-      ctx.lineTo(xVirtual + 33, yVirtual - 63);
+      ctx.moveTo(xVirtual + 23, yVirtual - 72);
+      ctx.lineTo(xVirtual + 28, yVirtual - 74);
+      ctx.lineTo(xVirtual + 33, yVirtual - 72);
       ctx.stroke();
       
-      ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(xVirtual - 5, yVirtual - 60, 10, 35);
-      ctx.fillRect(xVirtual + 50, yVirtual - 60, 10, 35);
-      
-      ctx.fillStyle = '#5d4037';
-      ctx.fillRect(xVirtual - 10, yVirtual - 40, 8, 25);
-      ctx.fillStyle = '#424242';
-      ctx.fillRect(xVirtual - 12, yVirtual - 45, 12, 5);
-      
-      ctx.fillStyle = '#0d47a1';
-      ctx.fillRect(xVirtual + 15, yVirtual - 10, 10, 30);
-      ctx.fillRect(xVirtual + 30, yVirtual - 10, 10, 30);
-      
-      ctx.fillStyle = '#212121';
-      ctx.fillRect(xVirtual + 13, yVirtual + 20, 14, 8);
-      ctx.fillRect(xVirtual + 28, yVirtual + 20, 14, 8);
-      
-      ctx.fillStyle = '#ffc107';
+      // Porra en mano
+      ctx.strokeStyle = '#8b4513';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.arc(xVirtual + 45, yVirtual - 60, 3, 0, Math.PI * 2);
+      ctx.moveTo(xVirtual + 45, yVirtual - 50);
+      ctx.lineTo(xVirtual + 55, yVirtual - 30);
+      ctx.stroke();
+      ctx.fillStyle = '#d2691e';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 55, yVirtual - 30, 4, 0, Math.PI * 2);
       ctx.fill();
       
+      // "RAPIDO" si aplica
       if (obs.velocidadExtra > 0) {
-        ctx.fillStyle = '#ff4d4d';
-        ctx.font = 'bold 13px Courier New';
+        ctx.shadowColor = '#ff4444';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = '#ff4444';
+        ctx.font = 'bold 14px Courier New';
         ctx.textAlign = 'center';
-        ctx.fillText('RAPIDO', xVirtual + 28, yVirtual - 92);
+        ctx.fillText('RAPIDO', xVirtual + 28, yVirtual - 95);
+        ctx.shadowBlur = 0;
       }
       
       ctx.restore();
@@ -1652,89 +1728,99 @@
       const xVirtual = cerdo.xVirtual;
       const yVirtual = cerdo.yVirtual;
       
-      ctx.fillStyle = '#ff80ab';
+      // Sombra
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.beginPath();
-      ctx.ellipse(xVirtual + 30, yVirtual - 25, 32, 25, 0, 0, Math.PI * 2);
+      ctx.ellipse(xVirtual + 30, yVirtual + 8, 35, 12, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      // Cuerpo gordo rosado con manchas sucias
+      const bodyGrad = ctx.createRadialGradient(xVirtual + 30, yVirtual - 25, 0, xVirtual + 30, yVirtual - 25, 40);
+      bodyGrad.addColorStop(0, '#ffaa99');
+      bodyGrad.addColorStop(0.7, '#ff80ab');
+      bodyGrad.addColorStop(1, '#e57373');
+      ctx.fillStyle = bodyGrad;
       ctx.beginPath();
-      ctx.ellipse(xVirtual + 30, yVirtual - 15, 28, 15, 0, 0, Math.PI * 2);
+      ctx.ellipse(xVirtual + 30, yVirtual - 25, 35, 28, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      ctx.fillStyle = '#ff80ab';
+      // Manchas sucias
+      ctx.fillStyle = '#d32f2f';
       ctx.beginPath();
-      ctx.arc(xVirtual + 30, yVirtual - 45, 20, 0, Math.PI * 2);
+      ctx.ellipse(xVirtual + 15, yVirtual - 20, 8, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(xVirtual + 45, yVirtual - 35, 10, 7, 0, 0, Math.PI * 2);
       ctx.fill();
       
-      ctx.fillStyle = '#e91e63';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 30, yVirtual - 40, 12, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = 'black';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 26, yVirtual - 42, 2.5, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 34, yVirtual - 42, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 23, yVirtual - 48, 4, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 37, yVirtual - 48, 4, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = 'black';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 24, yVirtual - 48, 2, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 36, yVirtual - 48, 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.strokeStyle = 'black';
+      // Pelo hirsuto (líneas irregulares)
+      ctx.strokeStyle = '#8b4513';
       ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 20, yVirtual - 52);
-      ctx.lineTo(xVirtual + 26, yVirtual - 50);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 34, yVirtual - 50);
-      ctx.lineTo(xVirtual + 40, yVirtual - 52);
-      ctx.stroke();
+      ctx.lineCap = 'round';
+      for (let i = 0; i < 12; i++) {
+        const px = xVirtual + 10 + i * 4;
+        const py = yVirtual - 45 + Math.random() * 5;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px + Math.random() * 6 - 3, py - 10);
+        ctx.stroke();
+      }
       
+      // Cabeza con hocico y baba
       ctx.fillStyle = '#ff80ab';
       ctx.beginPath();
-      ctx.arc(xVirtual + 18, yVirtual - 55, 9, 0.3 * Math.PI, 1.7 * Math.PI);
+      ctx.arc(xVirtual + 30, yVirtual - 45, 22, 0, Math.PI * 2);
       ctx.fill();
+      // Orejas
       ctx.beginPath();
-      ctx.arc(xVirtual + 42, yVirtual - 55, 9, 0.3 * Math.PI, 1.7 * Math.PI);
-      ctx.fill();
-      
-      ctx.fillStyle = '#ff4d4d';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 18, yVirtual - 55, 5, 0.3 * Math.PI, 1.7 * Math.PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(xVirtual + 42, yVirtual - 55, 5, 0.3 * Math.PI, 1.7 * Math.PI);
+      ctx.ellipse(xVirtual + 18, yVirtual - 55, 8, 12, Math.PI / 4, 0, Math.PI * 2);
+      ctx.ellipse(xVirtual + 42, yVirtual - 55, 8, 12, -Math.PI / 4, 0, Math.PI * 2);
       ctx.fill();
       
-      ctx.fillStyle = '#e91e63';
-      ctx.fillRect(xVirtual + 15, yVirtual - 5, 12, 18);
-      ctx.fillRect(xVirtual + 33, yVirtual - 5, 12, 18);
-      
-      ctx.fillStyle = '#880e4f';
-      ctx.fillRect(xVirtual + 17, yVirtual + 10, 8, 5);
-      ctx.fillRect(xVirtual + 35, yVirtual + 10, 8, 5);
-      
-      ctx.strokeStyle = '#e91e63';
-      ctx.lineWidth = 3;
+      // Ojos malvados rojos
+      ctx.fillStyle = '#ff0000';
+      ctx.shadowColor = '#880000';
+      ctx.shadowBlur = 6;
       ctx.beginPath();
-      ctx.moveTo(xVirtual + 55, yVirtual - 30);
-      ctx.bezierCurveTo(
-        xVirtual + 65, yVirtual - 25,
-        xVirtual + 62, yVirtual - 15,
-        xVirtual + 55, yVirtual - 10
-      );
+      ctx.arc(xVirtual + 25, yVirtual - 48, 4, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 35, yVirtual - 48, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 26, yVirtual - 48, 1.5, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 36, yVirtual - 48, 1.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Hocico con baba goteando
+      ctx.fillStyle = '#e0e0e0';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 30, yVirtual - 38, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ddd';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 27, yVirtual - 37, 2, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 33, yVirtual - 37, 2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Baba (gotas)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 30, yVirtual - 32);
+      ctx.quadraticCurveTo(xVirtual + 35, yVirtual - 25, xVirtual + 38, yVirtual - 20);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(xVirtual + 38, yVirtual - 20, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Piernas cortas
+      ctx.fillStyle = '#ff80ab';
+      for (let i = 0; i < 4; i++) {
+        const px = xVirtual + 15 + i * 15;
+        ctx.beginPath();
+        ctx.roundRect(px, yVirtual - 5, 8, 20, 2);
+        ctx.fill();
+      }
       
       ctx.restore();
     }
@@ -1746,46 +1832,58 @@
       const xVirtual = cig.xVirtual;
       const yVirtual = cig.yVirtual;
       
-      ctx.fillStyle = '#8d6e63';
-      ctx.fillRect(xVirtual + 8, yVirtual - 25, 28, 18);
+      // Filtro sucio con papel arrugado
+      ctx.fillStyle = '#d2b48c';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 3;
+      ctx.beginPath();
+      ctx.roundRect(xVirtual + 5, yVirtual - 28, 15, 25, 3);
+      ctx.fill();
+      ctx.shadowBlur = 0;
       
-      ctx.strokeStyle = 'rgba(100, 80, 70, 0.5)';
+      // Papel blanco con arrugas
+      ctx.fillStyle = '#f5f5f5';
+      ctx.strokeStyle = 'rgba(200, 200, 200, 0.6)';
       ctx.lineWidth = 1;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(xVirtual + 10, yVirtual - 23 + i * 4);
-        ctx.lineTo(xVirtual + 34, yVirtual - 23 + i * 4);
-        ctx.stroke();
-      }
-      
-      ctx.fillStyle = '#9e9e9e';
       ctx.beginPath();
-      ctx.arc(xVirtual + 15, yVirtual - 30, 6, 0, Math.PI * 2);
+      ctx.roundRect(xVirtual + 8, yVirtual - 26, 28, 18, 2);
+      ctx.fill();
+      // Arrugas
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 12, yVirtual - 22);
+      ctx.quadraticCurveTo(xVirtual + 20, yVirtual - 20, xVirtual + 30, yVirtual - 18);
+      ctx.stroke();
+      
+      // Brasa realista con glow pulsante
+      const brasaPulse = 0.8 + Math.sin(cig.tiempoBrasa * 0.4) * 0.2;
+      ctx.shadowColor = '#ff4400';
+      ctx.shadowBlur = 18 * brasaPulse;
+      ctx.fillStyle = `rgba(255, 80, 0, ${brasaPulse})`;
+      ctx.beginPath();
+      ctx.arc(xVirtual + 35, yVirtual - 28, 6 * brasaPulse, 0, Math.PI * 2);
       ctx.fill();
       
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.shadowColor = '#ffff44';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = `rgba(255, 255, 100, ${brasaPulse * 0.7})`;
       ctx.beginPath();
-      ctx.arc(xVirtual + 14, yVirtual - 31, 2, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 36, yVirtual - 29, 2.5, 0, Math.PI * 2);
       ctx.fill();
+      ctx.shadowBlur = 0;
       
-      const brillo = 0.7 + Math.sin(cig.tiempoBrasa * 0.3) * 0.3;
-      ctx.fillStyle = `rgba(255, 152, 0, ${brillo})`;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 38, yVirtual - 30, 5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = `rgba(255, 235, 59, ${brillo * 0.8})`;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 39, yVirtual - 31, 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      if (Math.random() > 0.7 && !jugador.pakiRicoh.activo) {
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = 'rgba(220, 220, 220, 0.6)';
-        ctx.beginPath();
-        ctx.arc(xVirtual + 38, yVirtual - 38, 3 + Math.random() * 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
+      // Humo real: partículas ascendentes con dispersión
+      if (Math.random() < 0.6) {
+        ctx.globalAlpha = 0.4;
+        ctx.fillStyle = 'rgba(200, 200, 200, 0.6)';
+        for (let i = 0; i < 3; i++) {
+          const smokeX = xVirtual + 35 + (Math.random() - 0.5) * 8;
+          const smokeY = yVirtual - 35 - i * 4;
+          const smokeR = 2 + i * 1.5;
+          ctx.beginPath();
+          ctx.arc(smokeX + Math.sin(juego.tiempo * 0.1 + i) * 2, smokeY, smokeR, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
       }
       
       ctx.restore();
