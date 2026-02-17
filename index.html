@@ -649,18 +649,18 @@
 
     // ==================== ESTADO DEL JUEGO ====================
     const juego = {
-      estado: 'menu',
-      score: 0;
-      velocidadBase: 4.8,
-      velocidad: 4.8;
-      tiempo: 0,
-      frecuenciaObstaculos: 90,
-      contadorObstaculos: 0,
-      pantallaRoja: 0,
-      record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
-      choquesSinMorir: 0,
-      totalCigarrosReales: 0
-    };
+  estado: 'menu',
+  score: 0,
+  velocidadBase: 4.8,
+  velocidad: 4.8,
+  tiempo: 0,
+  frecuenciaObstaculos: 90,
+  contadorObstaculos: 0,
+  pantallaRoja: 0,
+  record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
+  choquesSinMorir: 0,
+  totalCigarrosReales: 0
+};
 
     recordDisplay.textContent = `RÉCORD: ${juego.record}`;
 
