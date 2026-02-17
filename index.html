@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>EL SEGARRO RUNNER</title>
+  <title>EL SEGARRO RUNNER - ENHANCED</title>
   <style>
     * {
       margin: 0;
@@ -51,12 +51,18 @@
       padding: 1.8vh 3.5vw;
       border-radius: 3vh;
       border: 2px solid #ffd166;
-      box-shadow: 0 0 15px rgba(255, 209, 102, 0.7);
+      box-shadow: 0 0 15px rgba(255, 209, 102, 0.7), 0 0 30px rgba(255, 209, 102, 0.3);
       font-size: 2.8vh;
       font-weight: bold;
       z-index: 10;
       white-space: nowrap;
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(10px);
+      animation: hudPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes hudPulse {
+      0%, 100% { box-shadow: 0 0 15px rgba(255, 209, 102, 0.7), 0 0 30px rgba(255, 209, 102, 0.3); }
+      50% { box-shadow: 0 0 25px rgba(255, 209, 102, 0.9), 0 0 50px rgba(255, 209, 102, 0.5); }
     }
 
     #score-display, #record-display {
@@ -70,29 +76,40 @@
       z-index: 10;
       text-align: center;
       width: 30%;
+      transition: transform 0.1s ease-out, text-shadow 0.2s;
     }
 
     #score-display { right: 3%; }
     #record-display { left: 3%; }
 
+    #score-display.bump {
+      transform: scale(1.3);
+      text-shadow: 0 0 15px rgba(255, 209, 102, 1), 0 0 30px rgba(255, 77, 77, 0.8);
+    }
+
     #game-over {
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.92);
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(0, 0, 0, 0.95);
       color: #ff4d4d;
       padding: 4vh 6vw;
       border-radius: 4vh;
       border: 4px solid #ff4d4d;
       text-align: center;
-      display: none;
       z-index: 20;
       box-shadow: 
         0 0 30px rgba(255, 77, 77, 0.9),
-        0 0 50px rgba(255, 209, 102, 0.5);
+        0 0 50px rgba(255, 209, 102, 0.5),
+        inset 0 0 50px rgba(255, 77, 77, 0.1);
       width: 85%;
       max-width: 75vw;
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #game-over.show {
+      transform: translate(-50%, -50%) scale(1);
     }
 
     #game-over h2 {
@@ -102,10 +119,16 @@
       font-family: 'Courier New', monospace;
       letter-spacing: 2px;
       background: linear-gradient(45deg, #ff4d4d, #ffd166, #ff4d4d);
+      background-size: 200% 200%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      text-stroke: 1px black;
+      animation: gradientShift 2s ease infinite;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
     #game-over p {
@@ -118,6 +141,7 @@
 
     #restart-btn {
       background: linear-gradient(45deg, #06d6a0, #118ab2, #06d6a0);
+      background-size: 200% 200%;
       color: white;
       border: none;
       padding: 3vh 10vw;
@@ -131,11 +155,12 @@
       width: 90%;
       margin: 0 auto;
       display: block;
+      animation: gradientShift 3s ease infinite;
     }
 
     #restart-btn:hover {
       transform: scale(1.07);
-      box-shadow: 0 6px 25px rgba(6, 214, 160, 0.8);
+      box-shadow: 0 6px 35px rgba(6, 214, 160, 0.9);
     }
 
     #restart-btn:active {
@@ -145,16 +170,20 @@
     #instructions {
       position: absolute;
       bottom: 3%;
+      left: 50%;
+      transform: translateX(-50%);
       color: #a8dadc;
       font-size: 2.4vh;
       text-align: center;
       width: 95%;
       font-family: 'Courier New', monospace;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.7);
       padding: 1.5vh 3vw;
       border-radius: 2.5vh;
       z-index: 10;
       text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(168, 218, 220, 0.3);
     }
 
     #title-screen {
@@ -171,6 +200,21 @@
       z-index: 30;
       gap: 6vh;
       touch-action: auto;
+      overflow: hidden;
+    }
+
+    #title-screen::before {
+      content: '';
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 209, 102, 0.1) 0%, transparent 50%);
+      animation: bgPulse 4s ease-in-out infinite;
+    }
+
+    @keyframes bgPulse {
+      0%, 100% { transform: translate(-25%, -25%) scale(1); opacity: 0.5; }
+      50% { transform: translate(-25%, -25%) scale(1.2); opacity: 1; }
     }
 
     #title-screen h1 {
@@ -186,19 +230,28 @@
       animation: pulseTitle 2s infinite;
       text-align: center;
       padding: 0 5vw;
-      background: linear-gradient(45deg, #ffd166, #ff4d4d, #ffd166);
+      background: linear-gradient(45deg, #ffd166, #ff4d4d, #ffd166, #ff4d4d);
+      background-size: 300% 300%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      animation: pulseTitle 2s infinite, gradientTitle 4s ease infinite;
+      z-index: 1;
     }
 
     @keyframes pulseTitle {
-      0%, 100% { transform: scale(1); text-shadow: 0 0 15px rgba(255, 209, 102, 0.9), 0 0 30px rgba(255, 77, 77, 0.7); }
-      50% { transform: scale(1.07); text-shadow: 0 0 25px rgba(255, 209, 102, 1), 0 0 50px rgba(255, 77, 77, 0.9), 0 0 75px rgba(255, 209, 102, 0.7); }
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(255, 209, 102, 0.9)); }
+      50% { transform: scale(1.07); filter: drop-shadow(0 0 30px rgba(255, 77, 77, 0.9)); }
+    }
+
+    @keyframes gradientTitle {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
     }
 
     #start-btn {
       background: linear-gradient(45deg, #ff4d4d, #ffd166, #ff4d4d);
+      background-size: 200% 200%;
       color: white;
       border: none;
       padding: 4vh 12vw;
@@ -212,6 +265,27 @@
         0 0 25px rgba(255, 77, 77, 0.8),
         0 0 50px rgba(255, 209, 102, 0.6);
       letter-spacing: 2px;
+      animation: gradientShift 3s ease infinite;
+      z-index: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #start-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transform: rotate(45deg);
+      animation: btnShine 3s ease-in-out infinite;
+    }
+
+    @keyframes btnShine {
+      0% { transform: translateX(-100%) rotate(45deg); }
+      50%, 100% { transform: translateX(100%) rotate(45deg); }
     }
 
     #start-btn:hover {
@@ -234,32 +308,91 @@
       height: 1.2vh;
       background: linear-gradient(90deg, #4cc9f0, #4361ee, #3a0ca3);
       border-radius: 1vh;
-      box-shadow: 0 0 10px rgba(76, 201, 240, 0.8);
-      transition: left 0.25s ease-out, width 0.2s;
+      box-shadow: 0 0 15px rgba(76, 201, 240, 0.9), 0 0 30px rgba(67, 97, 238, 0.5);
+      transition: left 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), width 0.2s, box-shadow 0.2s;
       z-index: 5;
+    }
+
+    #carril-indicator.active {
+      width: 7vw;
+      box-shadow: 0 0 25px rgba(76, 201, 240, 1), 0 0 50px rgba(67, 97, 238, 0.8);
     }
 
     #audio-message {
       position: absolute;
       bottom: 12%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translateX(-50%) scale(0);
       background: linear-gradient(90deg, #ffd166, #ff9e6d, #ffd166);
+      background-size: 200% 200%;
       color: #0a0a14;
       padding: 2vh 5vw;
       border-radius: 3vh;
       font-family: 'Courier New', monospace;
       font-weight: bold;
       font-size: 3vh;
-      display: none;
       z-index: 15;
-      box-shadow: 0 0 15px rgba(255, 209, 102, 0.9);
-      animation: pulseAudio 1.5s infinite;
+      box-shadow: 0 0 20px rgba(255, 209, 102, 0.9);
+      animation: gradientShift 2s ease infinite;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    @keyframes pulseAudio {
-      0%, 100% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.05); }
+    #audio-message.show {
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* Screen shake */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px); }
+    }
+
+    .shake {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    /* Combo indicator */
+    #combo-display {
+      position: absolute;
+      top: 15%;
+      right: 5%;
+      font-size: 4vh;
+      font-weight: bold;
+      color: #ff4d4d;
+      text-shadow: 0 0 15px rgba(255, 77, 77, 0.9);
+      font-family: 'Courier New', monospace;
+      z-index: 10;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #combo-display.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Speed indicator */
+    #speed-indicator {
+      position: absolute;
+      bottom: 15%;
+      left: 3%;
+      width: 8vw;
+      height: 1vh;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 1vh;
+      overflow: hidden;
+      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #speed-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #06d6a0, #ffd166, #ff4d4d);
+      border-radius: 1vh;
+      transition: width 0.5s ease-out;
+      box-shadow: 0 0 10px currentColor;
     }
   </style>
 </head>
@@ -275,6 +408,8 @@
     </div>
     <div id="score-display">SCORE: 0</div>
     <div id="record-display">RÉCORD: 0</div>
+    <div id="combo-display">x0</div>
+    <div id="speed-indicator"><div id="speed-bar" style="width: 20%"></div></div>
     <canvas id="game-canvas"></canvas>
     
     <div id="carril-indicator"></div>
@@ -306,7 +441,6 @@
     const dpr = window.devicePixelRatio || 1;
     
     function resizeCanvas() {
-      // Usar tamaño CSS × DPR para alta resolución
       canvas.width = canvas.clientWidth * dpr;
       canvas.height = canvas.clientHeight * dpr;
       ctx.scale(dpr, dpr);
@@ -315,22 +449,10 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // NUEVAS funciones de conversión - coordenadas CSS
-    function virtualX(x) {
-      return (x / 800) * canvas.clientWidth;
-    }
-
-    function virtualY(y) {
-      return (y / 600) * canvas.clientHeight;
-    }
-
-    function virtualW(w) {
-      return (w / 800) * canvas.clientWidth;
-    }
-
-    function virtualH(h) {
-      return (h / 600) * canvas.clientHeight;
-    }
+    function virtualX(x) { return (x / 800) * canvas.clientWidth; }
+    function virtualY(y) { return (y / 600) * canvas.clientHeight; }
+    function virtualW(w) { return (w / 800) * canvas.clientWidth; }
+    function virtualH(h) { return (h / 600) * canvas.clientHeight; }
 
     // ==================== ELEMENTOS DEL DOM ====================
     const scoreDisplay = document.getElementById('score-display');
@@ -346,27 +468,144 @@
     const audioMessage = document.getElementById('audio-message');
     const carrilIndicator = document.getElementById('carril-indicator');
     const instructions = document.getElementById('instructions');
+    const gameContainer = document.getElementById('game-container');
+    const comboDisplay = document.getElementById('combo-display');
+    const speedBar = document.getElementById('speed-bar');
 
     const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
                     ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    
-    if (esMovil) {
-      instructions.innerHTML = '<p>← → : Carriles | ↑ : Saltar | ↓ : Agacharse | 3↓ rápidos: EURO</p>';
-    }
 
     // ==================== CONSTANTES DEL JUEGO ====================
     const CARRILES = { IZQUIERDA: 0, CENTRO: 1, DERECHA: 2 };
     const POS_X_CARRIL_VIRTUAL = [200, 400, 600];
     const POS_Y_BASE_VIRTUAL = 350;
-    const CENTRO_X_VIRTUAL = 400;
-    const CENTRO_Y_VIRTUAL = 300;
-    
-    // SWIPE ULTRA-SENSIBLE (VALIDADO)
     const umbralSwipe = 20;
     const umbralSwipeEURO = 40;
     const tiempoMaximoSwipe = 400;
 
-    // ==================== CLASES (TEXTOS INSTANTÁNEOS) ====================
+    // ==================== SISTEMA DE PARTÍCULAS MEJORADO ====================
+    class Particula {
+      constructor(x, y, opciones = {}) {
+        this.x = x;
+        this.y = y;
+        this.vx = opciones.vx || (Math.random() - 0.5) * 4;
+        this.vy = opciones.vy || (Math.random() - 0.5) * 4 - 2;
+        this.radio = opciones.radio || 3 + Math.random() * 5;
+        this.radioInicial = this.radio;
+        this.color = opciones.color || '#ffd166';
+        this.vida = opciones.vida || 60;
+        this.vidaMax = this.vida;
+        this.gravedad = opciones.gravedad || 0.1;
+        this.friccion = opciones.friccion || 0.98;
+        this.tipo = opciones.tipo || 'circulo';
+        this.rotacion = Math.random() * Math.PI * 2;
+        this.rotacionVel = (Math.random() - 0.5) * 0.2;
+      }
+      
+      actualizar() {
+        this.vy += this.gravedad;
+        this.vx *= this.friccion;
+        this.vy *= this.friccion;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vida--;
+        this.radio = this.radioInicial * (this.vida / this.vidaMax);
+        this.rotacion += this.rotacionVel;
+      }
+      
+      dibujar(ctx) {
+        const alpha = this.vida / this.vidaMax;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotacion);
+        
+        if (this.tipo === 'estrella') {
+          this.dibujarEstrella(ctx);
+        } else if (this.tipo === 'humo') {
+          this.dibujarHumo(ctx);
+        } else {
+          ctx.fillStyle = this.color;
+          ctx.shadowColor = this.color;
+          ctx.shadowBlur = 10;
+          ctx.beginPath();
+          ctx.arc(0, 0, this.radio, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.restore();
+      }
+      
+      dibujarEstrella(ctx) {
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+          const angle = (i * 4 * Math.PI) / 5 - Math.PI / 2;
+          const x = Math.cos(angle) * this.radio;
+          const y = Math.sin(angle) * this.radio;
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+      
+      dibujarHumo(ctx) {
+        const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.radio);
+        gradient.addColorStop(0, `rgba(200, 200, 200, 0.8)`);
+        gradient.addColorStop(1, `rgba(150, 150, 150, 0)`);
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.radio, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      estaMuerta() { return this.vida <= 0 || this.radio < 0.5; }
+    }
+
+    // Sistema de partículas global
+    const particulas = [];
+
+    function crearExplosion(x, y, color, cantidad = 15) {
+      for (let i = 0; i < cantidad; i++) {
+        particulas.push(new Particula(x, y, {
+          color: color,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8 - 3,
+          radio: 2 + Math.random() * 6,
+          vida: 40 + Math.random() * 30,
+          tipo: Math.random() > 0.5 ? 'estrella' : 'circulo'
+        }));
+      }
+    }
+
+    function crearTrail(x, y, color) {
+      particulas.push(new Particula(x, y, {
+        color: color,
+        vx: (Math.random() - 0.5) * 1,
+        vy: 0.5,
+        radio: 2 + Math.random() * 3,
+        vida: 20,
+        gravedad: 0,
+        tipo: 'circulo'
+      }));
+    }
+
+    function crearHumo(x, y) {
+      particulas.push(new Particula(x, y, {
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: -1 - Math.random() * 0.5,
+        radio: 4 + Math.random() * 6,
+        vida: 50 + Math.random() * 30,
+        gravedad: -0.02,
+        friccion: 0.99,
+        tipo: 'humo'
+      }));
+    }
+
+    // ==================== CLASE TEXTO EMERGENTE MEJORADA ====================
     class TextoEmergente {
       constructor(texto, x, y, color = '#ffd166', opciones = {}) {
         this.texto = texto;
@@ -374,78 +613,81 @@
         this.y = y;
         this.color = color;
         this.vida = opciones.gigante ? 100 : 70;
+        this.vidaMax = this.vida;
         this.velocidadY = -2;
-        this.opacidad = 1.0;
-        this.escala = opciones.gigante ? 1.8 : 1.0;
+        this.escala = opciones.gigante ? 2.2 : 1.2;
+        this.escalaBase = this.escala;
         this.vibrar = opciones.vibrar || false;
         this.tiempo = 0;
+        this.rebote = opciones.rebote || false;
       }
       
       actualizar() {
         this.y += this.velocidadY;
         this.vida--;
         this.tiempo++;
+        
+        if (this.rebote && this.tiempo < 15) {
+          this.escala = this.escalaBase * (1 + Math.sin(this.tiempo * 0.5) * 0.3);
+        }
       }
       
       dibujar(ctx) {
         ctx.save();
-        ctx.globalAlpha = this.opacidad;
+        const alpha = Math.min(1, this.vida / (this.vidaMax * 0.3));
+        ctx.globalAlpha = alpha;
 
         let offsetX = this.x;
         if (this.vibrar) {
-          offsetX += Math.sin(this.tiempo * 15) * 1.5;
+          offsetX += Math.sin(this.tiempo * 0.5) * 3;
         }
         
-        ctx.font = `bold ${Math.floor(30 * this.escala)}px 'Courier New', monospace`;
+        ctx.font = `bold ${Math.floor(28 * this.escala)}px 'Courier New', monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 4 * this.escala;
+        // Sombra/glow
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 20;
+        
+        // Borde
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)';
+        ctx.lineWidth = 5 * this.escala;
         ctx.lineJoin = 'round';
         ctx.strokeText(this.texto, offsetX, this.y);
         
-        ctx.fillStyle = this.color;
+        // Texto con gradiente
+        const gradient = ctx.createLinearGradient(offsetX - 50, this.y - 20, offsetX + 50, this.y + 20);
+        gradient.addColorStop(0, this.color);
+        gradient.addColorStop(0.5, '#ffffff');
+        gradient.addColorStop(1, this.color);
+        ctx.fillStyle = gradient;
         ctx.fillText(this.texto, offsetX, this.y);
         
         ctx.restore();
       }
       
-      estaMuerto() {
-        return this.vida <= 0;
-      }
+      estaMuerto() { return this.vida <= 0; }
     }
 
-    class ParticulaHumo {
-      constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = -0.5 - Math.random() * 0.3;
-        this.radio = 1.5 + Math.random() * 2;
-        this.opacidad = 0.7;
-        this.vida = 40 + Math.random() * 20;
-      }
-      
-      actualizar() {
-        this.x += this.vx;
-        this.y += this.vy;
-        this.radio *= 0.98;
-        this.opacidad *= 0.97;
-        this.vida--;
-      }
-      
-      dibujar(ctx) {
-        ctx.globalAlpha = this.opacidad;
-        ctx.fillStyle = `rgba(200, 200, 200, ${this.opacidad})`;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radio, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-      }
-      
-      estaMuerta() {
-        return this.vida <= 0 || this.radio < 0.5;
+    const textosEmergentes = [];
+
+    // ==================== SCREEN SHAKE ====================
+    let shakeIntensity = 0;
+    let shakeDecay = 0.9;
+
+    function screenShake(intensity) {
+      shakeIntensity = Math.max(shakeIntensity, intensity);
+    }
+
+    function aplicarShake() {
+      if (shakeIntensity > 0.5) {
+        const offsetX = (Math.random() - 0.5) * shakeIntensity * 2;
+        const offsetY = (Math.random() - 0.5) * shakeIntensity * 2;
+        ctx.translate(offsetX, offsetY);
+        shakeIntensity *= shakeDecay;
+      } else {
+        shakeIntensity = 0;
       }
     }
 
@@ -460,8 +702,8 @@
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         startMusicaArabe();
         audioHabilitado = true;
-        audioMessage.style.display = 'block';
-        setTimeout(() => audioMessage.style.display = 'none', 3000);
+        audioMessage.classList.add('show');
+        setTimeout(() => audioMessage.classList.remove('show'), 3000);
       } catch (e) {
         console.log('Audio no disponible:', e);
       }
@@ -470,34 +712,26 @@
     function startMusicaArabe() {
       if (!audioContext || musicaPlaying) return;
       musicaPlaying = true;
-      
       const notas = [110, 130.81, 146.83, 164.81, 196.00];
       let indice = 0;
       
       function tocar() {
         if (!musicaPlaying || !audioContext) return;
-        
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        
         osc.connect(gain);
         gain.connect(audioContext.destination);
-        
         osc.type = 'sine';
         osc.frequency.value = notas[indice];
         gain.gain.value = 0.06;
-        
         osc.start();
         osc.stop(audioContext.currentTime + 2.0);
-        
         gain.gain.setValueAtTime(0, audioContext.currentTime);
         gain.gain.linearRampToValueAtTime(0.06, audioContext.currentTime + 0.1);
         gain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1.9);
-        
         indice = (indice + 1) % notas.length;
         setTimeout(tocar, 2400);
       }
-      
       tocar();
     }
 
@@ -509,23 +743,17 @@
         try {
           const osc = audioContext.createOscillator();
           const gain = audioContext.createGain();
-          
           osc.connect(gain);
           gain.connect(audioContext.destination);
-          
           osc.type = tipo || 'sine';
           osc.frequency.value = frecuencia;
           gain.gain.value = volumen;
-          
           osc.start();
           osc.stop(audioContext.currentTime + (duracion || 0.2));
-          
           if (duracion) {
             gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duracion);
           }
-        } catch (e) {
-          console.log('Error sonido:', e);
-        }
+        } catch (e) {}
       };
     }
 
@@ -544,10 +772,9 @@
     };
     const sonidoCerdo = crearSonido(180, 'sawtooth', 0.3, 0.4);
 
-    // ==================== GESTOS MÓVIL (ULTRA-SENSIBLE + EURO 3↓) ====================
+    // ==================== GESTOS MÓVIL ====================
     let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
     let touchStartTime = 0;
-    
     let contadorSwipesAbajo = 0;
     let tiempoPrimerSwipeAbajo = 0;
     let timeoutResetEURO = null;
@@ -563,27 +790,21 @@
 
     canvas.addEventListener('touchstart', (e) => {
       if (juego.estado !== 'jugando') return;
-      
       touchStartTime = Date.now();
       touchStartX = e.touches[0].clientX;
       touchStartY = e.touches[0].clientY;
-      
       e.preventDefault();
     }, { passive: false });
 
     canvas.addEventListener('touchend', (e) => {
       if (juego.estado !== 'jugando') return;
-      
       const ahora = Date.now();
       const duracionSwipe = ahora - touchStartTime;
-      
       touchEndX = e.changedTouches[0].clientX;
       touchEndY = e.changedTouches[0].clientY;
-      
       if (duracionSwipe <= tiempoMaximoSwipe) {
         detectarSwipe();
       }
-      
       e.preventDefault();
     }, { passive: false });
 
@@ -597,11 +818,12 @@
       
       if (Math.abs(diffX) > Math.abs(diffY)) {
         resetContadorEURO();
-        
         if (diffX > umbralSwipe && jugador.carril < 2) {
           jugador.carril++;
+          jugador.carrilCambiado = true;
         } else if (diffX < -umbralSwipe && jugador.carril > 0) {
           jugador.carril--;
+          jugador.carrilCambiado = true;
         }
         return;
       }
@@ -624,13 +846,11 @@
       
       if (diffY >= umbralSwipeEURO) {
         const ahora = Date.now();
-        
         if (contadorSwipesAbajo === 0) {
           tiempoPrimerSwipeAbajo = ahora;
           contadorSwipesAbajo = 1;
         } else if (ahora - tiempoPrimerSwipeAbajo < 1000) {
           contadorSwipesAbajo++;
-          
           if (contadorSwipesAbajo >= 3 && !jugador.trucoEuro.usado) {
             activarTrucoEuro();
             resetContadorEURO();
@@ -641,26 +861,68 @@
           contadorSwipesAbajo = 1;
           tiempoPrimerSwipeAbajo = ahora;
         }
-        
         if (timeoutResetEURO) clearTimeout(timeoutResetEURO);
         timeoutResetEURO = setTimeout(resetContadorEURO, 1000);
       }
     }
 
+    // ==================== CONTROLES TECLADO ====================
+    document.addEventListener('keydown', (e) => {
+      if (juego.estado !== 'jugando') return;
+      
+      switch(e.key) {
+        case 'ArrowLeft':
+          if (jugador.carril > 0) {
+            jugador.carril--;
+            jugador.carrilCambiado = true;
+          }
+          break;
+        case 'ArrowRight':
+          if (jugador.carril < 2) {
+            jugador.carril++;
+            jugador.carrilCambiado = true;
+          }
+          break;
+        case 'ArrowUp':
+          if (jugador.enSuelo) {
+            jugador.vy = -15;
+            jugador.enSuelo = false;
+            jugador.saltando = true;
+            sonidoSalto();
+          }
+          break;
+        case 'ArrowDown':
+          if (jugador.enSuelo && !jugador.agachado) {
+            jugador.agachado = true;
+            jugador.altoVirtual = 40;
+          }
+          break;
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'ArrowDown') {
+        jugador.agachado = false;
+        jugador.altoVirtual = 65;
+      }
+    });
+
     // ==================== ESTADO DEL JUEGO ====================
     const juego = {
-  estado: 'menu',
-  score: 0,
-  velocidadBase: 4.8,
-  velocidad: 4.8,
-  tiempo: 0,
-  frecuenciaObstaculos: 90,
-  contadorObstaculos: 0,
-  pantallaRoja: 0,
-  record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
-  choquesSinMorir: 0,
-  totalCigarrosReales: 0
-};
+      estado: 'menu',
+      score: 0,
+      velocidadBase: 4.8,
+      velocidad: 4.8,
+      tiempo: 0,
+      frecuenciaObstaculos: 90,
+      contadorObstaculos: 0,
+      pantallaRoja: 0,
+      record: localStorage.getItem('segarroRecord') ? parseInt(localStorage.getItem('segarroRecord')) : 0,
+      choquesSinMorir: 0,
+      totalCigarrosReales: 0,
+      combo: 0,
+      ultimoScoreBump: 0
+    };
 
     recordDisplay.textContent = `RÉCORD: ${juego.record}`;
 
@@ -682,27 +944,24 @@
       cigarros: 0,
       invulnerable: false,
       tiempoInvulnerable: 0,
-      trucoEuro: {
-        usado: false
-      },
+      trucoEuro: { usado: false },
       pakiRicoh: {
         activo: false,
         contador: 0,
-        duracion: 300,
-        cambiosRestantes: 3,
+        duracion: 420,
+        cambiosRestantes: 0,
         proximoCambio: 60,
-        direccion: 0,
-        humoParticulas: []
+        direccion: 0
       },
       enEscenaFinal: false,
-      amigos: []
+      amigos: [],
+      carrilCambiado: false
     };
 
     // ==================== OBSTÁCULOS ====================
     const obstaculos = [];
     const cigarros = [];
     const cerdos = [];
-    const textosEmergentes = [];
 
     // ==================== FUNCIONES DEL JUEGO ====================
     function activarTrucoEuro() {
@@ -713,15 +972,15 @@
       jugador.vidas++;
       vidasDisplay.textContent = jugador.vidas;
       
-      // TEXTO EN CENTRO - COORDENADAS CORREGIDAS
       textosEmergentes.push(new TextoEmergente(
-        "EURO", 
-        virtualX(400),  // ← CORREGIDO: centro virtual convertido a CSS
-        virtualY(300),  // ← CORREGIDO: centro virtual convertido a CSS
-        '#ffd700',
-        { gigante: true, vibrar: true }
+        "€URO", 
+        virtualX(400), virtualY(300),
+        '#ffd700', { gigante: true, vibrar: true, rebote: true }
       ));
       
+      // Explosión de partículas doradas
+      crearExplosion(virtualX(400), virtualY(300), '#ffd700', 30);
+      screenShake(10);
       sonidoEuro();
       
       setTimeout(() => {
@@ -778,7 +1037,8 @@
             altoVirtual: 30,
             carril: carril,
             tipo: 'cigarro',
-            tiempoBrasa: 0
+            tiempoBrasa: 0,
+            flotacion: Math.random() * Math.PI * 2
           });
         }
         
@@ -802,6 +1062,7 @@
       for (let i = cigarros.length - 1; i >= 0; i--) {
         cigarros[i].yVirtual += juego.velocidad;
         cigarros[i].tiempoBrasa = (cigarros[i].tiempoBrasa + 1) % 20;
+        cigarros[i].flotacion += 0.1;
         if (cigarros[i].yVirtual > 700) cigarros.splice(i, 1);
       }
     }
@@ -820,11 +1081,9 @@
           if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
                       obsXVirtual, obsYVirtual, obs.anchoVirtual, obs.altoVirtual)) {
             if (Math.random() < 0.3) {
-              // Texto arriba del policía - COORDENADAS CORRECTAS
               textosEmergentes.push(new TextoEmergente(
                 "RECISTA", 
-                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
-                virtualY(obs.yVirtual - 60),
+                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]), virtualY(obs.yVirtual - 60),
                 '#ff4d4d'
               ));
             }
@@ -837,26 +1096,27 @@
           if (!jugador.invulnerable) {
             sonidoChoque();
             juego.choquesSinMorir++;
+            juego.combo = 0;
+            actualizarCombo();
             
             if (juego.choquesSinMorir >= 3) {
-              // Texto arriba del policía - COORDENADAS CORRECTAS
               textosEmergentes.push(new TextoEmergente(
                 "MI CARTERA¡", 
-                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
-                virtualY(obs.yVirtual - 70),
-                '#ffd166', 
-                { gigante: true, vibrar: true }
+                virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]), virtualY(obs.yVirtual - 70),
+                '#ffd166', { gigante: true, vibrar: true }
               ));
               juego.choquesSinMorir = 0;
             }
             
-            // Texto arriba del policía - COORDENADAS CORRECTAS
             textosEmergentes.push(new TextoEmergente(
               "RECISTA", 
-              virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]),
-              virtualY(obs.yVirtual - 60),
+              virtualX(POS_X_CARRIL_VIRTUAL[obs.carril]), virtualY(obs.yVirtual - 60),
               '#ff4d4d'
             ));
+            
+            // Efectos visuales de daño
+            crearExplosion(virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]), virtualY(jugador.yVirtual), '#ff4d4d', 20);
+            screenShake(15);
             juego.pantallaRoja = 30;
             
             if (jugador.vidas > 1) {
@@ -884,15 +1144,17 @@
             sonidoCerdo();
             jugador.vidas--;
             vidasDisplay.textContent = jugador.vidas;
+            juego.combo = 0;
+            actualizarCombo();
             
-            // Texto arriba del cerdo - COORDENADAS CORRECTAS
             textosEmergentes.push(new TextoEmergente(
               "YALLAH", 
-              virtualX(POS_X_CARRIL_VIRTUAL[cerdo.carril]),
-              virtualY(cerdo.yVirtual - 65),
-              '#ff4d4d', 
-              { gigante: true, vibrar: true }
+              virtualX(POS_X_CARRIL_VIRTUAL[cerdo.carril]), virtualY(cerdo.yVirtual - 65),
+              '#ff4d4d', { gigante: true, vibrar: true }
             ));
+            
+            crearExplosion(virtualX(POS_X_CARRIL_VIRTUAL[cerdo.carril]), virtualY(cerdo.yVirtual), '#ff80ab', 25);
+            screenShake(20);
             juego.pantallaRoja = 35;
             
             if (jugador.vidas <= 0) {
@@ -915,14 +1177,17 @@
         if (colision(jugadorXVirtual, jugadorYVirtual, jugador.anchoVirtual, jugador.altoVirtual, 
                     cigXVirtual, cigYVirtual, cig.anchoVirtual, cig.altoVirtual)) {
           sonidoSuspiro();
+          juego.combo++;
+          actualizarCombo();
           
-          // Texto arriba del cigarro - COORDENADAS CORRECTAS
           textosEmergentes.push(new TextoEmergente(
-            "SEGARRO", 
-            virtualX(POS_X_CARRIL_VIRTUAL[cig.carril]),
-            virtualY(cig.yVirtual - 55),
-            '#ffd166'
+            juego.combo > 1 ? `SEGARRO x${juego.combo}` : "SEGARRO", 
+            virtualX(POS_X_CARRIL_VIRTUAL[cig.carril]), virtualY(cig.yVirtual - 55),
+            '#ffd166', { rebote: true }
           ));
+          
+          // Partículas doradas al recoger
+          crearExplosion(virtualX(POS_X_CARRIL_VIRTUAL[cig.carril]), virtualY(cig.yVirtual), '#ffd166', 12);
           
           jugador.cigarros++;
           juego.totalCigarrosReales++;
@@ -934,14 +1199,14 @@
             cigarrosDisplay.textContent = jugador.cigarros;
             vidasDisplay.textContent = jugador.vidas;
             
-            // Texto arriba del jugador - COORDENADAS CORRECTAS
             textosEmergentes.push(new TextoEmergente(
               "AMIGOO", 
-              virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
-              virtualY(jugador.yVirtual - 60),
-              '#ffd700', 
-              { gigante: true, vibrar: true }
+              virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]), virtualY(jugador.yVirtual - 60),
+              '#ffd700', { gigante: true, vibrar: true, rebote: true }
             ));
+            
+            crearExplosion(virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]), virtualY(jugador.yVirtual), '#ffd700', 30);
+            screenShake(8);
           }
           
           if (juego.totalCigarrosReales % 10 === 0 && juego.totalCigarrosReales > 0) {
@@ -957,23 +1222,28 @@
       return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2;
     }
 
+    function actualizarCombo() {
+      if (juego.combo > 1) {
+        comboDisplay.textContent = `x${juego.combo}`;
+        comboDisplay.classList.add('show');
+      } else {
+        comboDisplay.classList.remove('show');
+      }
+    }
+
     function activarPakiRicoh() {
       jugador.pakiRicoh.activo = true;
       jugador.pakiRicoh.contador = 0;
-      jugador.pakiRicoh.cambiosRestantes = 0;  // ← CORREGIDO: 0 cambios (sin movimiento automático)
-      jugador.pakiRicoh.proximoCambio = 60;
-      jugador.pakiRicoh.direccion = 0;
-      jugador.pakiRicoh.duracion = 420;  // ← CORREGIDO: 420 frames = 7 segundos
-      jugador.pakiRicoh.humoParticulas = [];
+      jugador.pakiRicoh.duracion = 420;
       
-      // TEXTO EN CENTRO - COORDENADAS CORREGIDAS
       textosEmergentes.push(new TextoEmergente(
         "¡PAKI RICOH!", 
-        virtualX(400),  // ← CORREGIDO: centro virtual convertido a CSS
-        virtualY(300),  // ← CORREGIDO: centro virtual convertido a CSS
-        '#ffd700', 
-        { gigante: true, vibrar: true }
+        virtualX(400), virtualY(300),
+        '#ffd700', { gigante: true, vibrar: true, rebote: true }
       ));
+      
+      crearExplosion(virtualX(400), virtualY(300), '#ffd700', 40);
+      screenShake(12);
       
       if (audioContext) {
         const osc = audioContext.createOscillator();
@@ -993,24 +1263,13 @@
       
       jugador.pakiRicoh.contador++;
       
-      // Humo (sin cambios)
-      if (jugador.pakiRicoh.humoParticulas.length < 50 && Math.random() < 0.4) {
-        jugador.pakiRicoh.humoParticulas.push(new ParticulaHumo(
+      // Humo constante
+      if (Math.random() < 0.4) {
+        crearHumo(
           virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril] + (Math.random() - 0.5) * 25),
           virtualY(jugador.yVirtual - 25)
-        ));
+        );
       }
-      
-      for (let i = jugador.pakiRicoh.humoParticulas.length - 1; i >= 0; i--) {
-        jugador.pakiRicoh.humoParticulas[i].actualizar();
-        if (jugador.pakiRicoh.humoParticulas[i].estaMuerta()) {
-          jugador.pakiRicoh.humoParticulas.splice(i, 1);
-        }
-      }
-      
-      // ← ELIMINADO: Bloque de cambios automáticos de carril (ya no existe)
-      
-      // ← ELIMINADO: Movimiento automático de carril (ya no existe)
       
       if (jugador.pakiRicoh.contador >= jugador.pakiRicoh.duracion) {
         terminarPakiRicoh();
@@ -1019,13 +1278,10 @@
 
     function terminarPakiRicoh() {
       jugador.pakiRicoh.activo = false;
-      jugador.pakiRicoh.humoParticulas = [];
       
-      // Texto arriba del jugador - COORDENADAS CORRECTAS
       textosEmergentes.push(new TextoEmergente(
         "..", 
-        virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
-        virtualY(jugador.yVirtual - 50),
+        virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]), virtualY(jugador.yVirtual - 50),
         '#ffffff'
       ));
       sonidoTos();
@@ -1055,12 +1311,33 @@
         jugador.altoVirtual = 65;
       }
       
+      // Trail del jugador
+      if (juego.tiempo % 3 === 0 && !jugador.enEscenaFinal) {
+        crearTrail(
+          virtualX(POS_X_CARRIL_VIRTUAL[jugador.carril]),
+          virtualY(jugador.yVirtual + 20),
+          jugador.pakiRicoh.activo ? '#ffd700' : '#2e7d32'
+        );
+      }
+      
       actualizarPakiRicoh();
     }
 
     function actualizarDificultad() {
       juego.score++;
+      
+      // Bump animation para score
+      if (juego.score - juego.ultimoScoreBump >= 100) {
+        scoreDisplay.classList.add('bump');
+        setTimeout(() => scoreDisplay.classList.remove('bump'), 100);
+        juego.ultimoScoreBump = juego.score;
+      }
+      
       scoreDisplay.textContent = `SCORE: ${juego.score}`;
+      
+      // Actualizar barra de velocidad
+      const velocidadNivel = Math.min(100, ((juego.velocidad - 4.8) / 4.2) * 100);
+      speedBar.style.width = `${20 + velocidadNivel * 0.8}%`;
       
       juego.velocidad = 4.8;
       if (juego.score >= 1000) juego.velocidad += 0.6;
@@ -1085,6 +1362,13 @@
       for (let i = textosEmergentes.length - 1; i >= 0; i--) {
         textosEmergentes[i].actualizar();
         if (textosEmergentes[i].estaMuerto()) textosEmergentes.splice(i, 1);
+      }
+    }
+
+    function actualizarParticulas() {
+      for (let i = particulas.length - 1; i >= 0; i--) {
+        particulas[i].actualizar();
+        if (particulas[i].estaMuerta()) particulas.splice(i, 1);
       }
     }
 
@@ -1145,7 +1429,10 @@
       
       finalScoreDisplay.textContent = `SCORE: ${juego.score}`;
       bestRecordDisplay.textContent = `MEJOR RÉCORD: ${juego.record}`;
-      gameOverPanel.style.display = 'block';
+      gameOverPanel.classList.add('show');
+      
+      screenShake(25);
+      crearExplosion(virtualX(400), virtualY(300), '#ff4d4d', 50);
       
       if (audioContext) {
         const osc1 = audioContext.createOscillator();
@@ -1186,19 +1473,22 @@
       juego.contadorObstaculos = 0;
       juego.pantallaRoja = 0;
       juego.choquesSinMorir = 0;
+      juego.combo = 0;
+      juego.ultimoScoreBump = 0;
       
       jugador.carril = CARRILES.CENTRO;
       jugador.yVirtual = POS_Y_BASE_VIRTUAL;
       jugador.vy = 0;
       jugador.saltando = false;
       jugador.agachado = false;
+      jugador.altoVirtual = 65;
       jugador.enSuelo = true;
       jugador.vidas = 1;
       jugador.cigarros = 0;
       jugador.invulnerable = false;
       jugador.tiempoInvulnerable = 0;
       jugador.trucoEuro = { usado: false };
-      jugador.pakiRicoh = { activo: false, contador: 0, duracion: 300, cambiosRestantes: 3, proximoCambio: 60, direccion: 0, humoParticulas: [] };
+      jugador.pakiRicoh = { activo: false, contador: 0, duracion: 420, cambiosRestantes: 0, proximoCambio: 60, direccion: 0 };
       jugador.enEscenaFinal = false;
       jugador.amigos = [];
       
@@ -1206,393 +1496,766 @@
       cigarros.length = 0;
       cerdos.length = 0;
       textosEmergentes.length = 0;
+      particulas.length = 0;
       
       resetContadorEURO();
+      actualizarCombo();
       
       scoreDisplay.textContent = `SCORE: 0`;
       vidasDisplay.textContent = jugador.vidas;
       cigarrosDisplay.textContent = jugador.cigarros;
+      speedBar.style.width = '20%';
       
-      gameOverPanel.style.display = 'none';
+      gameOverPanel.classList.remove('show');
       
       if (audioHabilitado) startMusicaArabe();
     }
 
-    // ==================== RENDERIZADO ====================
+    // ==================== RENDERIZADO MEJORADO ====================
     function dibujarFondo() {
       ctx.save();
       ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-
-      // Cielo estrellado nocturno con gradiente profundo
-      const skyGrad = ctx.createRadialGradient(400, 100, 0, 400, 100, 500);
-      skyGrad.addColorStop(0, '#0a0a14');
-      skyGrad.addColorStop(0.3, '#1a1a2e');
-      skyGrad.addColorStop(0.7, '#0f3460');
-      skyGrad.addColorStop(1, '#000011');
-      ctx.fillStyle = skyGrad;
+      
+      // Fondo con gradiente más rico
+      const grad = ctx.createLinearGradient(0, 0, 0, 600);
+      grad.addColorStop(0, '#0f0c29');
+      grad.addColorStop(0.3, '#1a1a2e');
+      grad.addColorStop(0.6, '#162447');
+      grad.addColorStop(1, '#0f3460');
+      ctx.fillStyle = grad;
       ctx.fillRect(0, 0, 800, 600);
-
-      // Estrellas parpadeantes
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      for (let i = 0; i < 20; i++) {
-        const blink = 0.5 + Math.sin(juego.tiempo * 0.05 + i) * 0.5;
-        ctx.globalAlpha = blink * 0.6;
+      
+      // Estrellas con parallax
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      for (let i = 0; i < 50; i++) {
+        const x = (i * 73 + juego.tiempo * 0.02) % 800;
+        const y = (i * 41) % 200;
+        const size = 0.5 + (i % 3) * 0.5;
+        const twinkle = 0.5 + Math.sin(juego.tiempo * 0.1 + i) * 0.5;
+        ctx.globalAlpha = twinkle;
         ctx.beginPath();
-        ctx.arc(50 + i * 35 + Math.sin(juego.tiempo * 0.03 + i) * 5, 50 + i * 10, 1.5, 0, Math.PI * 2);
+        ctx.arc(x, y, size, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
-
-      // Edificios con ventanas iluminadas (profundidad)
-      ctx.fillStyle = '#111122';
-      ctx.fillRect(0, 250, 800, 350); // Base oscura
-      // Edificio 1
-      ctx.fillStyle = '#0d1117';
-      ctx.fillRect(40, 200, 140, 280);
-      for (let j = 0; j < 8; j++) {
-        for (let k = 0; k < 4; k++) {
-          const light = Math.sin(juego.tiempo * 0.08 + j + k) > 0 ? '#ffff88' : '#112244';
-          ctx.fillStyle = light;
-          ctx.fillRect(50 + k * 30, 220 + j * 30, 20, 20);
-        }
-      }
-      // Edificio 2, 3... (repite patrón para más)
-      ctx.fillStyle = '#0d1117';
-      ctx.fillRect(220, 230, 100, 260);
-      ctx.fillRect(350, 210, 160, 300);
-      ctx.fillRect(550, 220, 120, 280);
-      ctx.fillRect(680, 190, 110, 320);
-
-      // Neones parpadeantes en edificios
-      const neonPhase = juego.tiempo * 0.15;
-      ctx.shadowColor = '#ff00ff';
-      ctx.shadowBlur = 20;
-      ctx.fillStyle = `rgba(255, 0, 255, ${0.4 + Math.sin(neonPhase) * 0.3})`;
-      ctx.fillRect(360, 215, 140, 8);
-      ctx.shadowColor = '#00ffff';
-      ctx.fillStyle = `rgba(0, 255, 255, ${0.4 + Math.cos(neonPhase * 1.2) * 0.3})`;
-      ctx.fillRect(60, 205, 100, 6);
-      ctx.shadowBlur = 0;
-
-      // Carretera asfalto con textura y líneas
-      const roadGrad = ctx.createLinearGradient(0, 350, 0, 600);
-      roadGrad.addColorStop(0, '#2a2a3a');
-      roadGrad.addColorStop(1, '#1a1a25');
-      ctx.fillStyle = roadGrad;
-      ctx.fillRect(0, 350, 800, 250);
-
-      // Textura asfalto (puntos aleatorios)
-      ctx.fillStyle = 'rgba(50, 50, 60, 0.4)';
-      for (let i = 0; i < 500; i++) {
-        ctx.beginPath();
-        ctx.arc(Math.random() * 800, 350 + Math.random() * 250, Math.random() * 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-
-      // Líneas de carril animadas (scroll infinito)
-      ctx.strokeStyle = '#ffff88';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.setLineDash([30, 30]);
+      
+      // Montañas con parallax mejorado
+      ctx.fillStyle = '#2d3142';
+      dibujarMontanas(0.3, 0, 250, 200, 200, 350, 200, 400, 300, 600, 200, 800, 300);
+      ctx.fillStyle = '#1e2736';
+      dibujarMontanas(0.6, 0, 300, 150, 250, 350, 150, 550, 250, 750, 300, 800, 400);
+      ctx.fillStyle = '#141e2b';
+      dibujarMontanas(0.9, 0, 400, 100, 300, 400, 100, 600, 300, 800, 400, 800, 600);
+      
+      // Nubes animadas con glow
       for (let i = 0; i < 5; i++) {
-        const y = (juego.tiempo * juego.velocidad * 0.5 + i * 100) % 250 + 350;
+        const x = (juego.tiempo * 0.15 + i * 200) % 1000 - 100;
+        const y = 80 + Math.sin(juego.tiempo * 0.03 + i) * 15;
+        
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.3)';
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
         ctx.beginPath();
-        ctx.moveTo(200, y);
-        ctx.lineTo(600, y);
-        ctx.stroke();
-      }
-      ctx.setLineDash([]);
-
-      // Bordes de carril
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(200, 350);
-      ctx.lineTo(200, 600);
-      ctx.moveTo(600, 350);
-      ctx.lineTo(600, 600);
-      ctx.stroke();
-
-      // Farolas lejanas (luces amarillas)
-      for (let i = 0; i < 6; i++) {
-        const x = 100 + i * 130;
-        const flicker = 0.8 + Math.sin(juego.tiempo * 0.1 + i) * 0.2;
-        ctx.shadowColor = '#ffaa00';
-        ctx.shadowBlur = 15;
-        ctx.fillStyle = `rgba(255, 170, 0, ${flicker})`;
-        ctx.beginPath();
-        ctx.arc(x, 380 + Math.sin(juego.tiempo * 0.05) * 5, 12, 0, Math.PI * 2);
+        ctx.arc(x, y, 35, 0, Math.PI * 2);
+        ctx.arc(x + 30, y - 10, 28, 0, Math.PI * 2);
+        ctx.arc(x + 55, y, 32, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.strokeStyle = '#444';
-        ctx.lineWidth = 3;
+      }
+      
+      // Líneas de carril con glow
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.lineWidth = 4;
+      for (let i = 0; i < 4; i++) {
         ctx.beginPath();
-        ctx.moveTo(x, 380);
-        ctx.lineTo(x, 450);
+        ctx.moveTo(i * 200, 0);
+        ctx.lineTo(i * 200, 600);
         ctx.stroke();
       }
-
-      // Coches lejanos (sombras moviéndose)
-      ctx.fillStyle = 'rgba(100, 100, 120, 0.6)';
-      for (let i = 0; i < 3; i++) {
-        const x = (juego.tiempo * 2 + i * 300) % 800;
+      
+      // Línea central con glow
+      ctx.shadowColor = 'rgba(255, 209, 102, 0.5)';
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.setLineDash([25, 15]);
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(400, 0);
+      ctx.lineTo(400, 600);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
+      
+      // Marcas de velocidad con glow dinámico
+      const glowIntensity = 0.3 + (juego.velocidad - 4.8) * 0.1;
+      ctx.shadowColor = `rgba(255, 209, 102, ${glowIntensity})`;
+      ctx.shadowBlur = 15;
+      ctx.strokeStyle = `rgba(255, 209, 102, ${0.3 + glowIntensity})`;
+      ctx.lineWidth = 3;
+      for (let i = 0; i < 20; i++) {
+        const y = (juego.tiempo * juego.velocidad * 0.3 + i * 35) % 600;
         ctx.beginPath();
-        ctx.ellipse(x, 410, 40, 15, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
-        ctx.beginPath();
-        ctx.arc(x - 15, 405, 4, 0, Math.PI * 2);
-        ctx.arc(x + 15, 405, 4, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(335, y);
+        ctx.lineTo(465, y);
+        ctx.stroke();
       }
-
+      ctx.shadowBlur = 0;
+      
       ctx.restore();
-    }  
+    }
+
+    function dibujarMontanas(factor, ...puntos) {
+      ctx.beginPath();
+      ctx.moveTo(puntos[0], puntos[1]);
+      for (let i = 2; i < puntos.length; i += 2) {
+        ctx.lineTo(puntos[i], puntos[i+1]);
+      }
+      ctx.lineTo(800, 600);
+      ctx.lineTo(0, 600);
+      ctx.fill();
+      
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(puntos[0], puntos[1]);
+      for (let i = 2; i < puntos.length; i += 2) {
+        ctx.lineTo(puntos[i], puntos[i+1] + 15);
+      }
+      ctx.lineTo(800, 600);
+      ctx.lineTo(0, 600);
+      ctx.fill();
+    }
 
     function dibujarJugador() {
-  if (jugador.enEscenaFinal) {
-    // Escena final intacta
-    ctx.save();
-    ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-    // ... tu código original de escena final ...
-    ctx.restore();
-    return;
-  }
-  
-  ctx.save();
-  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-  
-  const xVirtual = POS_X_CARRIL_VIRTUAL - jugador.anchoVirtual / 2;
-  const yVirtual = jugador.yVirtual;
-  
-  if (jugador.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
-    ctx.globalAlpha = 0.7;
-  }
-  
-  if (jugador.pakiRicoh.activo) {
-    ctx.shadowColor = '#ffd700';
-    ctx.shadowBlur = 30;
-  }
-  
-  // Rebote mínimo (2px) para que parezca vivo sin romper salto
-  const rebote = Math.sin(juego.tiempo * 0.2) * 2;
-  
-  // Cabeza más grande, ojos flipados
-  ctx.fillStyle = '#4e342e';
-  ctx.beginPath();
-  ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 10 + rebote, 18, 0, Math.PI * 2);
-  ctx.fill();
-  
-  ctx.fillStyle = jugador.colorPiel;
-  ctx.beginPath();
-  ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 10 + rebote, 16, 0, Math.PI * 2);
-  ctx.fill();
-  
-  ctx.fillStyle = 'white';
-  ctx.beginPath();
-  ctx.arc(xVirtual + jugador.anchoVirtual / 2 - 6, yVirtual - jugador.altoVirtual - 12 + rebote, 5, 0, Math.PI * 2);
-  ctx.arc(xVirtual + jugador.anchoVirtual / 2 + 6, yVirtual - jugador.altoVirtual - 12 + rebote, 5, 0, Math.PI * 2);
-  ctx.fill();
-  
-  ctx.fillStyle = 'black';
-  ctx.beginPath();
-  ctx.arc(xVirtual + jugador.anchoVirtual / 2 - 5, yVirtual - jugador.altoVirtual - 14 + rebote, 2, 0, Math.PI * 2);
-  ctx.arc(xVirtual + jugador.anchoVirtual / 2 + 5, yVirtual - jugador.altoVirtual - 14 + rebote, 2, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // Sonrisa torcida
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  ctx.moveTo(xVirtual + jugador.anchoVirtual / 2 - 6, yVirtual - jugador.altoVirtual + 5 + rebote);
-  ctx.quadraticCurveTo(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual + 8 + rebote, xVirtual + jugador.anchoVirtual / 2 + 6, yVirtual - jugador.altoVirtual + 4 + rebote);
-  ctx.stroke();
-  
-  // Ropa original + bolsillo cigarro
-  ctx.fillStyle = jugador.colorRopa;
-  ctx.beginPath();
-  ctx.moveTo(xVirtual + 5, yVirtual - jugador.altoVirtual + rebote);
-  ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - jugador.altoVirtual + rebote);
-  ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - 15 + rebote);
-  ctx.lineTo(xVirtual + jugador.anchoVirtual - 15, yVirtual + rebote);
-  ctx.lineTo(xVirtual + 15, yVirtual + rebote);
-  ctx.lineTo(xVirtual + 5, yVirtual - 15 + rebote);
-  ctx.closePath();
-  ctx.fill();
-  
-  ctx.fillStyle = '#8d6e63';
-  ctx.fillRect(xVirtual + 10, yVirtual - jugador.altoVirtual + 10 + rebote, 10, 10); // bolsillo
-  ctx.fillStyle = '#a0522d';
-  ctx.fillRect(xVirtual + 12, yVirtual - jugador.altoVirtual + 8 + rebote, 4, 8); // cigarro
-  
-  // Brazos y piernas originales, pero con offset natural
-  const offset = Math.sin(juego.tiempo / 4) * 8;
-  ctx.fillStyle = jugador.colorPiel;
-  ctx.fillRect(xVirtual - 10, yVirtual - 35 + offset + rebote, 10, 25);
-  ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 35 - offset + rebote, 10, 25);
-  
-  ctx.fillStyle = '#1a237e';
-  ctx.fillRect(xVirtual + 8, yVirtual - 20 + offset + rebote, 8, 25);
-  ctx.fillRect(xVirtual + 19, yVirtual - 20 - offset + rebote, 8, 25);
-  
-  ctx.fillStyle = jugador.colorZapatos;
-  ctx.fillRect(xVirtual + 7, yVirtual + 27 + rebote, 10, 8);
-  ctx.fillRect(xVirtual + 18, yVirtual + 27 + rebote, 10, 8);
-  
-  // Humo muy sutil (solo 1 cada 10 frames)
-  if (!jugador.pakiRicoh.activo && Math.random() < 0.1) {
-    ctx.globalAlpha = 0.5;
-    ctx.fillStyle = 'rgba(220,220,220,0.7)';
-    ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 25 + rebote, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.globalAlpha = 1;
-  }
-  
-  ctx.shadowBlur = 0;
-  ctx.restore();
-}
+      if (jugador.enEscenaFinal) {
+        dibujarEscenaFinal();
+        return;
+      }
+      
+      ctx.save();
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+      
+      const xVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
+      const yVirtual = jugador.yVirtual;
+      
+      if (jugador.invulnerable && Math.floor(Date.now() / 80) % 2 === 0) {
+        ctx.globalAlpha = 0.5;
+      }
+      
+      // Glow durante Paki Ricoh
+      if (jugador.pakiRicoh.activo) {
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 40;
+        
+        // Aura dorada
+        const gradient = ctx.createRadialGradient(
+          xVirtual + jugador.anchoVirtual/2, yVirtual - jugador.altoVirtual/2,
+          0,
+          xVirtual + jugador.anchoVirtual/2, yVirtual - jugador.altoVirtual/2,
+          60
+        );
+        gradient.addColorStop(0, 'rgba(255, 215, 0, 0.3)');
+        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(xVirtual + jugador.anchoVirtual/2, yVirtual - jugador.altoVirtual/2, 60, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Cuerpo con gradiente
+      const bodyGrad = ctx.createLinearGradient(xVirtual, yVirtual - jugador.altoVirtual, xVirtual + jugador.anchoVirtual, yVirtual);
+      bodyGrad.addColorStop(0, '#3e8e41');
+      bodyGrad.addColorStop(0.5, jugador.colorRopa);
+      bodyGrad.addColorStop(1, '#1b5e20');
+      ctx.fillStyle = bodyGrad;
+      
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 5, yVirtual - jugador.altoVirtual);
+      ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - jugador.altoVirtual);
+      ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - 15);
+      ctx.lineTo(xVirtual + jugador.anchoVirtual - 15, yVirtual);
+      ctx.lineTo(xVirtual + 15, yVirtual);
+      ctx.lineTo(xVirtual + 5, yVirtual - 15);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Highlight en ropa
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 8, yVirtual - jugador.altoVirtual + 5);
+      ctx.lineTo(xVirtual + 18, yVirtual - jugador.altoVirtual + 5);
+      ctx.lineTo(xVirtual + 15, yVirtual - 30);
+      ctx.lineTo(xVirtual + 10, yVirtual - 30);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Cabeza con gradiente
+      ctx.fillStyle = '#4e342e';
+      ctx.beginPath();
+      ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 17, 0, Math.PI * 2);
+      ctx.fill();
+      
+      const headGrad = ctx.createRadialGradient(
+        xVirtual + jugador.anchoVirtual / 2 - 3, yVirtual - jugador.altoVirtual - 8, 2,
+        xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 15
+      );
+      headGrad.addColorStop(0, '#8d6e63');
+      headGrad.addColorStop(1, jugador.colorPiel);
+      ctx.fillStyle = headGrad;
+      ctx.beginPath();
+      ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 15, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Ojos
+      if (jugador.pakiRicoh.activo) {
+        // Gafas de sol doradas
+        ctx.fillStyle = '#1a1a1a';
+        ctx.fillRect(xVirtual + 9, yVirtual - jugador.altoVirtual - 13, 17, 8);
+        ctx.fillStyle = '#ffd700';
+        ctx.fillRect(xVirtual + 10, yVirtual - jugador.altoVirtual - 12, 3, 6);
+        ctx.fillRect(xVirtual + 22, yVirtual - jugador.altoVirtual - 12, 3, 6);
+      } else {
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(xVirtual + 12, yVirtual - jugador.altoVirtual - 8, 4.5, 0, Math.PI * 2);
+        ctx.arc(xVirtual + 23, yVirtual - jugador.altoVirtual - 8, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#2d1f1a';
+        const eyeOffset = Math.sin(juego.tiempo / 10) * 0.8;
+        ctx.beginPath();
+        ctx.arc(xVirtual + 12 + eyeOffset, yVirtual - jugador.altoVirtual - 8, 2.5, 0, Math.PI * 2);
+        ctx.arc(xVirtual + 23 + eyeOffset, yVirtual - jugador.altoVirtual - 8, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Brillo en ojos
+        ctx.fillStyle = 'white';
+        ctx.beginPath();
+        ctx.arc(xVirtual + 11, yVirtual - jugador.altoVirtual - 9, 1, 0, Math.PI * 2);
+        ctx.arc(xVirtual + 22, yVirtual - jugador.altoVirtual - 9, 1, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Sonrisa
+        ctx.strokeStyle = '#3e2723';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(xVirtual + 17.5, yVirtual - jugador.altoVirtual - 2, 5, 0.1 * Math.PI, 0.9 * Math.PI);
+        ctx.stroke();
+      }
+      
+      // Brazos animados
+      const offsetBrazos = Math.sin(juego.tiempo / 4) * 18;
+      ctx.fillStyle = jugador.colorPiel;
+      
+      if (jugador.agachado) {
+        ctx.fillRect(xVirtual - 10, yVirtual - 35, 10, 25);
+        ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 35, 10, 25);
+      } else if (jugador.saltando) {
+        ctx.fillRect(xVirtual - 12, yVirtual - jugador.altoVirtual - 15, 12, 30);
+        ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - jugador.altoVirtual - 15, 12, 30);
+      } else {
+        ctx.fillRect(xVirtual - 12, yVirtual - 45 + offsetBrazos, 12, 30);
+        ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 45 - offsetBrazos, 12, 30);
+      }
+      
+      // Piernas con gradiente
+      const legGrad = ctx.createLinearGradient(xVirtual, yVirtual - 20, xVirtual, yVirtual + 35);
+      legGrad.addColorStop(0, '#283593');
+      legGrad.addColorStop(1, '#1a237e');
+      ctx.fillStyle = legGrad;
+      const offsetPiernas = Math.sin(juego.tiempo / 4) * 12;
+      
+      if (jugador.agachado) {
+        ctx.fillRect(xVirtual + 8, yVirtual - 25, 10, 30);
+        ctx.fillRect(xVirtual + 17, yVirtual - 25, 10, 30);
+      } else {
+        ctx.fillRect(xVirtual + 8, yVirtual - 20 + offsetPiernas, 8, 25);
+        ctx.fillRect(xVirtual + 19, yVirtual - 20 - offsetPiernas, 8, 25);
+        ctx.fillRect(xVirtual + 9, yVirtual + 5 + offsetPiernas, 6, 22);
+        ctx.fillRect(xVirtual + 20, yVirtual + 5 - offsetPiernas, 6, 22);
+      }
+      
+      // Zapatos con highlight
+      ctx.fillStyle = jugador.colorZapatos;
+      ctx.fillRect(xVirtual + 7, yVirtual + 27, 10, 8);
+      ctx.fillRect(xVirtual + 18, yVirtual + 27, 10, 8);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+      ctx.fillRect(xVirtual + 8, yVirtual + 28, 8, 2);
+      ctx.fillRect(xVirtual + 19, yVirtual + 28, 8, 2);
+      
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
 
-function dibujarPolicia(obs) {
-  ctx.save();
-  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-  const x = obs.xVirtual;
-  const y = obs.yVirtual;
-  const t = juego.tiempo * 0.1;
-  
-  ctx.fillStyle = 'rgba(0,0,0,0.3)';
-  ctx.ellipse(x + 28, y + 20, 30, 10, 0, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // Piernas alternas
-  const pierna = Math.sin(t * 2) * 4;
-  ctx.fillStyle = '#1e3a5f';
-  ctx.roundRect(x + 15, y + 5 + pierna, 10, 30, 4);
-  ctx.roundRect(x + 35, y + 5 - pierna, 10, 30, 4);
-  
-  // Torso azul fuerte
-  ctx.fillStyle = '#1e3a5f';
-  ctx.roundRect(x + 10, y - 45, 36, 55, 6);
-  ctx.fill();
-  
-  // Brazos
-  const brazo = Math.sin(t * 1.5) * 5;
-  ctx.fillStyle = '#1e3a5f';
-  ctx.roundRect(x + 5, y - 35 + brazo, 8, 30, 4);
-  ctx.roundRect(x + 45, y - 35 - brazo, 8, 30, 4);
-  
-  // Cabeza
-  ctx.fillStyle = '#f0f0f0';
-  ctx.arc(x + 28, y - 65, 16, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // Gorra azul marino
-  ctx.fillStyle = '#00008b';
-  ctx.roundRect(x + 15, y - 78, 26, 13, 3);
-  ctx.fill();
-  
-  // Ojos neutros
-  ctx.fillStyle = '#000';
-  ctx.arc(x + 23, y - 63, 3, 0, Math.PI * 2);
-  ctx.arc(x + 33, y - 63, 3, 0, Math.PI * 2);
-  ctx.fill();
-  
-  // Boca recta
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(x + 24, y - 58);
-  ctx.lineTo(x + 32, y - 58);
-  ctx.stroke();
-  
-  ctx.restore();
-}
+    function dibujarEscenaFinal() {
+      ctx.save();
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+      
+      // Mesa con textura
+      const mesaGrad = ctx.createLinearGradient(340, 410, 340, 435);
+      mesaGrad.addColorStop(0, '#6d4c41');
+      mesaGrad.addColorStop(1, '#4e342e');
+      ctx.fillStyle = mesaGrad;
+      ctx.fillRect(340, 415, 120, 20);
+      
+      ctx.fillStyle = '#3e2723';
+      ctx.fillRect(345, 435, 10, 60);
+      ctx.fillRect(445, 435, 10, 60);
+      
+      ctx.fillStyle = '#d32f2f';
+      ctx.fillRect(335, 410, 130, 15);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.fillRect(340, 412, 120, 5);
+      
+      // Hookah mejorada
+      ctx.fillStyle = '#4e342e';
+      ctx.fillRect(380, 360, 40, 30);
+      ctx.fillStyle = '#2e1b1b';
+      ctx.fillRect(385, 330, 8, 30);
+      ctx.fillRect(407, 330, 8, 30);
+      ctx.fillRect(380, 390, 8, 60);
+      ctx.fillRect(412, 390, 8, 60);
+      
+      const x = 400, y = 380;
+      
+      // Personaje principal sentado
+      ctx.fillStyle = '#4e342e';
+      ctx.beginPath();
+      ctx.arc(x, y - 45, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = jugador.colorPiel;
+      ctx.beginPath();
+      ctx.arc(x, y - 45, 16, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#2e1b1b';
+      ctx.fillRect(x - 8, y - 48, 5, 2);
+      ctx.fillRect(x + 3, y - 48, 5, 2);
+      
+      ctx.strokeStyle = '#2e1b1b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y - 40, 6, 0.1 * Math.PI, 0.9 * Math.PI);
+      ctx.stroke();
+      
+      // Gafas
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(x - 10, y - 47, 20, 6);
+      ctx.fillStyle = '#ffd700';
+      ctx.fillRect(x - 9, y - 46, 3, 4);
+      ctx.fillRect(x + 6, y - 46, 3, 4);
+      
+      // Cuerpo
+      ctx.fillStyle = jugador.colorRopa;
+      ctx.beginPath();
+      ctx.moveTo(x - 15, y - 30);
+      ctx.lineTo(x + 15, y - 30);
+      ctx.lineTo(x + 12, y + 5);
+      ctx.lineTo(x - 12, y + 5);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Manguera
+      ctx.fillStyle = jugador.colorPiel;
+      ctx.fillRect(x + 15, y - 25, 25, 10);
+      ctx.fillStyle = '#8d6e63';
+      ctx.fillRect(x + 40, y - 28, 22, 6);
+      ctx.fillStyle = '#9e9e9e';
+      ctx.fillRect(x + 40, y - 32, 8, 4);
+      
+      // Brasa
+      ctx.shadowColor = '#ff9800';
+      ctx.shadowBlur = 15;
+      ctx.fillStyle = '#ff9800';
+      ctx.beginPath();
+      ctx.arc(x + 62, y - 30, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffeb3b';
+      ctx.beginPath();
+      ctx.arc(x + 62, y - 31, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      // Piernas
+      ctx.fillStyle = '#1a237e';
+      ctx.fillRect(x - 10, y + 5, 12, 28);
+      ctx.fillRect(x + 2, y + 12, 12, 22);
+      ctx.fillStyle = jugador.colorZapatos;
+      ctx.fillRect(x - 12, y + 33, 16, 8);
+      ctx.fillRect(x, y + 34, 16, 7);
+      
+      // Humo épico
+      for (let i = 0; i < 6; i++) {
+        const size = 8 + i * 4;
+        const opacity = 0.9 - i * 0.15;
+        const yOffset = -50 - i * 22 + Math.sin(juego.tiempo * 0.05 + i) * 5;
+        const offsetX = 25 + Math.sin(juego.tiempo * 0.08 + i * 2) * 4;
+        
+        const smokeGrad = ctx.createRadialGradient(x + offsetX, y + yOffset, 0, x + offsetX, y + yOffset, size);
+        smokeGrad.addColorStop(0, `rgba(240, 240, 240, ${opacity})`);
+        smokeGrad.addColorStop(1, `rgba(200, 200, 200, 0)`);
+        ctx.fillStyle = smokeGrad;
+        ctx.beginPath();
+        ctx.arc(x + offsetX, y + yOffset, size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Amigos
+      jugador.amigos.forEach(amigo => {
+        ctx.fillStyle = amigo.colorRopa;
+        ctx.beginPath();
+        ctx.arc(amigo.xVirtual, amigo.yVirtual - 15, 18, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = amigo.colorPiel;
+        ctx.beginPath();
+        ctx.arc(amigo.xVirtual, amigo.yVirtual - 35, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#2e1b1b';
+        ctx.fillRect(amigo.xVirtual - 6, amigo.yVirtual - 38, 3, 2);
+        ctx.fillRect(amigo.xVirtual + 3, amigo.yVirtual - 38, 3, 2);
+        
+        ctx.strokeStyle = '#2e1b1b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(amigo.xVirtual, amigo.yVirtual - 33, 3, 0.1 * Math.PI, 0.9 * Math.PI);
+        ctx.stroke();
+      });
+      
+      // Créditos con glow
+      const creditY = 680 - (juego.tiempo % 2000) * 0.65;
+      ctx.font = 'bold 30px "Courier New", monospace';
+      ctx.textAlign = 'center';
+      ctx.shadowColor = '#ffd166';
+      ctx.shadowBlur = 20;
+      ctx.fillStyle = '#ffd166';
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
+      ctx.lineWidth = 5;
+      ctx.strokeText("ESTE ES DEL BUENO", 400, creditY);
+      ctx.fillText("ESTE ES DEL BUENO", 400, creditY);
+      ctx.strokeText("RESINA PEGAJOSA", 400, creditY + 50);
+      ctx.fillText("RESINA PEGAJOSA", 400, creditY + 50);
+      ctx.shadowBlur = 0;
+      
+      ctx.font = 'bold 24px "Courier New", monospace';
+      ctx.fillStyle = '#a5d6a7';
+      ctx.shadowColor = '#a5d6a7';
+      ctx.shadowBlur = 10;
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.lineWidth = 4;
+      ctx.strokeText("la paz del segarrero", 400, 90);
+      ctx.fillText("la paz del segarrero", 400, 90);
+      ctx.shadowBlur = 0;
+      
+      ctx.restore();
+    }
 
-function dibujarCerdo(cerdo) {
-  ctx.save();
-  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-  const x = cerdo.xVirtual;
-  const y = cerdo.yVirtual;
-  const t = juego.tiempo * 0.12;
-  
-  const rebote = Math.sin(t * 2) * 2;
-  
-  ctx.fillStyle = '#ffb3ba';
-  ctx.ellipse(x + 30, y + rebote - 25, 30, 20, 0, 0, Math.PI * 2);
-  ctx.fill();
-  
-  ctx.fillStyle = '#ff8fab';
-  ctx.ellipse(x + 15, y + rebote - 40, 10, 12, Math.PI / 6, 0, Math.PI * 2);
-  ctx.ellipse(x + 45, y + rebote - 40, 10, 12, -Math.PI / 6, 0, Math.PI * 2);
-  ctx.fill();
-  
-  ctx.fillStyle = '#ff8fab';
-  ctx.arc(x + 30, y + rebote - 28, 8, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#000';
-  ctx.arc(x + 27, y + rebote - 28, 2, 0, Math.PI * 2);
-  ctx.arc(x + 33, y + rebote - 28, 2, 0, Math.PI * 2);
-  ctx.fill();
-  
-  ctx.fillStyle = 'white';
-  ctx.arc(x + 22, y + rebote - 35, 6, 0, Math.PI * 2);
-  ctx.arc(x + 38, y + rebote - 35, 6, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = '#000';
-  ctx.arc(x + 22, y + rebote - 35, 3, 0, Math.PI * 2);
-  ctx.arc(x + 38, y + rebote - 35, 3, 0, Math.PI * 2);
-  ctx.fill();
-  
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.arc(x + 30, y + rebote - 20, 7, 0, Math.PI * 2);
-  ctx.stroke();
-  
-  ctx.strokeStyle = '#ff8fab';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(x + 55, y + rebote - 20);
-  ctx.lineTo(x + 60, y + rebote - 30);
-  ctx.lineTo(x + 55, y + rebote - 35);
-  ctx.stroke();
-  
-  ctx.restore();
-}
+    function dibujarPolicia(obs) {
+      ctx.save();
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+      
+      const xVirtual = obs.xVirtual;
+      const yVirtual = obs.yVirtual;
+      
+      // Sombra debajo
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(xVirtual + 28, yVirtual + 25, 25, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Cuerpo con gradiente
+      const bodyGrad = ctx.createLinearGradient(xVirtual, yVirtual - 70, xVirtual + 56, yVirtual);
+      bodyGrad.addColorStop(0, obs.colorUniforme);
+      bodyGrad.addColorStop(0.5, '#1976d2');
+      bodyGrad.addColorStop(1, obs.colorGorra);
+      ctx.fillStyle = bodyGrad;
+      
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 8, yVirtual - 70);
+      ctx.lineTo(xVirtual + 47, yVirtual - 70);
+      ctx.lineTo(xVirtual + 45, yVirtual);
+      ctx.lineTo(xVirtual + 10, yVirtual);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Botones dorados
+      ctx.fillStyle = '#ffc107';
+      ctx.shadowColor = '#ffc107';
+      ctx.shadowBlur = 5;
+      for (let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        ctx.arc(xVirtual + 28, yVirtual - 50 + i * 12, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      
+      // Gorra
+      ctx.fillStyle = obs.colorGorra;
+      ctx.fillRect(xVirtual + 12, yVirtual - 85, 31, 12);
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 10, yVirtual - 73);
+      ctx.lineTo(xVirtual + 50, yVirtual - 73);
+      ctx.lineTo(xVirtual + 45, yVirtual - 80);
+      ctx.lineTo(xVirtual + 15, yVirtual - 80);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Cara
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(xVirtual + 15, yVirtual - 75, 25, 15);
+      
+      // Ojos enfadados
+      ctx.fillStyle = 'black';
+      ctx.fillRect(xVirtual + 20, yVirtual - 70, 4, 4);
+      ctx.fillRect(xVirtual + 31, yVirtual - 70, 4, 4);
+      
+      // Cejas
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 18, yVirtual - 72);
+      ctx.lineTo(xVirtual + 24, yVirtual - 74);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 30, yVirtual - 74);
+      ctx.lineTo(xVirtual + 36, yVirtual - 72);
+      ctx.stroke();
+      
+      // Boca
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 22, yVirtual - 63);
+      ctx.lineTo(xVirtual + 33, yVirtual - 63);
+      ctx.stroke();
+      
+      // Brazos
+      ctx.fillStyle = '#f5f5f5';
+      ctx.fillRect(xVirtual - 5, yVirtual - 60, 10, 35);
+      ctx.fillRect(xVirtual + 50, yVirtual - 60, 10, 35);
+      
+      // Porra
+      ctx.fillStyle = '#5d4037';
+      ctx.fillRect(xVirtual - 10, yVirtual - 40, 8, 25);
+      ctx.fillStyle = '#424242';
+      ctx.fillRect(xVirtual - 12, yVirtual - 45, 12, 5);
+      
+      // Piernas
+      ctx.fillStyle = '#0d47a1';
+      ctx.fillRect(xVirtual + 15, yVirtual - 10, 10, 30);
+      ctx.fillRect(xVirtual + 30, yVirtual - 10, 10, 30);
+      
+      // Zapatos
+      ctx.fillStyle = '#212121';
+      ctx.fillRect(xVirtual + 13, yVirtual + 20, 14, 8);
+      ctx.fillRect(xVirtual + 28, yVirtual + 20, 14, 8);
+      
+      // Placa
+      ctx.fillStyle = '#ffc107';
+      ctx.shadowColor = '#ffc107';
+      ctx.shadowBlur = 5;
+      ctx.beginPath();
+      ctx.arc(xVirtual + 45, yVirtual - 60, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      
+      // Indicador de rápido
+      if (obs.velocidadExtra > 0) {
+        ctx.fillStyle = '#ff4d4d';
+        ctx.shadowColor = '#ff4d4d';
+        ctx.shadowBlur = 10;
+        ctx.font = 'bold 13px "Courier New"';
+        ctx.textAlign = 'center';
+        ctx.fillText('¡RÁPIDO!', xVirtual + 28, yVirtual - 95);
+        ctx.shadowBlur = 0;
+      }
+      
+      ctx.restore();
+    }
 
-function dibujarCigarro(cig) {
-  ctx.save();
-  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-  const x = cig.xVirtual;
-  const y = cig.yVirtual;
-  
-  // Filtro marrón
-  ctx.fillStyle = '#8b4513';
-  ctx.roundRect(x + 15, y - 10, 8, 10, 3);
-  ctx.fill();
-  
-  // Papel blanco
-  ctx.fillStyle = '#f8f8f8';
-  ctx.roundRect(x + 23, y - 30, 5, 20, 2);
-  ctx.fill();
-  
-  // Brasa roja
-  ctx.shadowColor = '#ff0000';
-  ctx.shadowBlur = 8;
-  ctx.fillStyle = '#ff0000';
-  ctx.arc(x + 25.5, y - 30, 3.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  
-  // Humo mínimo
-  ctx.globalAlpha = 0.6;
-  ctx.fillStyle = 'rgba(240,240,240,0.8)';
-  ctx.arc(x + 25.5, y - 35, 2, 0, Math.PI * 2);
-  ctx.arc(x + 25.5, y - 40, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.globalAlpha = 1;
-  
-  ctx.restore();
-}
+    function dibujarCerdo(cerdo) {
+      ctx.save();
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+      
+      const xVirtual = cerdo.xVirtual;
+      const yVirtual = cerdo.yVirtual;
+      
+      // Sombra
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(xVirtual + 30, yVirtual + 15, 28, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Cuerpo con gradiente
+      const bodyGrad = ctx.createRadialGradient(xVirtual + 25, yVirtual - 30, 5, xVirtual + 30, yVirtual - 25, 35);
+      bodyGrad.addColorStop(0, '#ffb3c1');
+      bodyGrad.addColorStop(1, '#ff80ab');
+      ctx.fillStyle = bodyGrad;
+      ctx.beginPath();
+      ctx.ellipse(xVirtual + 30, yVirtual - 25, 32, 25, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Cabeza
+      ctx.fillStyle = '#ff80ab';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 30, yVirtual - 45, 20, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Hocico con gradiente
+      const noseGrad = ctx.createRadialGradient(xVirtual + 28, yVirtual - 42, 2, xVirtual + 30, yVirtual - 40, 12);
+      noseGrad.addColorStop(0, '#f48fb1');
+      noseGrad.addColorStop(1, '#e91e63');
+      ctx.fillStyle = noseGrad;
+      ctx.beginPath();
+      ctx.arc(xVirtual + 30, yVirtual - 40, 12, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Fosas nasales
+      ctx.fillStyle = '#880e4f';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 26, yVirtual - 42, 3, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 34, yVirtual - 42, 3, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Ojos con brillo
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 23, yVirtual - 48, 5, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 37, yVirtual - 48, 5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#2d1f1a';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 24, yVirtual - 48, 2.5, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 36, yVirtual - 48, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 22, yVirtual - 49, 1, 0, Math.PI * 2);
+      ctx.arc(xVirtual + 35, yVirtual - 49, 1, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Cejas enfadadas
+      ctx.strokeStyle = '#4a0e2a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 18, yVirtual - 53);
+      ctx.lineTo(xVirtual + 26, yVirtual - 50);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 34, yVirtual - 50);
+      ctx.lineTo(xVirtual + 42, yVirtual - 53);
+      ctx.stroke();
+      
+      // Orejas con interior
+      ctx.fillStyle = '#ff80ab';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 18, yVirtual - 55, 10, 0.3 * Math.PI, 1.7 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(xVirtual + 42, yVirtual - 55, 10, -0.7 * Math.PI, 0.7 * Math.PI);
+      ctx.fill();
+      
+      ctx.fillStyle = '#f48fb1';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 18, yVirtual - 55, 5, 0.3 * Math.PI, 1.7 * Math.PI);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(xVirtual + 42, yVirtual - 55, 5, -0.7 * Math.PI, 0.7 * Math.PI);
+      ctx.fill();
+      
+      // Patas
+      ctx.fillStyle = '#e91e63';
+      ctx.fillRect(xVirtual + 15, yVirtual - 5, 12, 18);
+      ctx.fillRect(xVirtual + 33, yVirtual - 5, 12, 18);
+      
+      // Pezuñas
+      ctx.fillStyle = '#880e4f';
+      ctx.fillRect(xVirtual + 17, yVirtual + 10, 8, 5);
+      ctx.fillRect(xVirtual + 35, yVirtual + 10, 8, 5);
+      
+      // Cola rizada
+      ctx.strokeStyle = '#e91e63';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(xVirtual + 55, yVirtual - 30);
+      ctx.bezierCurveTo(
+        xVirtual + 68, yVirtual - 25,
+        xVirtual + 62, yVirtual - 12,
+        xVirtual + 55, yVirtual - 8
+      );
+      ctx.stroke();
+      
+      ctx.restore();
+    }
+
+    function dibujarCigarro(cig) {
+      ctx.save();
+      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+      
+      const xVirtual = cig.xVirtual;
+      const yVirtual = cig.yVirtual + Math.sin(cig.flotacion) * 3; // Flotación
+      
+      // Glow alrededor
+      ctx.shadowColor = '#ffd166';
+      ctx.shadowBlur = 15;
+      
+      // Paquete con gradiente
+      const packGrad = ctx.createLinearGradient(xVirtual + 8, yVirtual - 25, xVirtual + 36, yVirtual - 7);
+      packGrad.addColorStop(0, '#a1887f');
+      packGrad.addColorStop(0.5, '#8d6e63');
+      packGrad.addColorStop(1, '#6d4c41');
+      ctx.fillStyle = packGrad;
+      ctx.fillRect(xVirtual + 8, yVirtual - 25, 28, 18);
+      
+      // Textura del paquete
+      ctx.strokeStyle = 'rgba(100, 80, 70, 0.4)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 4; i++) {
+        ctx.beginPath();
+        ctx.moveTo(xVirtual + 10, yVirtual - 23 + i * 4);
+        ctx.lineTo(xVirtual + 34, yVirtual - 23 + i * 4);
+        ctx.stroke();
+      }
+      
+      // Filtro con gradiente
+      const filterGrad = ctx.createRadialGradient(xVirtual + 13, yVirtual - 32, 2, xVirtual + 15, yVirtual - 30, 8);
+      filterGrad.addColorStop(0, '#bdbdbd');
+      filterGrad.addColorStop(1, '#9e9e9e');
+      ctx.fillStyle = filterGrad;
+      ctx.beginPath();
+      ctx.arc(xVirtual + 15, yVirtual - 30, 7, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Brillo del filtro
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 13, yVirtual - 32, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Brasa animada con glow intenso
+      const brillo = 0.7 + Math.sin(cig.tiempoBrasa * 0.35) * 0.3;
+      ctx.shadowColor = `rgba(255, 152, 0, ${brillo})`;
+      ctx.shadowBlur = 20;
+      
+      const brasaGrad = ctx.createRadialGradient(xVirtual + 38, yVirtual - 30, 0, xVirtual + 38, yVirtual - 30, 6);
+      brasaGrad.addColorStop(0, '#ffeb3b');
+      brasaGrad.addColorStop(0.5, '#ff9800');
+      brasaGrad.addColorStop(1, '#ff5722');
+      ctx.fillStyle = brasaGrad;
+      ctx.beginPath();
+      ctx.arc(xVirtual + 38, yVirtual - 30, 6, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Centro brillante de la brasa
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(xVirtual + 38, yVirtual - 31, 2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
 
     function dibujarObstaculos() {
       obstaculos.forEach(obs => dibujarPolicia(obs));
@@ -1600,25 +2263,26 @@ function dibujarCigarro(cig) {
       cigarros.forEach(cig => dibujarCigarro(cig));
     }
 
-    function dibujarParticulasPakiRicoh() {
-      if (jugador.pakiRicoh.activo) {
-        ctx.save();
-        ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-        jugador.pakiRicoh.humoParticulas.forEach(p => p.dibujar(ctx));
-        ctx.restore();
-      }
+    function dibujarParticulas() {
+      particulas.forEach(p => p.dibujar(ctx));
     }
 
-    // ==================== ¡¡¡FUNCIÓN CLAVE!!! ====================
-    // DIBUJAR TEXTOS SIN ESCALADO ADICIONAL
     function dibujarTextos() {
       textosEmergentes.forEach(t => t.dibujar(ctx));
     }
 
     function dibujarEfectoPantallaRoja() {
       if (juego.pantallaRoja > 0) {
-        ctx.fillStyle = `rgba(255, 50, 50, ${juego.pantallaRoja / 50})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const alpha = juego.pantallaRoja / 40;
+        const gradient = ctx.createRadialGradient(
+          canvas.clientWidth / 2, canvas.clientHeight / 2, 0,
+          canvas.clientWidth / 2, canvas.clientHeight / 2, canvas.clientWidth
+        );
+        gradient.addColorStop(0, `rgba(255, 50, 50, 0)`);
+        gradient.addColorStop(0.5, `rgba(255, 50, 50, ${alpha * 0.3})`);
+        gradient.addColorStop(1, `rgba(255, 50, 50, ${alpha})`);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.clientWidth, canvas.clientHeight);
       }
     }
 
@@ -1633,10 +2297,8 @@ function dibujarCigarro(cig) {
       carrilIndicator.style.left = `${posicionesX[jugador.carril]}px`;
       
       if (jugador.carrilCambiado) {
-        carrilIndicator.style.width = '7vw';
-        setTimeout(() => {
-          carrilIndicator.style.width = '5vw';
-        }, 200);
+        carrilIndicator.classList.add('active');
+        setTimeout(() => carrilIndicator.classList.remove('active'), 200);
         jugador.carrilCambiado = false;
       }
     }
@@ -1644,6 +2306,9 @@ function dibujarCigarro(cig) {
     // ==================== BUCLE PRINCIPAL ====================
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.save();
+      aplicarShake();
       
       if (juego.estado === 'jugando' || juego.estado === 'pausado_truco') {
         actualizarJugador();
@@ -1656,6 +2321,7 @@ function dibujarCigarro(cig) {
         }
         
         actualizarTextos();
+        actualizarParticulas();
         actualizarIndicadorCarril();
         
         juego.tiempo++;
@@ -1665,12 +2331,14 @@ function dibujarCigarro(cig) {
         dibujarFondo();
         if (!jugador.enEscenaFinal) {
           dibujarObstaculos();
-          dibujarParticulasPakiRicoh();
         }
         dibujarJugador();
-        dibujarTextos();              // ← Textos ANTES del efecto rojo
-        dibujarEfectoPantallaRoja();  // ← Efecto rojo DESPUÉS
+        dibujarParticulas();
+        dibujarTextos();
+        dibujarEfectoPantallaRoja();
       }
+      
+      ctx.restore();
       
       requestAnimationFrame(gameLoop);
     }
@@ -1683,8 +2351,6 @@ function dibujarCigarro(cig) {
     });
     
     restartBtn.addEventListener('click', reiniciarJuego);
-    
-    titleScreen.addEventListener('touchmove', (e) => {}, { passive: true });
     
     gameLoop();
   </script>
