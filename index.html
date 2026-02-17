@@ -1349,97 +1349,106 @@
       ctx.restore();
     }  
 
-      function dibujarJugador() {
+    function dibujarJugador() {
   if (jugador.enEscenaFinal) {
-    // (deja igual la escena final, no la toco)
+    // Escena final intacta
+    ctx.save();
+    ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
     // ... tu código original de escena final ...
+    ctx.restore();
     return;
   }
   
   ctx.save();
   ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
   
-  const x = POS_X_CARRIL_VIRTUAL - jugador.anchoVirtual / 2;
-  const y = jugador.yVirtual;
+  const xVirtual = POS_X_CARRIL_VIRTUAL - jugador.anchoVirtual / 2;
+  const yVirtual = jugador.yVirtual;
   
   if (jugador.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
     ctx.globalAlpha = 0.7;
   }
   
-  // Rebote suave al caminar
-  const rebote = Math.sin(juego.tiempo * 0.3) * 3;
-  const yBase = y + rebote;
+  if (jugador.pakiRicoh.activo) {
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 30;
+  }
   
-  // Cabeza más grande y expresiva
+  // Rebote mínimo (2px) para que parezca vivo sin romper salto
+  const rebote = Math.sin(juego.tiempo * 0.2) * 2;
+  
+  // Cabeza más grande, ojos flipados
   ctx.fillStyle = '#4e342e';
   ctx.beginPath();
-  ctx.arc(x + jugador.anchoVirtual / 2, yBase - jugador.altoVirtual - 10, 20, 0, Math.PI * 2);
+  ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 10 + rebote, 18, 0, Math.PI * 2);
   ctx.fill();
   
   ctx.fillStyle = jugador.colorPiel;
   ctx.beginPath();
-  ctx.arc(x + jugador.anchoVirtual / 2, yBase - jugador.altoVirtual - 10, 17, 0, Math.PI * 2);
+  ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 10 + rebote, 16, 0, Math.PI * 2);
   ctx.fill();
   
-  // Ojos grandes, pupilas arriba (flipado)
   ctx.fillStyle = 'white';
   ctx.beginPath();
-  ctx.arc(x + jugador.anchoVirtual / 2 - 6, yBase - jugador.altoVirtual - 12, 6, 0, Math.PI * 2);
-  ctx.arc(x + jugador.anchoVirtual / 2 + 6, yBase - jugador.altoVirtual - 12, 6, 0, Math.PI * 2);
+  ctx.arc(xVirtual + jugador.anchoVirtual / 2 - 6, yVirtual - jugador.altoVirtual - 12 + rebote, 5, 0, Math.PI * 2);
+  ctx.arc(xVirtual + jugador.anchoVirtual / 2 + 6, yVirtual - jugador.altoVirtual - 12 + rebote, 5, 0, Math.PI * 2);
   ctx.fill();
   
   ctx.fillStyle = 'black';
   ctx.beginPath();
-  ctx.arc(x + jugador.anchoVirtual / 2 - 5, yBase - jugador.altoVirtual - 14, 2.5, 0, Math.PI * 2);
-  ctx.arc(x + jugador.anchoVirtual / 2 + 5, yBase - jugador.altoVirtual - 14, 2.5, 0, Math.PI * 2);
+  ctx.arc(xVirtual + jugador.anchoVirtual / 2 - 5, yVirtual - jugador.altoVirtual - 14 + rebote, 2, 0, Math.PI * 2);
+  ctx.arc(xVirtual + jugador.anchoVirtual / 2 + 5, yVirtual - jugador.altoVirtual - 14 + rebote, 2, 0, Math.PI * 2);
   ctx.fill();
   
-  // Boca sonrisa torcida
+  // Sonrisa torcida
   ctx.strokeStyle = '#000';
-  ctx.lineWidth = 3;
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
-  ctx.moveTo(x + jugador.anchoVirtual / 2 - 8, yBase - jugador.altoVirtual + 5);
-  ctx.quadraticCurveTo(x + jugador.anchoVirtual / 2, yBase - jugador.altoVirtual + 10, x + jugador.anchoVirtual / 2 + 8, yBase - jugador.altoVirtual + 3);
+  ctx.moveTo(xVirtual + jugador.anchoVirtual / 2 - 6, yVirtual - jugador.altoVirtual + 5 + rebote);
+  ctx.quadraticCurveTo(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual + 8 + rebote, xVirtual + jugador.anchoVirtual / 2 + 6, yVirtual - jugador.altoVirtual + 4 + rebote);
   ctx.stroke();
   
-  // Ropa y bolsillo con cigarro
+  // Ropa original + bolsillo cigarro
   ctx.fillStyle = jugador.colorRopa;
-  ctx.roundRect(x + 5, yBase - jugador.altoVirtual + 10, jugador.anchoVirtual - 10, 50, 8);
+  ctx.beginPath();
+  ctx.moveTo(xVirtual + 5, yVirtual - jugador.altoVirtual + rebote);
+  ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - jugador.altoVirtual + rebote);
+  ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - 15 + rebote);
+  ctx.lineTo(xVirtual + jugador.anchoVirtual - 15, yVirtual + rebote);
+  ctx.lineTo(xVirtual + 15, yVirtual + rebote);
+  ctx.lineTo(xVirtual + 5, yVirtual - 15 + rebote);
+  ctx.closePath();
   ctx.fill();
   
   ctx.fillStyle = '#8d6e63';
-  ctx.beginPath();
-  ctx.arc(x + 12, yBase - jugador.altoVirtual + 20, 5, 0, Math.PI * 2); // bolsillo
-  ctx.fill();
+  ctx.fillRect(xVirtual + 10, yVirtual - jugador.altoVirtual + 10 + rebote, 10, 10); // bolsillo
   ctx.fillStyle = '#a0522d';
-  ctx.fillRect(x + 10, yBase - jugador.altoVirtual + 15, 4, 10); // cigarro asomando
+  ctx.fillRect(xVirtual + 12, yVirtual - jugador.altoVirtual + 8 + rebote, 4, 8); // cigarro
   
-  // Brazos balanceo natural (como corriendo)
-  const brazoOffset = Math.sin(juego.tiempo * 0.25) * 12;
+  // Brazos y piernas originales, pero con offset natural
+  const offset = Math.sin(juego.tiempo / 4) * 8;
   ctx.fillStyle = jugador.colorPiel;
-  ctx.roundRect(x - 5, yBase - jugador.altoVirtual + 15 + brazoOffset, 10, 35, 4);
-  ctx.roundRect(x + jugador.anchoVirtual - 5, yBase - jugador.altoVirtual + 15 - brazoOffset, 10, 35, 4);
+  ctx.fillRect(xVirtual - 10, yVirtual - 35 + offset + rebote, 10, 25);
+  ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 35 - offset + rebote, 10, 25);
   
-  // Piernas alternas
-  const piernaOffset = Math.sin(juego.tiempo * 0.3) * 8;
   ctx.fillStyle = '#1a237e';
-  ctx.roundRect(x + 10, yBase - 10 + piernaOffset, 10, 35, 4);
-  ctx.roundRect(x + jugador.anchoVirtual - 20, yBase - 10 - piernaOffset, 10, 35, 4);
+  ctx.fillRect(xVirtual + 8, yVirtual - 20 + offset + rebote, 8, 25);
+  ctx.fillRect(xVirtual + 19, yVirtual - 20 - offset + rebote, 8, 25);
   
   ctx.fillStyle = jugador.colorZapatos;
-  ctx.fillRect(x + 8, yBase + 20, 14, 10);
-  ctx.fillRect(x + jugador.anchoVirtual - 22, yBase + 20, 14, 10);
+  ctx.fillRect(xVirtual + 7, yVirtual + 27 + rebote, 10, 8);
+  ctx.fillRect(xVirtual + 18, yVirtual + 27 + rebote, 10, 8);
   
-  // Humo sutil de boca (solo si no estás en Paki Ricoh)
-  if (!jugador.pakiRicoh.activo && Math.random() < 0.2) {
-    ctx.globalAlpha = 0.6;
-    ctx.fillStyle = 'rgba(220,220,220,0.8)';
-    ctx.beginPath();
-    ctx.arc(x + jugador.anchoVirtual / 2 + Math.random() * 4 - 2, yBase - jugador.altoVirtual - 5 - Math.random() * 10, 3, 0, Math.PI * 2);
+  // Humo muy sutil (solo 1 cada 10 frames)
+  if (!jugador.pakiRicoh.activo && Math.random() < 0.1) {
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = 'rgba(220,220,220,0.7)';
+    ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 25 + rebote, 3, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
   }
   
+  ctx.shadowBlur = 0;
   ctx.restore();
 }
 
@@ -1448,52 +1457,51 @@ function dibujarPolicia(obs) {
   ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
   const x = obs.xVirtual;
   const y = obs.yVirtual;
-  const t = juego.tiempo * 0.1; // ritmo lento y natural
+  const t = juego.tiempo * 0.1;
   
-  // Sombra suave
-  ctx.fillStyle = 'rgba(0,0,0,0.25)';
-  ctx.ellipse(x + 28, y + 25, 32, 12, 0, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.3)';
+  ctx.ellipse(x + 28, y + 20, 30, 10, 0, 0, Math.PI * 2);
+  ctx.fill();
   
-  // Piernas: caminata tranquila
-  const pierna1 = Math.sin(t * 2) * 5;
-  const pierna2 = Math.sin(t * 2 + Math.PI) * 5;
+  // Piernas alternas
+  const pierna = Math.sin(t * 2) * 4;
   ctx.fillStyle = '#1e3a5f';
-  ctx.roundRect(x + 15, y + 10 + pierna1, 10, 30, 4);
-  ctx.roundRect(x + 35, y + 10 + pierna2, 10, 30, 4);
+  ctx.roundRect(x + 15, y + 5 + pierna, 10, 30, 4);
+  ctx.roundRect(x + 35, y + 5 - pierna, 10, 30, 4);
   
-  // Torso recto
-  ctx.fillStyle = obs.colorUniforme;
-  ctx.roundRect(x + 10, y - 45, 36, 60, 8);
+  // Torso azul fuerte
+  ctx.fillStyle = '#1e3a5f';
+  ctx.roundRect(x + 10, y - 45, 36, 55, 6);
   ctx.fill();
   
-  // Brazos balanceo (manos en bolsillo casi)
-  const brazo1 = Math.sin(t * 1.5) * 8;
-  const brazo2 = Math.sin(t * 1.5 + Math.PI) * 8;
-  ctx.fillStyle = obs.colorUniforme;
-  ctx.roundRect(x + 5, y - 30 + brazo1, 10, 35, 4);
-  ctx.roundRect(x + 45, y - 30 + brazo2, 10, 35, 4);
+  // Brazos
+  const brazo = Math.sin(t * 1.5) * 5;
+  ctx.fillStyle = '#1e3a5f';
+  ctx.roundRect(x + 5, y - 35 + brazo, 8, 30, 4);
+  ctx.roundRect(x + 45, y - 35 - brazo, 8, 30, 4);
   
-  // Cabeza fija mirando adelante
+  // Cabeza
   ctx.fillStyle = '#f0f0f0';
-  ctx.arc(x + 28, y - 65, 18, 0, Math.PI * 2);
+  ctx.arc(x + 28, y - 65, 16, 0, Math.PI * 2);
   ctx.fill();
   
-  // Gorra recta
-  ctx.fillStyle = obs.colorGorra;
-  ctx.roundRect(x + 15, y - 80, 26, 15, 4);
+  // Gorra azul marino
+  ctx.fillStyle = '#00008b';
+  ctx.roundRect(x + 15, y - 78, 26, 13, 3);
   ctx.fill();
   
-  // Cara neutra: ojos normales, boca recta
+  // Ojos neutros
   ctx.fillStyle = '#000';
-  ctx.arc(x + 22, y - 62, 3, 0, Math.PI * 2);
-  ctx.arc(x + 34, y - 62, 3, 0, Math.PI * 2);
+  ctx.arc(x + 23, y - 63, 3, 0, Math.PI * 2);
+  ctx.arc(x + 33, y - 63, 3, 0, Math.PI * 2);
   ctx.fill();
   
+  // Boca recta
   ctx.strokeStyle = '#000';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(x + 22, y - 55);
-  ctx.lineTo(x + 34, y - 55);
+  ctx.moveTo(x + 24, y - 58);
+  ctx.lineTo(x + 32, y - 58);
   ctx.stroke();
   
   ctx.restore();
@@ -1504,64 +1512,48 @@ function dibujarCerdo(cerdo) {
   ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
   const x = cerdo.xVirtual;
   const y = cerdo.yVirtual;
-  const t = juego.tiempo * 0.15;
+  const t = juego.tiempo * 0.12;
   
-  // Rebote alegre
-  const rebote = Math.sin(t * 3) * 4;
-  const yBase = y + rebote;
+  const rebote = Math.sin(t * 2) * 2;
   
-  // Cuerpo rosa redondo
   ctx.fillStyle = '#ffb3ba';
-  ctx.arc(x + 30, yBase - 25, 30, 0, Math.PI * 2);
+  ctx.ellipse(x + 30, y + rebote - 25, 30, 20, 0, 0, Math.PI * 2);
   ctx.fill();
   
-  // Orejas triangulares subiendo/bajando
   ctx.fillStyle = '#ff8fab';
-  const orejaOff = Math.sin(t * 2) * 3;
-  ctx.beginPath();
-  ctx.moveTo(x + 10, yBase - 40);
-  ctx.lineTo(x + 5, yBase - 55 + orejaOff);
-  ctx.lineTo(x + 15, yBase - 50 + orejaOff);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(x + 50, yBase - 40);
-  ctx.lineTo(x + 55, yBase - 55 - orejaOff);
-  ctx.lineTo(x + 45, yBase - 50 - orejaOff);
+  ctx.ellipse(x + 15, y + rebote - 40, 10, 12, Math.PI / 6, 0, Math.PI * 2);
+  ctx.ellipse(x + 45, y + rebote - 40, 10, 12, -Math.PI / 6, 0, Math.PI * 2);
   ctx.fill();
   
-  // Naricita
   ctx.fillStyle = '#ff8fab';
-  ctx.arc(x + 30, yBase - 30, 8, 0, Math.PI * 2);
+  ctx.arc(x + 30, y + rebote - 28, 8, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#000';
-  ctx.arc(x + 27, yBase - 30, 2, 0, Math.PI * 2);
-  ctx.arc(x + 33, yBase - 30, 2, 0, Math.PI * 2);
+  ctx.arc(x + 27, y + rebote - 28, 2, 0, Math.PI * 2);
+  ctx.arc(x + 33, y + rebote - 28, 2, 0, Math.PI * 2);
   ctx.fill();
   
-  // Ojos grandes de sorpresa
   ctx.fillStyle = 'white';
-  ctx.arc(x + 20, yBase - 35, 8, 0, Math.PI * 2);
-  ctx.arc(x + 40, yBase - 35, 8, 0, Math.PI * 2);
+  ctx.arc(x + 22, y + rebote - 35, 6, 0, Math.PI * 2);
+  ctx.arc(x + 38, y + rebote - 35, 6, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = '#000';
-  ctx.arc(x + 20, yBase - 35, 4, 0, Math.PI * 2);
-  ctx.arc(x + 40, yBase - 35, 4, 0, Math.PI * 2);
+  ctx.arc(x + 22, y + rebote - 35, 3, 0, Math.PI * 2);
+  ctx.arc(x + 38, y + rebote - 35, 3, 0, Math.PI * 2);
   ctx.fill();
   
-  // Boca "O"
   ctx.strokeStyle = '#000';
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.arc(x + 30, yBase - 20, 8, 0, Math.PI * 2);
+  ctx.arc(x + 30, y + rebote - 20, 7, 0, Math.PI * 2);
   ctx.stroke();
   
-  // Colita rizada girando
   ctx.strokeStyle = '#ff8fab';
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(x + 55, yBase - 15);
-  ctx.lineTo(x + 60 + Math.sin(t * 5) * 2, yBase - 25);
-  ctx.lineTo(x + 55 + Math.sin(t * 5 + Math.PI) * 2, yBase - 35);
+  ctx.moveTo(x + 55, y + rebote - 20);
+  ctx.lineTo(x + 60, y + rebote - 30);
+  ctx.lineTo(x + 55, y + rebote - 35);
   ctx.stroke();
   
   ctx.restore();
@@ -1572,35 +1564,31 @@ function dibujarCigarro(cig) {
   ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
   const x = cig.xVirtual;
   const y = cig.yVirtual;
-  const pulse = 0.9 + Math.sin(cig.tiempoBrasa * 0.4) * 0.1;
   
-  // Filtro marrón corto
-  ctx.fillStyle = '#a0522d';
-  ctx.roundRect(x + 10, y - 15, 10, 15, 4);
+  // Filtro marrón
+  ctx.fillStyle = '#8b4513';
+  ctx.roundRect(x + 15, y - 10, 8, 10, 3);
   ctx.fill();
   
-  // Papel blanco delgado
+  // Papel blanco
   ctx.fillStyle = '#f8f8f8';
-  ctx.roundRect(x + 20, y - 40, 8, 25, 3);
+  ctx.roundRect(x + 23, y - 30, 5, 20, 2);
   ctx.fill();
   
-  // Brasa roja fuerte
+  // Brasa roja
   ctx.shadowColor = '#ff0000';
-  ctx.shadowBlur = 12 * pulse;
+  ctx.shadowBlur = 8;
   ctx.fillStyle = '#ff0000';
-  ctx.arc(x + 24, y - 40, 5 * pulse, 0, Math.PI * 2);
+  ctx.arc(x + 25.5, y - 30, 3.5, 0, Math.PI * 2);
   ctx.fill();
   ctx.shadowBlur = 0;
   
-  // Humo corto y fino (solo 4 volutas)
-  ctx.globalAlpha = 0.7;
+  // Humo mínimo
+  ctx.globalAlpha = 0.6;
   ctx.fillStyle = 'rgba(240,240,240,0.8)';
-  for (let i = 0; i < 4; i++) {
-    const r = 3 + i * 1.2;
-    const smokeY = y - 45 - i * 6 - Math.sin(cig.tiempoBrasa * 0.15 + i) * 2;
-    ctx.arc(x + 24 + Math.sin(cig.tiempoBrasa + i) * 2, smokeY, r, 0, Math.PI * 2);
-    ctx.fill();
-  }
+  ctx.arc(x + 25.5, y - 35, 2, 0, Math.PI * 2);
+  ctx.arc(x + 25.5, y - 40, 2.5, 0, Math.PI * 2);
+  ctx.fill();
   ctx.globalAlpha = 1;
   
   ctx.restore();
