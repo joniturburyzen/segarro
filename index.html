@@ -1608,286 +1608,359 @@
       ctx.restore();
     }
 
-    function dibujarPolicia(obs) {
-      ctx.save();
-      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const xVirtual = obs.xVirtual;
-      const yVirtual = obs.yVirtual;
-      
-      // Sombra
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 28, yVirtual + 5, 25, 10, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Uniforme con botones y cinturón
-      const uniformGrad = ctx.createLinearGradient(xVirtual, yVirtual - 75, xVirtual + 56, yVirtual);
-      uniformGrad.addColorStop(0, obs.colorUniforme);
-      uniformGrad.addColorStop(0.5, '#0d47a1');
-      uniformGrad.addColorStop(1, obs.colorUniforme);
-      ctx.fillStyle = uniformGrad;
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 10, yVirtual - 75);
-      ctx.lineTo(xVirtual + 46, yVirtual - 75);
-      ctx.lineTo(xVirtual + 50, yVirtual);
-      ctx.lineTo(xVirtual + 6, yVirtual);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Botones dorados
-      ctx.fillStyle = '#ffd700';
-      ctx.shadowColor = '#ffaa00';
-      ctx.shadowBlur = 8;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.arc(xVirtual + 18 + i * 8, yVirtual - 50, 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.shadowBlur = 0;
-      
-      // Cinturón
-      ctx.fillStyle = '#4a2c0b';
-      ctx.fillRect(xVirtual + 12, yVirtual - 15, 32, 6);
-      
-      // Placa brillante
-      ctx.shadowColor = '#ffd700';
-      ctx.shadowBlur = 12;
-      ctx.fillStyle = '#c0c0c0';
-      ctx.beginPath();
-      ctx.roundRect(xVirtual + 28, yVirtual - 35, 12, 10, 2);
-      ctx.fill();
-      ctx.fillStyle = '#ffd700';
-      ctx.font = 'bold 8px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('POLI', xVirtual + 34, yVirtual - 30);
-      ctx.shadowBlur = 0;
-      
-      // Gorra con visera
-      ctx.fillStyle = obs.colorGorra;
-      ctx.beginPath();
-      ctx.roundRect(xVirtual + 12, yVirtual - 90, 32, 14, 3);
-      ctx.fill();
-      ctx.fillStyle = '#ffd700';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 28, yVirtual - 85, 8, Math.PI, 0);
-      ctx.fill();
-      
-      // Cara con bigote y ojos serios
-      ctx.fillStyle = '#f5f5f5';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 28, yVirtual - 78, 12, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#333';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 24, yVirtual - 80, 2.5, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 32, yVirtual - 80, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      // Bigote
-      ctx.strokeStyle = '#4a2c0b';
-      ctx.lineWidth = 3;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 23, yVirtual - 72);
-      ctx.lineTo(xVirtual + 28, yVirtual - 74);
-      ctx.lineTo(xVirtual + 33, yVirtual - 72);
-      ctx.stroke();
-      
-      // Porra en mano
-      ctx.strokeStyle = '#8b4513';
-      ctx.lineWidth = 6;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 45, yVirtual - 50);
-      ctx.lineTo(xVirtual + 55, yVirtual - 30);
-      ctx.stroke();
-      ctx.fillStyle = '#d2691e';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 55, yVirtual - 30, 4, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // "RAPIDO" si aplica
-      if (obs.velocidadExtra > 0) {
-        ctx.shadowColor = '#ff4444';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = '#ff4444';
-        ctx.font = 'bold 14px Courier New';
-        ctx.textAlign = 'center';
-        ctx.fillText('RAPIDO', xVirtual + 28, yVirtual - 95);
-        ctx.shadowBlur = 0;
-      }
-      
-      ctx.restore();
-    }
+      function dibujarPolicia(obs) {
+  ctx.save();
+  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+  const xVirtual = obs.xVirtual;
+  const yVirtual = obs.yVirtual;
+  const tiempoAnim = juego.tiempo * 0.15 + obs.yVirtual * 0.01; // Fluido por posición/tiempo
 
-    function dibujarCerdo(cerdo) {
-      ctx.save();
-      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const xVirtual = cerdo.xVirtual;
-      const yVirtual = cerdo.yVirtual;
-      
-      // Sombra
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 30, yVirtual + 8, 35, 12, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Cuerpo gordo rosado con manchas sucias
-      const bodyGrad = ctx.createRadialGradient(xVirtual + 30, yVirtual - 25, 0, xVirtual + 30, yVirtual - 25, 40);
-      bodyGrad.addColorStop(0, '#ffaa99');
-      bodyGrad.addColorStop(0.7, '#ff80ab');
-      bodyGrad.addColorStop(1, '#e57373');
-      ctx.fillStyle = bodyGrad;
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 30, yVirtual - 25, 35, 28, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Manchas sucias
-      ctx.fillStyle = '#d32f2f';
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 15, yVirtual - 20, 8, 6, 0, 0, Math.PI * 2);
-      ctx.ellipse(xVirtual + 45, yVirtual - 35, 10, 7, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Pelo hirsuto (líneas irregulares)
-      ctx.strokeStyle = '#8b4513';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      for (let i = 0; i < 12; i++) {
-        const px = xVirtual + 10 + i * 4;
-        const py = yVirtual - 45 + Math.random() * 5;
-        ctx.beginPath();
-        ctx.moveTo(px, py);
-        ctx.lineTo(px + Math.random() * 6 - 3, py - 10);
-        ctx.stroke();
-      }
-      
-      // Cabeza con hocico y baba
-      ctx.fillStyle = '#ff80ab';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 30, yVirtual - 45, 22, 0, Math.PI * 2);
-      ctx.fill();
-      // Orejas
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 18, yVirtual - 55, 8, 12, Math.PI / 4, 0, Math.PI * 2);
-      ctx.ellipse(xVirtual + 42, yVirtual - 55, 8, 12, -Math.PI / 4, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Ojos malvados rojos
-      ctx.fillStyle = '#ff0000';
-      ctx.shadowColor = '#880000';
-      ctx.shadowBlur = 6;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 25, yVirtual - 48, 4, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 35, yVirtual - 48, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 26, yVirtual - 48, 1.5, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 36, yVirtual - 48, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Hocico con baba goteando
-      ctx.fillStyle = '#e0e0e0';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 30, yVirtual - 38, 7, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#ddd';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 27, yVirtual - 37, 2, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 33, yVirtual - 37, 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Baba (gotas)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 30, yVirtual - 32);
-      ctx.quadraticCurveTo(xVirtual + 35, yVirtual - 25, xVirtual + 38, yVirtual - 20);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(xVirtual + 38, yVirtual - 20, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Piernas cortas
-      ctx.fillStyle = '#ff80ab';
-      for (let i = 0; i < 4; i++) {
-        const px = xVirtual + 15 + i * 15;
-        ctx.beginPath();
-        ctx.roundRect(px, yVirtual - 5, 8, 20, 2);
-        ctx.fill();
-      }
-      
-      ctx.restore();
-    }
+  // Sombra dinámica
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+  ctx.beginPath();
+  ctx.ellipse(xVirtual + 28, yVirtual + 8 + Math.sin(tiempoAnim) * 2, 28, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-    function dibujarCigarro(cig) {
-      ctx.save();
-      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const xVirtual = cig.xVirtual;
-      const yVirtual = cig.yVirtual;
-      
-      // Filtro sucio con papel arrugado
-      ctx.fillStyle = '#d2b48c';
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 3;
-      ctx.beginPath();
-      ctx.roundRect(xVirtual + 5, yVirtual - 28, 15, 25, 3);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      
-      // Papel blanco con arrugas
-      ctx.fillStyle = '#f5f5f5';
-      ctx.strokeStyle = 'rgba(200, 200, 200, 0.6)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(xVirtual + 8, yVirtual - 26, 28, 18, 2);
-      ctx.fill();
-      // Arrugas
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 12, yVirtual - 22);
-      ctx.quadraticCurveTo(xVirtual + 20, yVirtual - 20, xVirtual + 30, yVirtual - 18);
-      ctx.stroke();
-      
-      // Brasa realista con glow pulsante
-      const brasaPulse = 0.8 + Math.sin(cig.tiempoBrasa * 0.4) * 0.2;
-      ctx.shadowColor = '#ff4400';
-      ctx.shadowBlur = 18 * brasaPulse;
-      ctx.fillStyle = `rgba(255, 80, 0, ${brasaPulse})`;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 35, yVirtual - 28, 6 * brasaPulse, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.shadowColor = '#ffff44';
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = `rgba(255, 255, 100, ${brasaPulse * 0.7})`;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 36, yVirtual - 29, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      
-      // Humo real: partículas ascendentes con dispersión
-      if (Math.random() < 0.6) {
-        ctx.globalAlpha = 0.4;
-        ctx.fillStyle = 'rgba(200, 200, 200, 0.6)';
-        for (let i = 0; i < 3; i++) {
-          const smokeX = xVirtual + 35 + (Math.random() - 0.5) * 8;
-          const smokeY = yVirtual - 35 - i * 4;
-          const smokeR = 2 + i * 1.5;
-          ctx.beginPath();
-          ctx.arc(smokeX + Math.sin(juego.tiempo * 0.1 + i) * 2, smokeY, smokeR, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-      }
-      
-      ctx.restore();
-    }
+  // Piernas animadas (marcha)
+  const offsetPierna = Math.sin(tiempoAnim * 2) * 8;
+  ctx.fillStyle = '#1e3a5f';
+  ctx.roundRect(xVirtual + 15, yVirtual - 10 + offsetPierna * 0.5, 8, 25, 2);
+  ctx.roundRect(xVirtual + 33, yVirtual - 10 - offsetPierna * 0.5, 8, 25, 2);
+
+  // Cinturón/pistola
+  ctx.fillStyle = '#4a2c0b';
+  ctx.roundRect(xVirtual + 12, yVirtual - 18, 32, 8, 2);
+  ctx.fillStyle = '#2d1b0f';
+  ctx.roundRect(xVirtual + 42, yVirtual - 16, 6, 4, 1);
+
+  // Torso con gradiente/arrugas
+  const uniformGrad = ctx.createLinearGradient(xVirtual + 28, yVirtual - 75, xVirtual + 28, yVirtual - 10);
+  uniformGrad.addColorStop(0, obs.colorUniforme);
+  uniformGrad.addColorStop(0.6, '#0d47a1');
+  uniformGrad.addColorStop(1, '#1e3a5f');
+  ctx.fillStyle = uniformGrad;
+  ctx.beginPath();
+  ctx.roundRect(xVirtual + 8, yVirtual - 75, 48, 65, 4);
+  ctx.fill();
+
+  // Botones brillantes
+  ctx.shadowColor = '#ffd700';
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = '#ffd700';
+  for (let i = 0; i < 5; i++) {
+    ctx.beginPath();
+    ctx.arc(xVirtual + 16 + i * 8, yVirtual - 48 + Math.sin(tiempoAnim + i) * 1, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  // Brazos animados (balanceo)
+  const offsetBrazo = Math.sin(tiempoAnim * 1.8) * 12;
+  ctx.fillStyle = obs.colorUniforme;
+  ctx.roundRect(xVirtual + 2, yVirtual - 55 + offsetBrazo * 0.3, 10, 35, 3);
+  ctx.roundRect(xVirtual + 44, yVirtual - 55 - offsetBrazo * 0.3, 10, 35, 3);
+
+  // Porra en mano derecha (animada)
+  ctx.strokeStyle = '#8b4513';
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(xVirtual + 52, yVirtual - 45 + offsetBrazo * 0.2);
+  ctx.lineTo(xVirtual + 62 + Math.sin(tiempoAnim * 3) * 3, yVirtual - 25);
+  ctx.stroke();
+  ctx.fillStyle = '#d2691e';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 62 + Math.sin(tiempoAnim * 3) * 3, yVirtual - 25, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cabeza con animación bob
+  const bobY = Math.sin(tiempoAnim) * 1.5;
+  ctx.fillStyle = '#f0f0f0';
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 4;
+  ctx.beginPath();
+  ctx.arc(xVirtual + 28, yVirtual - 85 + bobY, 14, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Gorra detallada
+  ctx.fillStyle = obs.colorGorra;
+  ctx.roundRect(xVirtual + 10, yVirtual - 98 + bobY, 36, 16, 4);
+  ctx.fill();
+  ctx.fillStyle = '#ffd700';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 28, yVirtual - 93 + bobY, 9, Math.PI, 0);
+  ctx.fill();
+
+  // Cara: ojos fríos, bigote, sudor (rápido)
+  ctx.fillStyle = '#333';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 23, yVirtual - 87 + bobY, 2.2, 0, Math.PI * 2);
+  ctx.arc(xVirtual + 33, yVirtual - 87 + bobY, 2.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#4a2c0b';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(xVirtual + 21, yVirtual - 80 + bobY);
+  ctx.quadraticCurveTo(xVirtual + 28, yVirtual - 82 + bobY, xVirtual + 35, yVirtual - 80 + bobY);
+  ctx.stroke();
+
+  // Sudor si rápido
+  if (obs.velocidadExtra > 0) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(xVirtual + 20, yVirtual - 88 + bobY);
+    ctx.quadraticCurveTo(xVirtual + 15, yVirtual - 92 + bobY, xVirtual + 12, yVirtual - 90 + bobY);
+    ctx.stroke();
+  }
+
+  // "RAPIDO" flotante
+  if (obs.velocidadExtra > 0) {
+    ctx.shadowColor = '#ff4444';
+    ctx.shadowBlur = 12;
+    ctx.fillStyle = '#ff4444';
+    ctx.font = `bold ${14 + Math.sin(tiempoAnim * 5) * 2}px 'Courier New'`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('RAPIDO', xVirtual + 28, yVirtual - 105 + Math.sin(tiempoAnim * 4) * 1);
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.restore();
+}
+
+// CERDO MEJORADO: Más cerdo real (hocico chato, orejas caídas, rabo rizado, cerdas, baba goteante)
+function dibujarCerdo(cerdo) {
+  ctx.save();
+  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+  const xVirtual = cerdo.xVirtual;
+  const yVirtual = cerdo.yVirtual;
+  const tiempoAnim = juego.tiempo * 0.12 + cerdo.yVirtual * 0.01;
+
+  // Sombra ondulante
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+  ctx.beginPath();
+  ctx.ellipse(xVirtual + 30, yVirtual + 10 + Math.sin(tiempoAnim * 1.5) * 1, 38, 15, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cuerpo obeso con gradiente piel + manchas + cerdas
+  const bodyGrad = ctx.createRadialGradient(xVirtual + 30, yVirtual - 30, 0, xVirtual + 30, yVirtual - 30, 45);
+  bodyGrad.addColorStop(0, '#ffb3ba');
+  bodyGrad.addColorStop(0.6, '#ff8fab');
+  bodyGrad.addColorStop(1, '#e91e63');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(xVirtual + 5, yVirtual - 55, 60, 55, 30); // Más redondo
+  ctx.fill();
+
+  // Manchas irregulares
+  ctx.fillStyle = '#c62828';
+  ctx.beginPath();
+  ctx.ellipse(xVirtual + 12, yVirtual - 35, 12, 9, Math.PI / 6, 0, Math.PI * 2);
+  ctx.ellipse(xVirtual + 48, yVirtual - 50, 15, 11, -Math.PI / 8, 0, Math.PI * 2);
+  ctx.ellipse(xVirtual + 20, yVirtual - 10, 8, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cerdas (pelo tieso animado)
+  ctx.strokeStyle = '#7b1fa2';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  for (let i = 0; i < 25; i++) {
+    const px = xVirtual + 8 + i * 2.3 + Math.sin(tiempoAnim + i) * 0.5;
+    const py = yVirtual - 58 + (i % 5) * 2;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px + Math.sin(tiempoAnim * 1.2 + i) * 2 - 1, py - 12);
+    ctx.stroke();
+  }
+
+  // Rabo rizado animado
+  ctx.strokeStyle = '#ff8fab';
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(xVirtual + 55, yVirtual - 20);
+  for (let t = 0; t < 1.5; t += 0.15) {
+    const rx = xVirtual + 55 + t * 8 + Math.sin(tiempoAnim * 3 + t * 10) * 3;
+    const ry = yVirtual - 20 - t * 12;
+    ctx.lineTo(rx, ry);
+  }
+  ctx.stroke();
+
+  // Piernas rechonchas
+  ctx.fillStyle = '#ff8fab';
+  for (let i = 0; i < 4; i++) {
+    const px = xVirtual + 12 + i * 16;
+    const pyOff = Math.sin(tiempoAnim * 2 + i) * 3;
+    ctx.roundRect(px, yVirtual - 8 + pyOff, 10, 28, 3);
+    ctx.fill();
+  }
+
+  // Cabeza grande: orejas caídas, ojos rojos malvados, hocico chato
+  ctx.fillStyle = '#ff8fab';
+  ctx.shadowColor = '#cc0000';
+  ctx.shadowBlur = 5;
+  ctx.beginPath();
+  ctx.arc(xVirtual + 28, yVirtual - 55, 26, 0, Math.PI * 2); // Cabeza más ancha
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Orejas caídas/texturadas
+  ctx.fillStyle = '#ffb3ba';
+  ctx.beginPath();
+  ctx.ellipse(xVirtual + 12, yVirtual - 60 + Math.sin(tiempoAnim) * 1, 12, 18, Math.PI / 3, 0, Math.PI * 2);
+  ctx.ellipse(xVirtual + 44, yVirtual - 58 - Math.sin(tiempoAnim) * 1, 12, 18, -Math.PI / 3, 0, Math.PI * 2);
+  ctx.fill();
+  // Venas orejas
+  ctx.strokeStyle = '#e91e63';
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(xVirtual + 12, yVirtual - 60);
+  ctx.lineTo(xVirtual + 8, yVirtual - 45);
+  ctx.moveTo(xVirtual + 44, yVirtual - 58);
+  ctx.lineTo(xVirtual + 48, yVirtual - 43);
+  ctx.stroke();
+
+  // Ojos inyectados + pupilas
+  ctx.shadowColor = '#ff0000';
+  ctx.shadowBlur = 8;
+  ctx.fillStyle = '#ff1744';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 20, yVirtual - 58, 5.5, 0, Math.PI * 2);
+  ctx.arc(xVirtual + 36, yVirtual - 58, 5.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#660000';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 22 + Math.sin(tiempoAnim * 4) * 0.5, yVirtual - 58, 2.5, 0, Math.PI * 2);
+  ctx.arc(xVirtual + 38 + Math.sin(tiempoAnim * 4 + 2) * 0.5, yVirtual - 58, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 21, yVirtual - 57, 1, 0, Math.PI * 2);
+  ctx.arc(xVirtual + 37, yVirtual - 57, 1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hocico chato + fosas + colmillos
+  ctx.fillStyle = '#eee';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 28, yVirtual - 45, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#ddd';
+  ctx.beginPath();
+  ctx.arc(xVirtual + 24, yVirtual - 44, 2.8, 0, Math.PI * 2);
+  ctx.arc(xVirtual + 32, yVirtual - 44, 2.8, 0, Math.PI * 2);
+  ctx.fill();
+  // Colmillos curvados
+  ctx.fillStyle = '#fff';
+  ctx.beginPath();
+  ctx.ellipse(xVirtual + 20, yVirtual - 42, 3, 2.5, -Math.PI / 4, 0, Math.PI * 2);
+  ctx.ellipse(xVirtual + 36, yVirtual - 42, 3, 2.5, Math.PI / 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#ccc';
+  ctx.beginPath();
+  ctx.ellipse(xVirtual + 21, yVirtual - 43, 1.5, 1.2, -Math.PI / 4, 0, Math.PI * 2);
+  ctx.ellipse(xVirtual + 37, yVirtual - 43, 1.5, 1.2, Math.PI / 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Baba goteante realista (múltiples gotas)
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.shadowColor = '#fff';
+  ctx.shadowBlur = 2;
+  for (let i = 0; i < 3; i++) {
+    ctx.beginPath();
+    ctx.moveTo(xVirtual + 28 + (i - 1) * 3, yVirtual - 38 + i * 0.5);
+    const dropY = yVirtual - 30 + Math.sin(tiempoAnim * 2 + i) * 2;
+    ctx.quadraticCurveTo(xVirtual + 28 + (i - 1) * 4, dropY - 5, xVirtual + 28 + (i - 1) * 2.5, dropY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(xVirtual + 28 + (i - 1) * 2.5, dropY, 2.5 + i * 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  ctx.restore();
+}
+
+// CIGARRO MEJORADO: Como emoji 🚬 (filtro marrón, papel blanco arrugado, brasa naranja pulsante, humo denso)
+function dibujarCigarro(cig) {
+  ctx.save();
+  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+  const xVirtual = cig.xVirtual;
+  const yVirtual = cig.yVirtual;
+  const pulse = 0.85 + Math.sin(cig.tiempoBrasa * 0.35) * 0.15;
+
+  // Filtro marrón (como 🚬)
+  ctx.shadowColor = '#8b4513';
+  ctx.shadowBlur = 4;
+  ctx.fillStyle = '#a0522d';
+  ctx.roundRect(xVirtual + 2, yVirtual - 32, 12, 28, 6);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Papel blanco principal (arrugado)
+  ctx.fillStyle = '#f8f8f8';
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.shadowBlur = 2;
+  ctx.roundRect(xVirtual + 8, yVirtual - 28, 32, 20, 3);
+  ctx.fill();
+  // Arrugas finas
+  ctx.strokeStyle = 'rgba(200,200,200,0.8)';
+  ctx.lineWidth = 0.8;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(xVirtual + 12, yVirtual - 24);
+  ctx.quadraticCurveTo(xVirtual + 22, yVirtual - 22, xVirtual + 32, yVirtual - 20);
+  ctx.moveTo(xVirtual + 15, yVirtual - 16);
+  ctx.quadraticCurveTo(xVirtual + 25, yVirtual - 18, xVirtual + 35, yVirtual - 14);
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Brasa pulsante (naranja/rojo como 🚬)
+  ctx.shadowColor = '#ff4500';
+  ctx.shadowBlur = 20 * pulse;
+  const brasaGrad = ctx.createRadialGradient(xVirtual + 38, yVirtual - 30, 0, xVirtual + 38, yVirtual - 30, 8 * pulse);
+  brasaGrad.addColorStop(0, '#ff6600');
+  brasaGrad.addColorStop(0.5, '#ff4500');
+  brasaGrad.addColorStop(1, 'rgba(255,100,0,0)');
+  ctx.fillStyle = brasaGrad;
+  ctx.beginPath();
+  ctx.arc(xVirtual + 38, yVirtual - 30, 8 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Partículas brasa (chispas)
+  ctx.shadowColor = '#ffaa00';
+  ctx.shadowBlur = 6;
+  ctx.fillStyle = 'rgba(255,200,100,0.9)';
+  for (let i = 0; i < 4; i++) {
+    const sparkOff = Math.sin(cig.tiempoBrasa * 0.5 + i) * 1.5;
+    ctx.beginPath();
+    ctx.arc(xVirtual + 38 + sparkOff, yVirtual - 30 + sparkOff * 0.5 - i, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  // Humo denso ascendente (ondas como 🚬)
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = 'rgba(220,220,220,0.7)';
+  for (let i = 0; i < 6; i++) {
+    const smokeR = 2.5 + i * 1.8 + Math.sin(cig.tiempoBrasa * 0.2 + i) * 1;
+    const smokeX = xVirtual + 38 + (Math.random() - 0.5) * 4 + Math.sin(cig.tiempoBrasa * 0.15 + i * 0.5) * 2;
+    const smokeY = yVirtual - 38 - i * 5 - Math.sin(cig.tiempoBrasa * 0.1 + i) * 1.5;
+    ctx.beginPath();
+    ctx.arc(smokeX, smokeY, smokeR, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  ctx.restore();
+}
 
     function dibujarObstaculos() {
       obstaculos.forEach(obs => dibujarPolicia(obs));
