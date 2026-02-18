@@ -1625,166 +1625,273 @@
       ctx.fill();
     }
 
-    function dibujarJugador() {
-      if (jugador.enEscenaFinal) {
-        dibujarEscenaFinal();
-        return;
-      }
-      
-      ctx.save();
-      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const xVirtual = POS_X_CARRIL_VIRTUAL[jugador.carril] - jugador.anchoVirtual / 2;
-      const yVirtual = jugador.yVirtual;
-      
-      if (jugador.invulnerable && Math.floor(Date.now() / 80) % 2 === 0) {
-        ctx.globalAlpha = 0.5;
-      }
-      
-      // Glow durante Paki Ricoh
-      if (jugador.pakiRicoh.activo) {
-        ctx.shadowColor = '#ffd700';
-        ctx.shadowBlur = 40;
-        
-        // Aura dorada
-        const gradient = ctx.createRadialGradient(
-          xVirtual + jugador.anchoVirtual/2, yVirtual - jugador.altoVirtual/2,
-          0,
-          xVirtual + jugador.anchoVirtual/2, yVirtual - jugador.altoVirtual/2,
-          60
-        );
-        gradient.addColorStop(0, 'rgba(255, 215, 0, 0.3)');
-        gradient.addColorStop(1, 'rgba(255, 215, 0, 0)');
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(xVirtual + jugador.anchoVirtual/2, yVirtual - jugador.altoVirtual/2, 60, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      
-      // Cuerpo con gradiente
-      const bodyGrad = ctx.createLinearGradient(xVirtual, yVirtual - jugador.altoVirtual, xVirtual + jugador.anchoVirtual, yVirtual);
-      bodyGrad.addColorStop(0, '#3e8e41');
-      bodyGrad.addColorStop(0.5, jugador.colorRopa);
-      bodyGrad.addColorStop(1, '#1b5e20');
-      ctx.fillStyle = bodyGrad;
-      
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 5, yVirtual - jugador.altoVirtual);
-      ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - jugador.altoVirtual);
-      ctx.lineTo(xVirtual + jugador.anchoVirtual - 5, yVirtual - 15);
-      ctx.lineTo(xVirtual + jugador.anchoVirtual - 15, yVirtual);
-      ctx.lineTo(xVirtual + 15, yVirtual);
-      ctx.lineTo(xVirtual + 5, yVirtual - 15);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Highlight en ropa
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 8, yVirtual - jugador.altoVirtual + 5);
-      ctx.lineTo(xVirtual + 18, yVirtual - jugador.altoVirtual + 5);
-      ctx.lineTo(xVirtual + 15, yVirtual - 30);
-      ctx.lineTo(xVirtual + 10, yVirtual - 30);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Cabeza con gradiente
-      ctx.fillStyle = '#4e342e';
-      ctx.beginPath();
-      ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 17, 0, Math.PI * 2);
-      ctx.fill();
-      
-      const headGrad = ctx.createRadialGradient(
-        xVirtual + jugador.anchoVirtual / 2 - 3, yVirtual - jugador.altoVirtual - 8, 2,
-        xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 15
-      );
-      headGrad.addColorStop(0, '#8d6e63');
-      headGrad.addColorStop(1, jugador.colorPiel);
-      ctx.fillStyle = headGrad;
-      ctx.beginPath();
-      ctx.arc(xVirtual + jugador.anchoVirtual / 2, yVirtual - jugador.altoVirtual - 5, 15, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Ojos
-      if (jugador.pakiRicoh.activo) {
-        // Gafas de sol doradas
-        ctx.fillStyle = '#1a1a1a';
-        ctx.fillRect(xVirtual + 9, yVirtual - jugador.altoVirtual - 13, 17, 8);
-        ctx.fillStyle = '#ffd700';
-        ctx.fillRect(xVirtual + 10, yVirtual - jugador.altoVirtual - 12, 3, 6);
-        ctx.fillRect(xVirtual + 22, yVirtual - jugador.altoVirtual - 12, 3, 6);
-      } else {
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.arc(xVirtual + 12, yVirtual - jugador.altoVirtual - 8, 4.5, 0, Math.PI * 2);
-        ctx.arc(xVirtual + 23, yVirtual - jugador.altoVirtual - 8, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.fillStyle = '#2d1f1a';
-        const eyeOffset = Math.sin(juego.tiempo / 10) * 0.8;
-        ctx.beginPath();
-        ctx.arc(xVirtual + 12 + eyeOffset, yVirtual - jugador.altoVirtual - 8, 2.5, 0, Math.PI * 2);
-        ctx.arc(xVirtual + 23 + eyeOffset, yVirtual - jugador.altoVirtual - 8, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Brillo en ojos
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.arc(xVirtual + 11, yVirtual - jugador.altoVirtual - 9, 1, 0, Math.PI * 2);
-        ctx.arc(xVirtual + 22, yVirtual - jugador.altoVirtual - 9, 1, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Sonrisa
-        ctx.strokeStyle = '#3e2723';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(xVirtual + 17.5, yVirtual - jugador.altoVirtual - 2, 5, 0.1 * Math.PI, 0.9 * Math.PI);
-        ctx.stroke();
-      }
-      
-      // Brazos animados
-      const offsetBrazos = Math.sin(juego.tiempo / 4) * 18;
-      ctx.fillStyle = jugador.colorPiel;
-      
-      if (jugador.agachado) {
-        ctx.fillRect(xVirtual - 10, yVirtual - 35, 10, 25);
-        ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 35, 10, 25);
-      } else if (jugador.saltando) {
-        ctx.fillRect(xVirtual - 12, yVirtual - jugador.altoVirtual - 15, 12, 30);
-        ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - jugador.altoVirtual - 15, 12, 30);
-      } else {
-        ctx.fillRect(xVirtual - 12, yVirtual - 45 + offsetBrazos, 12, 30);
-        ctx.fillRect(xVirtual + jugador.anchoVirtual, yVirtual - 45 - offsetBrazos, 12, 30);
-      }
-      
-      // Piernas con gradiente
-      const legGrad = ctx.createLinearGradient(xVirtual, yVirtual - 20, xVirtual, yVirtual + 35);
-      legGrad.addColorStop(0, '#283593');
-      legGrad.addColorStop(1, '#1a237e');
-      ctx.fillStyle = legGrad;
-      const offsetPiernas = Math.sin(juego.tiempo / 4) * 12;
-      
-      if (jugador.agachado) {
-        ctx.fillRect(xVirtual + 8, yVirtual - 25, 10, 30);
-        ctx.fillRect(xVirtual + 17, yVirtual - 25, 10, 30);
-      } else {
-        ctx.fillRect(xVirtual + 8, yVirtual - 20 + offsetPiernas, 8, 25);
-        ctx.fillRect(xVirtual + 19, yVirtual - 20 - offsetPiernas, 8, 25);
-        ctx.fillRect(xVirtual + 9, yVirtual + 5 + offsetPiernas, 6, 22);
-        ctx.fillRect(xVirtual + 20, yVirtual + 5 - offsetPiernas, 6, 22);
-      }
-      
-      // Zapatos con highlight
-      ctx.fillStyle = jugador.colorZapatos;
-      ctx.fillRect(xVirtual + 7, yVirtual + 27, 10, 8);
-      ctx.fillRect(xVirtual + 18, yVirtual + 27, 10, 8);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-      ctx.fillRect(xVirtual + 8, yVirtual + 28, 8, 2);
-      ctx.fillRect(xVirtual + 19, yVirtual + 28, 8, 2);
-      
-      ctx.shadowBlur = 0;
-      ctx.restore();
-    }
+function dibujarJugador() {
+  if (jugador.enEscenaFinal) {
+    dibujarEscenaFinal();
+    return;
+  }
+
+  ctx.save();
+  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+
+  const cx = POS_X_CARRIL_VIRTUAL[jugador.carril];
+  const cy = jugador.yVirtual;
+  const inv = jugador.invulnerable && Math.floor(Date.now() / 80) % 2 === 0;
+  if (inv) ctx.globalAlpha = 0.4;
+
+  // Aura dorada Paki Ricoh
+  if (jugador.pakiRicoh.activo) {
+    const aura = ctx.createRadialGradient(cx, cy - 35, 5, cx, cy - 35, 65);
+    aura.addColorStop(0, 'rgba(255,215,0,0.35)');
+    aura.addColorStop(1, 'rgba(255,215,0,0)');
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(cx, cy - 35, 65, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 30;
+  }
+
+  const t = juego.tiempo;
+  const enSuelo = jugador.enSuelo;
+  const agachado = jugador.agachado;
+  const saltando = jugador.saltando;
+
+  // Animación de piernas (solo si está en suelo y no agachado)
+  const swingA = enSuelo && !agachado ? Math.sin(t * 0.22) * 14 : 0;
+  const swingB = -swingA;
+  const swingBrazos = enSuelo && !agachado ? Math.sin(t * 0.22) * 12 : 0;
+
+  // --- SOMBRA ---
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 36, 18, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // --- ZAPATOS ---
+  const shoeColor = '#1a1a1a';
+  const shoeHighlight = '#444';
+  if (agachado) {
+    // Zapatos pegados al cuerpo
+    dibujarZapato(ctx, cx - 10, cy + 14, shoeColor, shoeHighlight, 0);
+    dibujarZapato(ctx, cx + 2, cy + 14, shoeColor, shoeHighlight, 0);
+  } else {
+    dibujarZapato(ctx, cx - 12 + swingA * 0.4, cy + 28 + Math.abs(swingA) * 0.15, shoeColor, shoeHighlight, swingA);
+    dibujarZapato(ctx, cx + 2 + swingB * 0.4, cy + 28 + Math.abs(swingB) * 0.15, shoeColor, shoeHighlight, swingB);
+  }
+
+  // --- PIERNAS (pantalón oscuro) ---
+  ctx.fillStyle = '#1a237e';
+  if (agachado) {
+    // Piernas dobladas
+    ctx.beginPath();
+    ctx.ellipse(cx - 7, cy + 8, 7, 10, -0.4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + 7, cy + 8, 7, 10, 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (saltando) {
+    // Piernas recogidas
+    ctx.beginPath();
+    ctx.ellipse(cx - 8, cy + 5, 6, 12, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + 8, cy + 5, 6, 12, 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Piernas con swing
+    ctx.beginPath();
+    ctx.roundRect(cx - 15 + swingA * 0.3, cy - 5, 11, 32, 4);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx + 4 + swingB * 0.3, cy - 5, 11, 32, 4);
+    ctx.fill();
+    // Highlight piernas
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath();
+    ctx.roundRect(cx - 14 + swingA * 0.3, cy - 4, 4, 20, 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx + 5 + swingB * 0.3, cy - 4, 4, 20, 2);
+    ctx.fill();
+  }
+
+  // --- CUERPO (thobe blanco árabe) ---
+  ctx.fillStyle = agachado ? '#e0e0e0' : '#f5f5f5';
+  if (agachado) {
+    ctx.beginPath();
+    ctx.ellipse(cx, cy - 10, 20, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(cx - 17, cy - 55);
+    ctx.lineTo(cx + 17, cy - 55);
+    ctx.lineTo(cx + 20, cy + 5);
+    ctx.lineTo(cx - 20, cy + 5);
+    ctx.closePath();
+    ctx.fill();
+    // Franja central
+    ctx.fillStyle = '#bdbdbd';
+    ctx.beginPath();
+    ctx.moveTo(cx - 2, cy - 55);
+    ctx.lineTo(cx + 2, cy - 55);
+    ctx.lineTo(cx + 3, cy + 5);
+    ctx.lineTo(cx - 3, cy + 5);
+    ctx.closePath();
+    ctx.fill();
+    // Highlight lateral
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, cy - 54);
+    ctx.lineTo(cx - 10, cy - 54);
+    ctx.lineTo(cx - 8, cy);
+    ctx.lineTo(cx - 14, cy);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // --- BRAZOS ---
+  ctx.fillStyle = '#d7b899'; // tono piel
+  if (agachado) {
+    ctx.beginPath();
+    ctx.roundRect(cx - 28, cy - 18, 12, 20, 4);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx + 16, cy - 18, 12, 20, 4);
+    ctx.fill();
+  } else if (saltando) {
+    ctx.beginPath();
+    ctx.roundRect(cx - 26, cy - 60, 12, 28, 4);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx + 14, cy - 60, 12, 28, 4);
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.roundRect(cx - 26, cy - 50 + swingBrazos, 11, 28, 4);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx + 15, cy - 50 - swingBrazos, 11, 28, 4);
+    ctx.fill();
+  }
+
+  // --- CABEZA ---
+  // Sombra cabeza
+  ctx.fillStyle = '#4e342e';
+  ctx.beginPath();
+  ctx.arc(cx, cy - 72, 19, 0, Math.PI * 2);
+  ctx.fill();
+  // Piel árabe cálida
+  const headGrad = ctx.createRadialGradient(cx - 4, cy - 76, 3, cx, cy - 72, 17);
+  headGrad.addColorStop(0, '#c8956c');
+  headGrad.addColorStop(1, '#8d5a3c');
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy - 72, 17, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Kufiya (pañuelo árabe) - característica principal
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.arc(cx, cy - 72, 18, Math.PI, 0); // parte superior blanca
+  ctx.fill();
+  // Patrón del kufiya
+  ctx.strokeStyle = '#e0e0e0';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(cx - 16 + i * 8, cy - 90);
+    ctx.lineTo(cx - 20 + i * 8, cy - 72);
+    ctx.stroke();
+  }
+  // Agal (aro negro sobre kufiya)
+  ctx.strokeStyle = '#1a1a1a';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(cx, cy - 72, 18, Math.PI + 0.1, -0.1);
+  ctx.stroke();
+  // Caída lateral del kufiya
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.beginPath();
+  ctx.moveTo(cx + 12, cy - 72);
+  ctx.lineTo(cx + 20, cy - 55);
+  ctx.lineTo(cx + 14, cy - 52);
+  ctx.lineTo(cx + 8, cy - 68);
+  ctx.closePath();
+  ctx.fill();
+
+  // Ojos
+  if (jugador.pakiRicoh.activo) {
+    // Gafas de sol doradas
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.roundRect(cx - 13, cy - 78, 11, 8, 3);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.roundRect(cx + 2, cy - 78, 11, 8, 3);
+    ctx.fill();
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx - 14, cy - 79, 13, 10);
+    ctx.strokeRect(cx + 1, cy - 79, 13, 10);
+    ctx.beginPath();
+    ctx.moveTo(cx - 1, cy - 74);
+    ctx.lineTo(cx + 1, cy - 74);
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(cx - 7, cy - 76, 4, 0, Math.PI * 2);
+    ctx.arc(cx + 7, cy - 76, 4, 0, Math.PI * 2);
+    ctx.fill();
+    const eyeX = Math.sin(t * 0.05) * 1;
+    ctx.fillStyle = '#2d1508';
+    ctx.beginPath();
+    ctx.arc(cx - 7 + eyeX, cy - 76, 2.2, 0, Math.PI * 2);
+    ctx.arc(cx + 7 + eyeX, cy - 76, 2.2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(cx - 8, cy - 77, 0.8, 0, Math.PI * 2);
+    ctx.arc(cx + 6, cy - 77, 0.8, 0, Math.PI * 2);
+    ctx.fill();
+    // Sonrisa
+    ctx.strokeStyle = '#5d3a1a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy - 69, 4, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+    // Bigote fino árabe
+    ctx.strokeStyle = '#3e2010';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx - 3, cy - 71, 3, 0, Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx + 3, cy - 71, 3, 0, Math.PI);
+    ctx.stroke();
+  }
+
+  ctx.shadowBlur = 0;
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function dibujarZapato(ctx, x, y, color, highlight, swing) {
+  ctx.save();
+  ctx.translate(x + 8, y);
+  ctx.rotate(swing * 0.03);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.roundRect(-8, -5, 18, 9, [3, 5, 3, 2]);
+  ctx.fill();
+  ctx.fillStyle = highlight;
+  ctx.beginPath();
+  ctx.roundRect(-6, -4, 10, 3, 2);
+  ctx.fill();
+  ctx.restore();
+}
 
     function dibujarEscenaFinal() {
       ctx.save();
@@ -1951,311 +2058,396 @@
     }
 
     function dibujarPolicia(obs) {
-      ctx.save();
-      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const xVirtual = obs.xVirtual;
-      const yVirtual = obs.yVirtual;
-      
-      // Sombra debajo
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 28, yVirtual + 25, 25, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Cuerpo con gradiente
-      const bodyGrad = ctx.createLinearGradient(xVirtual, yVirtual - 70, xVirtual + 56, yVirtual);
-      bodyGrad.addColorStop(0, obs.colorUniforme);
-      bodyGrad.addColorStop(0.5, '#1976d2');
-      bodyGrad.addColorStop(1, obs.colorGorra);
-      ctx.fillStyle = bodyGrad;
-      
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 8, yVirtual - 70);
-      ctx.lineTo(xVirtual + 47, yVirtual - 70);
-      ctx.lineTo(xVirtual + 45, yVirtual);
-      ctx.lineTo(xVirtual + 10, yVirtual);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Botones dorados
-      ctx.fillStyle = '#ffc107';
-      ctx.shadowColor = '#ffc107';
-      ctx.shadowBlur = 5;
-      for (let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        ctx.arc(xVirtual + 28, yVirtual - 50 + i * 12, 3, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.shadowBlur = 0;
-      
-      // Gorra
-      ctx.fillStyle = obs.colorGorra;
-      ctx.fillRect(xVirtual + 12, yVirtual - 85, 31, 12);
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 10, yVirtual - 73);
-      ctx.lineTo(xVirtual + 50, yVirtual - 73);
-      ctx.lineTo(xVirtual + 45, yVirtual - 80);
-      ctx.lineTo(xVirtual + 15, yVirtual - 80);
-      ctx.closePath();
-      ctx.fill();
-      
-      // Cara
-      ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(xVirtual + 15, yVirtual - 75, 25, 15);
-      
-      // Ojos enfadados
-      ctx.fillStyle = 'black';
-      ctx.fillRect(xVirtual + 20, yVirtual - 70, 4, 4);
-      ctx.fillRect(xVirtual + 31, yVirtual - 70, 4, 4);
-      
-      // Cejas
-      ctx.strokeStyle = '#333';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 18, yVirtual - 72);
-      ctx.lineTo(xVirtual + 24, yVirtual - 74);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 30, yVirtual - 74);
-      ctx.lineTo(xVirtual + 36, yVirtual - 72);
-      ctx.stroke();
-      
-      // Boca
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 22, yVirtual - 63);
-      ctx.lineTo(xVirtual + 33, yVirtual - 63);
-      ctx.stroke();
-      
-      // Brazos
-      ctx.fillStyle = '#f5f5f5';
-      ctx.fillRect(xVirtual - 5, yVirtual - 60, 10, 35);
-      ctx.fillRect(xVirtual + 50, yVirtual - 60, 10, 35);
-      
-      // Porra
-      ctx.fillStyle = '#5d4037';
-      ctx.fillRect(xVirtual - 10, yVirtual - 40, 8, 25);
-      ctx.fillStyle = '#424242';
-      ctx.fillRect(xVirtual - 12, yVirtual - 45, 12, 5);
-      
-      // Piernas
-      ctx.fillStyle = '#0d47a1';
-      ctx.fillRect(xVirtual + 15, yVirtual - 10, 10, 30);
-      ctx.fillRect(xVirtual + 30, yVirtual - 10, 10, 30);
-      
-      // Zapatos
-      ctx.fillStyle = '#212121';
-      ctx.fillRect(xVirtual + 13, yVirtual + 20, 14, 8);
-      ctx.fillRect(xVirtual + 28, yVirtual + 20, 14, 8);
-      
-      // Placa
-      ctx.fillStyle = '#ffc107';
-      ctx.shadowColor = '#ffc107';
-      ctx.shadowBlur = 5;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 45, yVirtual - 60, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      
-      // Indicador de rápido
-      if (obs.velocidadExtra > 0) {
-        ctx.fillStyle = '#ff4d4d';
-        ctx.shadowColor = '#ff4d4d';
-        ctx.shadowBlur = 10;
-        ctx.font = 'bold 13px "Courier New"';
-        ctx.textAlign = 'center';
-        ctx.fillText('¡RÁPIDO!', xVirtual + 28, yVirtual - 95);
-        ctx.shadowBlur = 0;
-      }
-      
-      ctx.restore();
-    }
+  ctx.save();
+  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
 
-    function dibujarCerdo(cerdo) {
-      ctx.save();
-      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const xVirtual = cerdo.xVirtual;
-      const yVirtual = cerdo.yVirtual;
-      
-      // Sombra
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 30, yVirtual + 15, 28, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Cuerpo con gradiente
-      const bodyGrad = ctx.createRadialGradient(xVirtual + 25, yVirtual - 30, 5, xVirtual + 30, yVirtual - 25, 35);
-      bodyGrad.addColorStop(0, '#ffb3c1');
-      bodyGrad.addColorStop(1, '#ff80ab');
-      ctx.fillStyle = bodyGrad;
-      ctx.beginPath();
-      ctx.ellipse(xVirtual + 30, yVirtual - 25, 32, 25, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Cabeza
-      ctx.fillStyle = '#ff80ab';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 30, yVirtual - 45, 20, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Hocico con gradiente
-      const noseGrad = ctx.createRadialGradient(xVirtual + 28, yVirtual - 42, 2, xVirtual + 30, yVirtual - 40, 12);
-      noseGrad.addColorStop(0, '#f48fb1');
-      noseGrad.addColorStop(1, '#e91e63');
-      ctx.fillStyle = noseGrad;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 30, yVirtual - 40, 12, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Fosas nasales
-      ctx.fillStyle = '#880e4f';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 26, yVirtual - 42, 3, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 34, yVirtual - 42, 3, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Ojos con brillo
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 23, yVirtual - 48, 5, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 37, yVirtual - 48, 5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = '#2d1f1a';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 24, yVirtual - 48, 2.5, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 36, yVirtual - 48, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.fillStyle = 'white';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 22, yVirtual - 49, 1, 0, Math.PI * 2);
-      ctx.arc(xVirtual + 35, yVirtual - 49, 1, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Cejas enfadadas
-      ctx.strokeStyle = '#4a0e2a';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 18, yVirtual - 53);
-      ctx.lineTo(xVirtual + 26, yVirtual - 50);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 34, yVirtual - 50);
-      ctx.lineTo(xVirtual + 42, yVirtual - 53);
-      ctx.stroke();
-      
-      // Orejas con interior
-      ctx.fillStyle = '#ff80ab';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 18, yVirtual - 55, 10, 0.3 * Math.PI, 1.7 * Math.PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(xVirtual + 42, yVirtual - 55, 10, -0.7 * Math.PI, 0.7 * Math.PI);
-      ctx.fill();
-      
-      ctx.fillStyle = '#f48fb1';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 18, yVirtual - 55, 5, 0.3 * Math.PI, 1.7 * Math.PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(xVirtual + 42, yVirtual - 55, 5, -0.7 * Math.PI, 0.7 * Math.PI);
-      ctx.fill();
-      
-      // Patas
-      ctx.fillStyle = '#e91e63';
-      ctx.fillRect(xVirtual + 15, yVirtual - 5, 12, 18);
-      ctx.fillRect(xVirtual + 33, yVirtual - 5, 12, 18);
-      
-      // Pezuñas
-      ctx.fillStyle = '#880e4f';
-      ctx.fillRect(xVirtual + 17, yVirtual + 10, 8, 5);
-      ctx.fillRect(xVirtual + 35, yVirtual + 10, 8, 5);
-      
-      // Cola rizada
-      ctx.strokeStyle = '#e91e63';
-      ctx.lineWidth = 4;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(xVirtual + 55, yVirtual - 30);
-      ctx.bezierCurveTo(
-        xVirtual + 68, yVirtual - 25,
-        xVirtual + 62, yVirtual - 12,
-        xVirtual + 55, yVirtual - 8
-      );
-      ctx.stroke();
-      
-      ctx.restore();
-    }
+  const cx = obs.xVirtual + 28;
+  const cy = obs.yVirtual;
+  const t = juego.tiempo;
+  const swing = Math.sin(t * 0.25) * 12;
 
-    function dibujarCigarro(cig) {
-      ctx.save();
-      ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
-      
-      const xVirtual = cig.xVirtual;
-      const yVirtual = cig.yVirtual + Math.sin(cig.flotacion) * 3; // Flotación
-      
-      // Glow alrededor
-      ctx.shadowColor = '#ffd166';
-      ctx.shadowBlur = 15;
-      
-      // Paquete con gradiente
-      const packGrad = ctx.createLinearGradient(xVirtual + 8, yVirtual - 25, xVirtual + 36, yVirtual - 7);
-      packGrad.addColorStop(0, '#a1887f');
-      packGrad.addColorStop(0.5, '#8d6e63');
-      packGrad.addColorStop(1, '#6d4c41');
-      ctx.fillStyle = packGrad;
-      ctx.fillRect(xVirtual + 8, yVirtual - 25, 28, 18);
-      
-      // Textura del paquete
-      ctx.strokeStyle = 'rgba(100, 80, 70, 0.4)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 4; i++) {
-        ctx.beginPath();
-        ctx.moveTo(xVirtual + 10, yVirtual - 23 + i * 4);
-        ctx.lineTo(xVirtual + 34, yVirtual - 23 + i * 4);
-        ctx.stroke();
-      }
-      
-      // Filtro con gradiente
-      const filterGrad = ctx.createRadialGradient(xVirtual + 13, yVirtual - 32, 2, xVirtual + 15, yVirtual - 30, 8);
-      filterGrad.addColorStop(0, '#bdbdbd');
-      filterGrad.addColorStop(1, '#9e9e9e');
-      ctx.fillStyle = filterGrad;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 15, yVirtual - 30, 7, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Brillo del filtro
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 13, yVirtual - 32, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Brasa animada con glow intenso
-      const brillo = 0.7 + Math.sin(cig.tiempoBrasa * 0.35) * 0.3;
-      ctx.shadowColor = `rgba(255, 152, 0, ${brillo})`;
-      ctx.shadowBlur = 20;
-      
-      const brasaGrad = ctx.createRadialGradient(xVirtual + 38, yVirtual - 30, 0, xVirtual + 38, yVirtual - 30, 6);
-      brasaGrad.addColorStop(0, '#ffeb3b');
-      brasaGrad.addColorStop(0.5, '#ff9800');
-      brasaGrad.addColorStop(1, '#ff5722');
-      ctx.fillStyle = brasaGrad;
-      ctx.beginPath();
-      ctx.arc(xVirtual + 38, yVirtual - 30, 6, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Centro brillante de la brasa
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(xVirtual + 38, yVirtual - 31, 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      ctx.shadowBlur = 0;
-      ctx.restore();
-    }
+  // Sombra
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 28, 22, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Zapatos
+  dibujarZapatoPolicia(ctx, cx - 10 + swing * 0.4, cy + 26, swing);
+  dibujarZapatoPolicia(ctx, cx + 2 - swing * 0.4, cy + 26, -swing);
+
+  // Piernas
+  ctx.fillStyle = '#0d47a1';
+  ctx.beginPath();
+  ctx.roundRect(cx - 14 + swing * 0.3, cy - 2, 11, 28, 3);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(cx + 3 - swing * 0.3, cy - 2, 11, 28, 3);
+  ctx.fill();
+
+  // Cuerpo
+  const bodyGrad = ctx.createLinearGradient(cx - 18, cy - 55, cx + 18, cy);
+  bodyGrad.addColorStop(0, obs.colorUniforme);
+  bodyGrad.addColorStop(1, obs.colorGorra);
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.roundRect(cx - 18, cy - 58, 36, 60, [4, 4, 6, 6]);
+  ctx.fill();
+  // Highlight uniforme
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.beginPath();
+  ctx.roundRect(cx - 16, cy - 56, 12, 40, 3);
+  ctx.fill();
+
+  // Cinturón
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(cx - 18, cy - 10, 36, 6);
+  ctx.fillStyle = '#ffc107';
+  ctx.beginPath();
+  ctx.arc(cx, cy - 7, 4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Placa
+  ctx.fillStyle = '#ffc107';
+  ctx.shadowColor = '#ffc107';
+  ctx.shadowBlur = 6;
+  ctx.beginPath();
+  ctx.roundRect(cx + 5, cy - 50, 10, 12, 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#1a1a1a';
+  ctx.font = 'bold 6px Courier New';
+  ctx.textAlign = 'center';
+  ctx.fillText('P', cx + 10, cy - 41);
+
+  // Brazos
+  ctx.fillStyle = obs.colorUniforme;
+  ctx.beginPath();
+  ctx.roundRect(cx - 28, cy - 50 - swing * 0.5, 11, 30, 4);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(cx + 17, cy - 50 + swing * 0.5, 11, 30, 4);
+  ctx.fill();
+
+  // Porra
+  ctx.fillStyle = '#4e342e';
+  ctx.beginPath();
+  ctx.roundRect(cx + 26, cy - 30, 7, 28, 3);
+  ctx.fill();
+  ctx.fillStyle = '#212121';
+  ctx.beginPath();
+  ctx.roundRect(cx + 25, cy - 35, 9, 8, 2);
+  ctx.fill();
+
+  // Cuello
+  ctx.fillStyle = '#f5deb3';
+  ctx.beginPath();
+  ctx.roundRect(cx - 6, cy - 62, 12, 8, 3);
+  ctx.fill();
+
+  // Cabeza
+  ctx.fillStyle = '#f5deb3';
+  ctx.beginPath();
+  ctx.arc(cx, cy - 72, 16, 0, Math.PI * 2);
+  ctx.fill();
+  // Cara más detallada
+  ctx.fillStyle = '#f0d0a0';
+  ctx.beginPath();
+  ctx.arc(cx, cy - 72, 14, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Gorra
+  ctx.fillStyle = obs.colorGorra;
+  ctx.beginPath();
+  ctx.roundRect(cx - 16, cy - 88, 32, 14, [6, 6, 0, 0]);
+  ctx.fill();
+  // Visera
+  ctx.fillStyle = obs.colorGorra;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy - 74, 20, 5, 0, Math.PI, 0);
+  ctx.fill();
+  // Banda amarilla gorra
+  ctx.fillStyle = '#ffc107';
+  ctx.fillRect(cx - 16, cy - 76, 32, 3);
+
+  // Ojos enfadados
+  ctx.fillStyle = '#1a1a1a';
+  ctx.beginPath();
+  ctx.arc(cx - 6, cy - 72, 3, 0, Math.PI * 2);
+  ctx.arc(cx + 6, cy - 72, 3, 0, Math.PI * 2);
+  ctx.fill();
+  // Cejas enfadadas en V
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - 10, cy - 77);
+  ctx.lineTo(cx - 4, cy - 75);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + 4, cy - 75);
+  ctx.lineTo(cx + 10, cy - 77);
+  ctx.stroke();
+  // Boca recta
+  ctx.strokeStyle = '#8b4513';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx - 5, cy - 64);
+  ctx.lineTo(cx + 5, cy - 64);
+  ctx.stroke();
+
+  // RÁPIDO indicator
+  if (obs.velocidadExtra > 0) {
+    ctx.fillStyle = '#ff4d4d';
+    ctx.shadowColor = '#ff4d4d';
+    ctx.shadowBlur = 8;
+    ctx.font = 'bold 11px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('¡RÁPIDO!', cx, cy - 98);
+    ctx.shadowBlur = 0;
+  }
+
+  ctx.restore();
+}
+
+function dibujarZapatoPolicia(ctx, x, y, swing) {
+  ctx.save();
+  ctx.translate(x + 8, y);
+  ctx.rotate(swing * 0.025);
+  ctx.fillStyle = '#212121';
+  ctx.beginPath();
+  ctx.roundRect(-8, -4, 20, 9, [2, 4, 3, 2]);
+  ctx.fill();
+  ctx.fillStyle = '#444';
+  ctx.beginPath();
+  ctx.roundRect(-6, -3, 10, 3, 1);
+  ctx.fill();
+  ctx.restore();
+}
+
+  function dibujarCerdo(cerdo) {
+  ctx.save();
+  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+
+  const cx = cerdo.xVirtual + 30;
+  const cy = cerdo.yVirtual;
+  const t = juego.tiempo;
+  const bobY = Math.sin(t * 0.18) * 3;
+
+  // Sombra
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy + 16 + bobY, 26, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Patas traseras
+  ctx.fillStyle = '#e57373';
+  ctx.beginPath();
+  ctx.roundRect(cx + 12, cy - 5 + bobY, 10, 20, [2, 2, 4, 4]);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(cx + 22, cy - 5 + bobY, 10, 20, [2, 2, 4, 4]);
+  ctx.fill();
+  // Pezuñas traseras
+  ctx.fillStyle = '#b71c1c';
+  ctx.beginPath();
+  ctx.roundRect(cx + 12, cy + 12 + bobY, 10, 5, [0, 0, 3, 3]);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(cx + 22, cy + 12 + bobY, 10, 5, [0, 0, 3, 3]);
+  ctx.fill();
+
+  // Cuerpo principal (más natural, menos perfecto)
+  const bodyGrad = ctx.createLinearGradient(cx - 28, cy - 20 + bobY, cx + 28, cy + 10 + bobY);
+  bodyGrad.addColorStop(0, '#ef9a9a');
+  bodyGrad.addColorStop(0.5, '#e57373');
+  bodyGrad.addColorStop(1, '#ef9a9a');
+  ctx.fillStyle = bodyGrad;
+  ctx.beginPath();
+  ctx.ellipse(cx - 2, cy - 8 + bobY, 30, 20, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Patas delanteras
+  ctx.fillStyle = '#e57373';
+  ctx.beginPath();
+  ctx.roundRect(cx - 32, cy - 5 + bobY, 10, 20, [2, 2, 4, 4]);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(cx - 22, cy - 5 + bobY, 10, 20, [2, 2, 4, 4]);
+  ctx.fill();
+  ctx.fillStyle = '#b71c1c';
+  ctx.beginPath();
+  ctx.roundRect(cx - 32, cy + 12 + bobY, 10, 5, [0, 0, 3, 3]);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.roundRect(cx - 22, cy + 12 + bobY, 10, 5, [0, 0, 3, 3]);
+  ctx.fill();
+
+  // Cabeza
+  const headGrad = ctx.createRadialGradient(cx - 22, cy - 32 + bobY, 3, cx - 20, cy - 28 + bobY, 18);
+  headGrad.addColorStop(0, '#ffcdd2');
+  headGrad.addColorStop(1, '#ef9a9a');
+  ctx.fillStyle = headGrad;
+  ctx.beginPath();
+  ctx.ellipse(cx - 20, cy - 28 + bobY, 18, 16, -0.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Orejas
+  ctx.fillStyle = '#ef9a9a';
+  ctx.beginPath();
+  ctx.ellipse(cx - 32, cy - 38 + bobY, 8, 10, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx - 10, cy - 38 + bobY, 7, 9, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#f48fb1';
+  ctx.beginPath();
+  ctx.ellipse(cx - 32, cy - 38 + bobY, 4, 6, -0.4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(cx - 10, cy - 38 + bobY, 3, 5, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Hocico
+  ctx.fillStyle = '#f48fb1';
+  ctx.beginPath();
+  ctx.ellipse(cx - 20, cy - 23 + bobY, 10, 8, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#ad1457';
+  ctx.beginPath();
+  ctx.arc(cx - 24, cy - 24 + bobY, 2.5, 0, Math.PI * 2);
+  ctx.arc(cx - 16, cy - 24 + bobY, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ojos
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(cx - 26, cy - 31 + bobY, 4.5, 0, Math.PI * 2);
+  ctx.arc(cx - 14, cy - 31 + bobY, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#2d1f1a';
+  ctx.beginPath();
+  ctx.arc(cx - 26, cy - 31 + bobY, 2.5, 0, Math.PI * 2);
+  ctx.arc(cx - 14, cy - 31 + bobY, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'white';
+  ctx.beginPath();
+  ctx.arc(cx - 27, cy - 32 + bobY, 1, 0, Math.PI * 2);
+  ctx.arc(cx - 15, cy - 32 + bobY, 1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cola
+  ctx.strokeStyle = '#e57373';
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(cx + 26, cy - 12 + bobY);
+  ctx.bezierCurveTo(cx + 38, cy - 8 + bobY, cx + 36, cy + 2 + bobY, cx + 28, cy + 4 + bobY);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+   function dibujarCigarro(cig) {
+  ctx.save();
+  ctx.scale(canvas.width / (800 * dpr), canvas.height / (600 * dpr));
+
+  const cx = cig.xVirtual + 22;
+  const cy = cig.yVirtual + Math.sin(cig.flotacion) * 4;
+  const t = cig.tiempoBrasa;
+  const brillo = 0.7 + Math.sin(t * 0.4) * 0.3;
+
+  // Halo de recogida
+  const halo = ctx.createRadialGradient(cx, cy - 15, 5, cx, cy - 15, 32);
+  halo.addColorStop(0, 'rgba(255,209,102,0.15)');
+  halo.addColorStop(1, 'rgba(255,209,102,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(cx, cy - 15, 32, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Cigarro (cuerpo principal, inclinado)
+  ctx.save();
+  ctx.translate(cx, cy - 10);
+  ctx.rotate(-0.15);
+
+  // Papel del cigarro
+  const cigGrad = ctx.createLinearGradient(-4, -18, 4, -18);
+  cigGrad.addColorStop(0, '#f5f5dc');
+  cigGrad.addColorStop(0.5, '#fffde7');
+  cigGrad.addColorStop(1, '#e8d5a3');
+  ctx.fillStyle = cigGrad;
+  ctx.beginPath();
+  ctx.roundRect(-4, -18, 8, 26, [2, 2, 1, 1]);
+  ctx.fill();
+
+  // Líneas de papel
+  ctx.strokeStyle = 'rgba(200,180,120,0.5)';
+  ctx.lineWidth = 0.8;
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(-3, -14 + i * 5);
+    ctx.lineTo(3, -14 + i * 5);
+    ctx.stroke();
+  }
+
+  // Filtro (naranja/marrón)
+  const filterGrad = ctx.createLinearGradient(-4, 6, 4, 8);
+  filterGrad.addColorStop(0, '#d2691e');
+  filterGrad.addColorStop(0.5, '#ff8c00');
+  filterGrad.addColorStop(1, '#8b4513');
+  ctx.fillStyle = filterGrad;
+  ctx.beginPath();
+  ctx.roundRect(-4, 6, 8, 8, [0, 0, 2, 2]);
+  ctx.fill();
+  // Textura filtro
+  ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(-2, 8); ctx.lineTo(2, 8);
+  ctx.moveTo(-2, 10); ctx.lineTo(2, 10);
+  ctx.moveTo(-2, 12); ctx.lineTo(2, 12);
+  ctx.stroke();
+
+  // Brasa con glow animado
+  ctx.shadowColor = `rgba(255,120,0,${brillo})`;
+  ctx.shadowBlur = 14 * brillo;
+  const brasaGrad = ctx.createRadialGradient(0, -20, 0, 0, -20, 6);
+  brasaGrad.addColorStop(0, '#ffffff');
+  brasaGrad.addColorStop(0.3, '#ffeb3b');
+  brasaGrad.addColorStop(0.7, '#ff9800');
+  brasaGrad.addColorStop(1, '#e64a19');
+  ctx.fillStyle = brasaGrad;
+  ctx.beginPath();
+  ctx.arc(0, -20, 5 + brillo, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Ceniza
+  ctx.fillStyle = '#9e9e9e';
+  ctx.beginPath();
+  ctx.roundRect(-3, -19, 6, 4, 1);
+  ctx.fill();
+  ctx.fillStyle = '#bdbdbd';
+  ctx.beginPath();
+  ctx.roundRect(-2, -19, 4, 2, 1);
+  ctx.fill();
+
+  ctx.restore();
+
+  // Humo (3 volutas)
+  for (let i = 0; i < 3; i++) {
+    const smokeY = cy - 25 - i * 12 + Math.sin(juego.tiempo * 0.06 + i * 2) * 3;
+    const smokeX = cx + Math.sin(juego.tiempo * 0.04 + i) * 4;
+    const size = 3 + i * 2.5;
+    const alpha = (0.5 - i * 0.13) * brillo;
+    ctx.fillStyle = `rgba(220,220,220,${alpha})`;
+    ctx.beginPath();
+    ctx.arc(smokeX, smokeY, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
 
     function dibujarObstaculos() {
       obstaculos.forEach(obs => dibujarPolicia(obs));
